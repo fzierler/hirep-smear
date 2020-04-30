@@ -2,3 +2,13 @@
 *.o
 .*.swp
 libhr.a
+
+Doc/*.aux
+Doc/*.fdb_latexmk
+Doc/*.fls
+Doc/*.log
+Doc/*.pdf
+Doc/*.out
+Doc/*.spl
+Doc/*.dvi
+Doc/*.ps
