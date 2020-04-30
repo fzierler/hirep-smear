@@ -37,9 +37,11 @@ typedef struct _input_WF {
   double tmax;
   int nmeas;
   int nint;
+  int saveflowedcnfg;
+  char savetimestring[1024];
 
   /* for the reading function */
-  input_record_t read[4];
+  input_record_t read[6];
 
 } input_WF;
 
@@ -49,6 +51,8 @@ typedef struct _input_WF {
     {"WF max integration time", "WF:tmax = %lf", DOUBLE_T, &((varname).tmax)},\
     {"WF number of measures", "WF:nmeas = %d", DOUBLE_T, &((varname).nmeas)},\
     {"WF number of integration steps between measures", "WF:nint = %d", INT_T, &((varname).nint)},\
+    {"WF save flowed cnfg", "WF:save_flowed_cnfg = %d",INT_T, &(varname).saveflowedcnfg}, \
+    {"WF save flowed cnfg at times", "WF:save_times = %s", STRING_T, (varname).savetimestring}, \
     {NULL, NULL, 0, NULL}\
   }\
 }
@@ -192,12 +196,35 @@ void read_cmdline(int argc, char* argv[]) {
 
 }
 
+/* A comparison function to allow using qsort to sort the list of times
+   to save the flowed configuration at */
+int compare_times(const void* a, const void* b) {
+  if ((*(double*)a > 0) && (*(double*)b < 0)) {
+    return -1;
+  } else if ((*(double*)a < 0) && (*(double*)b > 0)) {
+    return 1;
+  } else {
+    return *(double*)a > *(double*)b;
+  }
+}
+
+
+/* Calculate a filename to save the flowed configuration to, and save it */
+void save_flowed_cnfg(const char* orig_filename, double t) {
+  char flowed_filename[276];
+  sprintf(flowed_filename, "%s_%.6lf", orig_filename, t);
+  write_gauge_field(flowed_filename);
+}
+
 
 int main(int argc,char *argv[]) {
   int i;
-  char tmp[256];
+  char tmp[256], *cptr;
   FILE* list;
   filename_t fpars;
+  int nsave;
+  const int nsave_max = 256;
+  double savetime[nsave_max];
 
   /* setup process id and communications */
   read_cmdline(argc, argv);
@@ -252,6 +279,24 @@ int main(int argc,char *argv[]) {
 
   lprintf("MAIN",0,"Fermion representation: " REPR_NAME " [dim=%d]\n",NF);
 
+  nsave = 0;
+  if(WF_var.saveflowedcnfg) {
+    strcpy(tmp,WF_var.savetimestring);
+    cptr = strtok(tmp, ";");
+    nsave = 0;
+    while(cptr != NULL) {
+      error(nsave > nsave_max, 1, "WF_measure.c", "Too many save times specified. Please increase the value of nsave_max and recompile.");
+      savetime[nsave] = atof(cptr);
+      if (savetime[nsave] < WF_var.tmax) {
+	nsave++;
+      } else {
+	lprintf("MAIN", 0, "WARNING: WF save requested at time %lf which is greater than total flow time %lf, ignoring.\n", savetime[nsave], WF_var.tmax);
+      }
+      cptr = strtok(NULL, ";");
+    }
+    qsort(savetime, nsave, sizeof(double), compare_times);
+  }
+
   /* setup communication geometry */
   if (geometry_init() == 1) {
     finalize_process();
@@ -286,6 +331,22 @@ int main(int argc,char *argv[]) {
   lprintf("MAIN",0,"WF number of integration intervals per measure: %d\n",WF_var.nint);
   lprintf("MAIN",0,"WF number of integration intervals: %d\n",WF_var.nint*WF_var.nmeas);
   lprintf("MAIN",0,"WF integration step: %e\n",WF_var.tmax/(WF_var.nmeas*WF_var.nint));
+  if (WF_var.saveflowedcnfg && nsave > 0) {
+    char save_step_message[2048];
+    snprintf(save_step_message, 2048, "WF save flowed configuration at times: ");
+    snprintf(save_step_message + strlen(save_step_message), 2048 - strlen(save_step_message), "%lf", savetime[0]);
+    for (int save_index = 1; save_index < nsave; save_index++) {
+      snprintf(save_step_message + strlen(save_step_message),
+	       2048 - strlen(save_step_message),
+	       ", %lf", savetime[save_index]);
+    }
+    snprintf(save_step_message + strlen(save_step_message),
+	     2048 - strlen(save_step_message),
+	     ".\n");
+    lprintf("MAIN",0,save_step_message);
+  } else {
+    lprintf("MAIN",0,"WF: not saving any flowed configurations.\n");
+  }
 
 #ifdef ROTATED_SF
   lprintf("MAIN",0,"SF beta=%e\n",SF_var.beta);      
@@ -332,10 +393,23 @@ int main(int argc,char *argv[]) {
     int k, n;
     double epsilon=WF_var.tmax/(WF_var.nmeas*WF_var.nint);
     double t=0.;
+    int save_index = 0;
 
     for(n=-1;n<WF_var.nmeas;n++) {
       if(n>-1) {
         for(k=0;k<WF_var.nint;k++) {
+	  /* In the edge case where there are multiple saves requested in
+	     an interval smaller than epsilon, then this will save multiple
+	     times, which will use a little extra time. The alternative would
+	     be to duplicate the while condition as an if, which would be
+	     messy. (Using an if instead would break in this edge case.) */
+	  while (WF_var.saveflowedcnfg
+		 && save_index < nsave
+		 && savetime[save_index] >= 0
+		 && savetime[save_index] <= t) {
+	    save_flowed_cnfg(cnfg_filename, t);
+	    save_index++;
+	  }
           WilsonFlow3(u_gauge,epsilon);
           t+=epsilon;
         }
@@ -369,6 +443,11 @@ int main(int argc,char *argv[]) {
       lprintf("WILSONFLOW",0,"SF dS/deta= %e\n", SF_action(SF_var.beta));
 
 #endif
+    }
+    if (WF_var.saveflowedcnfg
+	&& save_index < nsave
+	&& savetime[save_index] < 0.) {
+      save_flowed_cnfg(cnfg_filename, t);
     }
     
     if(list==NULL) break;
