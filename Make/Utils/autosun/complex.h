@@ -1,3 +1,10 @@
+#ifndef COMPLEX_H
+#define COMPLEX_H
+#include <ostream>
+
+#include "./style.h"
+
+using namespace std;
 #define FLOATING double
 
 
@@ -123,3 +130,4 @@ string ftos(FLOATING x)
 	else sprintf(tmp, _NUMBER_, x);
 	return string(tmp);
 }
+#endif

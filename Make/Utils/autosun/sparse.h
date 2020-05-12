@@ -1,3 +1,10 @@
+#ifndef SPARSE_H
+#define SPARSE_H
+#include <iostream>
+#include <sstream>
+#include "./style.h"
+#include "./list.h"
+using namespace std;
 template<class INDEX, class VALUE> class sparselinear : public orderedlist<INDEX,VALUE>
 {
 public:
@@ -189,6 +196,7 @@ public:
 		if(p.size != q.size)
 		{
 			cerr << "WRONG MATRIX MULT.\n";
+			cerr << p.size << "!=" << q.size<< "\n";
 			return;
 		}
 		sparselinear<mindex,VALUE>::clear();
@@ -342,3 +350,4 @@ public:
 	}
 
 };
+#endif

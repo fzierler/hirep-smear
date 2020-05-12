@@ -1,3 +1,8 @@
+#ifndef POLYNOMIAL_H        
+#define POLYNOMIAL_H        
+#include "./complex.h"
+#include "./list.h"
+#include <cmath>
 #define _ZERO_ (1e-10)
 
 bool equal(FLOATING a,FLOATING b)
@@ -247,3 +252,4 @@ public:
 
 	using polynomial::operator=;
 };
+#endif

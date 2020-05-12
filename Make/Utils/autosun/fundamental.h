@@ -1,3 +1,9 @@
+#ifndef FUNDAMENTAL_H
+#define FUNDAMENTAL_H
+#include <string>
+#include "./sun.h"
+
+using namespace std;
 namespace representation
 {
 	int DIM;
@@ -51,7 +57,11 @@ string group_represent(const char* vname, const char* uname)
 	string RET;
 	cmatrix U(group::N,uname);
 
-	RET += U.assignment("=", vname);
+#ifndef _GAUGE_SPN_	
+	RET = U.assignment("=", vname);
+#else
+	RET = U.symplectic_compressed_assignment("=", vname);
+#endif
 	
 	return RET;
 }
@@ -62,3 +72,4 @@ string debug_group_represent(const char* vname, const char* uname)
 	RET = string("copy(") + vname + "," + uname + ");\n";
 	return RET;
 }
+#endif

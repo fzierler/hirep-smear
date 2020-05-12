@@ -1,3 +1,7 @@
+#ifndef ADJOINT_H
+#define ADJOINT_H
+#include "./sun.h"
+
 namespace representation
 {
 	int DIM;
@@ -33,6 +37,11 @@ void representation::init()
 	name = "ADJOINT";
 #ifdef _GAUGE_SON
         DIM = N*(N-1)/2;
+#elif _GAUGE_SPN_
+   /* We use the generators of the symplectic group here. 
+    * The adjoint of the symplectic group is irreducible whereas 
+    * the representation built with the generators of SU(N) would not be. */
+   DIM = (N*N+N)/2;
 #else
 	DIM = N*N-1;
 #endif
@@ -77,7 +86,11 @@ void representation::init()
 string group_represent(const char* vname, const char* uname)
 {
 	string RET;
+#ifdef _GAUGE_SPN_
+	spmatrix U(group::N,uname);
+#else
 	cmatrix U(group::N,uname);
+#endif
 	pmatrix adjU(group::N);
 	pmatrix rU(representation::DIM);
 	pmatrix *Ue;
@@ -155,4 +168,4 @@ string debug_group_represent(const char* vname, const char* uname)
 	}\n";
 	return RET;
 }
-
+#endif

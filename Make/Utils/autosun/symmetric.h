@@ -1,10 +1,14 @@
+#ifndef SYMMETRIC_H
+#define SYMMETRIC_H
+#include "./sun.h"
+
 namespace representation
 {
 	int DIM;
 	const int PHI_FLAVORS = 4;
 	typedef complex TYPE;
 
-	smatrix* iT;
+    smatrix* iT;
 	string name;
 	FLOATING iTnorm;
 
@@ -79,7 +83,12 @@ void representation::init()
 string group_represent(const char* vname, const char* uname)
 {
 	string RET;
+#ifdef _GAUGE_SPN_
+	spmatrix U(group::N,uname);
+#else
 	cmatrix U(group::N,uname);
+#endif
+ 
 	pmatrix trU(group::N);
 	pmatrix rU(representation::DIM);
 	pmatrix *Ue;
@@ -138,4 +147,4 @@ string debug_group_represent(const char* vname, const char* uname)
 	}";
 	return RET;
 }
-
+#endif
