@@ -65,6 +65,14 @@ if ($gauge_group eq "GAUGE_SON"){ #all represenatations real
     $c2="R";
 }
 
+if ($gauge_group eq "GAUGE_SPN" and $Ng==2){
+    die("Use SU(2) instead of SP(2).")
+}
+
+if ($gauge_group eq "GAUGE_SPN" and $Ng % 2 == 1){
+    die("For SP(2N), 2N needs to be - guess what - even.\n")
+}
+
 my ($N,$suff,$complex,$to);
 
 my $dataname;

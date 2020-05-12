@@ -78,8 +78,23 @@ sub validate_gauge {
         $gauge = "GAUGE_SUN"
     } elsif ($gauge eq "SON") { 
         $gauge = "GAUGE_SON"         
+    } elsif ($gauge eq "SPN"){
+        $gauge = "GAUGE_SPN";
+        if($NG == 2){
+            print "Error: SP(2) not implemented. Use SU(2) instead.";
+            HelpMessage(1);
+        }
+        if($repr eq "REPR_SYMMETRIC"){
+            print "Error: SP(2N) symmetric representation not implemented.";
+            print "       Use adjoint representation instead.";
+            HelpMessage(1);
+        }
+        if($NG % 2 == 1){
+            print "Error: In SP(2N), 2N must be even.";
+            HelpMessage(1);
+        }
     } else {
-        print "Error: The gauge group must be one of the following: SUN, SON\n";
+        print "Error: The gauge group must be one of the following: SUN, SON or SPN\n";
         HelpMessage(1);
     }
 }
