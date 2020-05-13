@@ -171,6 +171,14 @@ typedef float complex hr_complex_flt;
 #define _complex_mul_star_star_assign(c,a,b) \
    (c)+=conj((a)*(b))
 
+
+/*
+* a+=(b+c^*) (a,b complex)
+*/
+#define _complex_add_star_assign(a,b,c) \
+   (a)+=(b)+conj(c)
+
+
 /*
 * a=-b (a complex)
 */
@@ -295,6 +303,45 @@ typedef float complex hr_complex_flt;
 */
 #define _complex_clc_assign(a,z1,c1,z2,c2) \
     (a)+=(z1)*(c1)+(z2)*(c2)
+
+//////////NEW MACROS FOR SPN
+/*
+* a=-b*(c^+) (a,b,c complex)
+*/
+#define _complex_minus_mul_star(a,b,c) \
+   (a)= -(b)*conj(c)
+
+/*
+* a-=b*(c^+) (a,b,c complex)
+*/
+#define _complex_mul_star_massign(a,b,c) \
+   (a)-=(b)*conj(c)
+
+/*
+* a+=b*(c^+) (a,b,c complex)
+*/
+#define _complex_mul_star_passign(a,b,c) \
+   (a)+=(b)*conj(c)
+
+/*
+* a-=b*c (a,b,c complex)
+*/
+#define _complex_mul_massign(a,b,c) \
+   (a)-=(b)*(c)
+   
+/*
+* a+=b*c (a,b,c complex)
+*/
+#define _complex_mul_passign(a,b,c) \
+   (a)+=(b)*(c)
+
+/*
+* a=-b*c (a,b,c complex)
+*/
+#define _complex_minus_mul(a,b,c) \
+    (a)=-(b)*(c)
+
+
 
 
 #endif

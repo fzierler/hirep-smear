@@ -401,11 +401,13 @@ END
             write_spN_minus();
 
             write_spN_mul();
+            write_spN_mul_assign();
             write_spN_mulc();
             write_spN_add_assign();
             write_spN_sub_assign();
             write_spN_sqnorm();
             write_spN_sqnorm_m1();
+            write_spN_trace();
             write_spN_trace_re();
             write_spN_trace_im();
             write_suN_FMAT();
@@ -1733,14 +1735,14 @@ sub write_su2_decode {
         print "/* _tmp is a complex 2x2 matrix  */\n";
         print "#define _${dataname}_fun_decode(_tmp,u) \\\n";
         print "      _COMPLEX _tmp[4]; \\\n";
-        print "      _complex_re(_tmp[0]) = (u).$cname\[0\]; \\\n";
-        print "      _complex_im(_tmp[0]) = (u).$cname\[3\]; \\\n";
-        print "      _complex_re(_tmp[1]) = -(u).$cname\[2\]; \\\n";
-        print "      _complex_im(_tmp[1]) = (u).$cname\[1\]; \\\n";
-        print "      _complex_re(_tmp[2]) = (u).$cname\[2\]; \\\n";
-        print "      _complex_im(_tmp[2]) = (u).$cname\[1\]; \\\n";
-        print "      _complex_re(_tmp[3]) = (u).$cname\[0\]; \\\n";
-        print "      _complex_im(_tmp[3]) = -(u).$cname\[3\]";
+        print "      _tmp[0] =     (u).$cname\[0\]; \\\n";
+        print "      _tmp[0]+= I*( (u).$cname\[3\]); \\\n";
+        print "      _tmp[1] =    -(u).$cname\[2\]; \\\n";
+        print "      _tmp[1]+= I*( (u).$cname\[1\]); \\\n";
+        print "      _tmp[2] =     (u).$cname\[2\]; \\\n";
+        print "      _tmp[2]+= I*( (u).$cname\[1\]); \\\n";
+        print "      _tmp[3] =     (u).$cname\[0\]; \\\n";
+        print "      _tmp[3]+= I*(-(u).$cname\[3\])";
         print "\n\n";
     } elsif ($N==3) {
         print "/* _tmp is a real 3x3 matrix  */\n";
@@ -3161,13 +3163,13 @@ sub write_suN_2TA {
         for(my $i=0;$i<$N;){
             for(my $j=$i;$j<$N;$j++){
                 if($i==$j) {
-                    print "      _complex_re((u).$cname\[$n\])= 0.; \\\n";
-                    print "      _complex_im((u).$cname\[$n\])= 2.*_complex_im((v).$cname\[$k\])-_trim; \\\n";
+                    print "      (u).$cname\[$n\] = 0.; \\\n";
+                    print "      (u).$cname\[$n\]+= I*(2.*_complex_im((v).$cname\[$k\])-_trim); \\\n";
                 } else {
-                    print "      _complex_re((u).$cname\[$n\])= _complex_re((v).$cname\[$n\])-_complex_re((v).$cname\[$k\]); \\\n";
-                    print "      _complex_im((u).$cname\[$n\])= _complex_im((v).$cname\[$k\])+_complex_im((v).$cname\[$n\]); \\\n";
-                    print "      _complex_re((u).$cname\[$k\])= -_complex_re((u).$cname\[$n\]); \\\n";
-                    print "      _complex_im((u).$cname\[$k\])= _complex_im((u).$cname\[$n\]); \\\n";
+                    print "      (u).$cname\[$n\] = _complex_re((v).$cname\[$n\])-_complex_re((v).$cname\[$k\]); \\\n";
+                    print "      (u).$cname\[$n\]+= I*(_complex_im((v).$cname\[$k\])+_complex_im((v).$cname\[$n\])); \\\n";
+                    print "      (u).$cname\[$k\] = -_complex_re((u).$cname\[$n\]); \\\n";
+                    print "      (u).$cname\[$k\]+= I*(_complex_im((u).$cname\[$n\])); \\\n";
                 }
                 $n++; $k+=$N;
             }
@@ -3179,14 +3181,14 @@ sub write_suN_2TA {
         print "      int _i,_j,_n=0,_k=0,_s2=0;\\\n";
         print "      double _trim; _${dataname}_trace_im(_trim,(v)); _trim*=(2./$N.);\\\n";
         print "      for(_i=0;_i<$N;){\\\n";
-        print "         _complex_re((u).$cname\[_n\])= 0.; \\\n";
-        print "         _complex_im((u).$cname\[_n\])= 2.*_complex_im((v).$cname\[_k\])-_trim; \\\n";
+        print "         (u).$cname\[_n\] = 0.; \\\n";
+        print "         (u).$cname\[_n\]+= I*(2.*_complex_im((v).$cname\[_k\])-_trim); \\\n";
         print "         ++_n; _k+=$N; \\\n";
         print "         for(_j=_i+1;_j<$N;++_j){\\\n";
-        print "            _complex_re((u).$cname\[_n\])= _complex_re((v).$cname\[_n\])-_complex_re((v).$cname\[_k\]); \\\n";
-        print "            _complex_im((u).$cname\[_n\])= _complex_im((v).$cname\[_k\])+_complex_im((v).$cname\[_n\]); \\\n";
-        print "            _complex_re((u).$cname\[_k\])= -_complex_re((u).$cname\[_n\]); \\\n";
-        print "            _complex_im((u).$cname\[_k\])= _complex_im((u).$cname\[_n\]); \\\n";
+        print "            (u).$cname\[_n\] =     _complex_re((v).$cname\[_n\])-_complex_re((v).$cname\[_k\]); \\\n";
+        print "            (u).$cname\[_n\]+= I*( _complex_im((v).$cname\[_k\])+_complex_im((v).$cname\[_n\])); \\\n";
+        print "            (u).$cname\[_k\] =    -_complex_re((u).$cname\[_n\]); \\\n";
+        print "            (u).$cname\[_k\]+= I*( _complex_im((u).$cname\[_n\])); \\\n";
         print "            ++_n; _k+=$N; \\\n";
         print "         }\\\n";
         print "         ++_i; _s2+=$N; _n+=_i; _k-=$shift-_s2; \\\n";
@@ -3207,13 +3209,13 @@ sub write_suN_TA {
         for(my $i=0;$i<$N;){
             for(my $j=$i;$j<$N;$j++){
                 if($i==$j) {
-                    print "      _complex_re((u).$cname\[$n\])= 0.; \\\n";
-                    print "      _complex_im((u).$cname\[$n\])= _complex_im((v).$cname\[$k\])-_trim; \\\n";
+                    print "      (u).$cname\[$n\] =     0.; \\\n";
+                    print "      (u).$cname\[$n\]+= I*( _complex_im((v).$cname\[$k\])-_trim); \\\n";
                 } else {
-                    print "      _complex_re((u).$cname\[$n\])= 0.5*(_complex_re((v).$cname\[$n\])-_complex_re((v).$cname\[$k\])); \\\n";
-                    print "      _complex_im((u).$cname\[$n\])= 0.5*(_complex_im((v).$cname\[$k\])+_complex_im((v).$cname\[$n\])); \\\n";
-                    print "      _complex_re((u).$cname\[$k\])= -_complex_re((u).$cname\[$n\]); \\\n";
-                    print "      _complex_im((u).$cname\[$k\])= _complex_im((u).$cname\[$n\]); \\\n";
+                    print "      (u).$cname\[$n\] =     0.5*(_complex_re((v).$cname\[$n\])-_complex_re((v).$cname\[$k\])); \\\n";
+                    print "      (u).$cname\[$n\]+= I*( 0.5*(_complex_im((v).$cname\[$k\])+_complex_im((v).$cname\[$n\]))); \\\n";
+                    print "      (u).$cname\[$k\] =    -_complex_re((u).$cname\[$n\]); \\\n";
+                    print "      (u).$cname\[$k\]+= I*( _complex_im((u).$cname\[$n\])); \\\n";
                 }
                 $n++; $k+=$N;
             }
@@ -3225,14 +3227,14 @@ sub write_suN_TA {
         print "      int _i,_j,_n=0,_k=0,_s2=0;\\\n";
         print "      double _trim; _${dataname}_trace_im(_trim,(v)); _trim*=(1./$N.);\\\n";
         print "      for(_i=0;_i<$N;){\\\n";
-        print "         _complex_re((u).$cname\[_n\])= 0.; \\\n";
-        print "         _complex_im((u).$cname\[_n\])= _complex_im((v).$cname\[_k\])-_trim; \\\n";
+        print "         (u).$cname\[_n\] =     0.; \\\n";
+        print "         (u).$cname\[_n\]+= I*( _complex_im((v).$cname\[_k\])-_trim); \\\n";
         print "         ++_n; _k+=$N; \\\n";
         print "         for(_j=_i+1;_j<$N;++_j){\\\n";
-        print "            _complex_re((u).$cname\[_n\])= 0.5*(_complex_re((v).$cname\[_n\])-_complex_re((v).$cname\[_k\])); \\\n";
-        print "            _complex_im((u).$cname\[_n\])= 0.5*(_complex_im((v).$cname\[_k\])+_complex_im((v).$cname\[_n\])); \\\n";
-        print "            _complex_re((u).$cname\[_k\])= -_complex_re((u).$cname\[_n\]); \\\n";
-        print "            _complex_im((u).$cname\[_k\])= _complex_im((u).$cname\[_n\]); \\\n";
+        print "            (u).$cname\[_n\] =     0.5*(_complex_re((v).$cname\[_n\])-_complex_re((v).$cname\[_k\])); \\\n";
+        print "            (u).$cname\[_n\]+= I*( 0.5*(_complex_im((v).$cname\[_k\])+_complex_im((v).$cname\[_n\]))); \\\n";
+        print "            (u).$cname\[_k\] =    -_complex_re((u).$cname\[_n\]); \\\n";
+        print "            (u).$cname\[_k\]+= I*( _complex_im((u).$cname\[_n\])); \\\n";
         print "            ++_n; _k+=$N; \\\n";
         print "         }\\\n";
         print "         ++_i; _s2+=$N; _n+=_i; _k-=$shift-_s2; \\\n";
@@ -3257,7 +3259,7 @@ sub write_suN_FMAT {
         }
     } else {
         print "   do { \\\n";
-        print "      int _i,_j,_n=0;\\\n";
+        print "      int _i,_n=0;\\\n";
         print "      for (_i=0; _i<$N; ++_i){\\\n";
         if ($N<(2*$unroll+1)) {
             my $n=0;
@@ -3267,6 +3269,7 @@ sub write_suN_FMAT {
                 print "         ++_n; \\\n";
             }
         } else {
+            print "         int _j=0;\\\n";
             print "         for (_j=0; _j<$vd; ){\\\n";
             for(my $i=0;$i<$unroll;$i++){
                 print "            _complex_mul_star_assign((u).$cname\[_n\],(s).${cname}\[0\].$cname\[_i\],(s).${cname}\[2\].$cname\[_j\]); \\\n";
@@ -3604,11 +3607,11 @@ sub write_vector_myrandom {
     print "/* random vector */\n";
     print "#define _vector_myrand(r) \\\n";
     for(my $i=1;$i<$N;$i++){
-        print "   _complex_re((r).$cname\[$i\])=1.0*((double)rand())/(double)RAND_MAX; \\\n";
-        print "   _complex_im((r).$cname\[$i\])=1.0*((double)rand())/(double)RAND_MAX; \\\n";
+        print "   (r).$cname\[$i\] =     1.0*((double)rand())/(double)RAND_MAX; \\\n";
+        print "   (r).$cname\[$i\]+= I*( 1.0*((double)rand())/(double)RAND_MAX); \\\n";
     }
-    print "   _complex_re((r).$cname\[$N\])=1.0*((double)rand())/(double)RAND_MAX; \\\n";
-    print "   _complex_im((r).$cname\[$N\])=1.0*((double)rand())/(double)RAND_MAX\n\n";
+    print "   (r).$cname\[$N\] =     1.0*((double)rand())/(double)RAND_MAX; \\\n";
+    print "   (r).$cname\[$N\]+= I*( 1.0*((double)rand())/(double)RAND_MAX)\n\n";
 
 }
 
@@ -3626,8 +3629,8 @@ sub write_su3_myrandom {
     print "/* random matrix */\n";
     print "#define _${dataname}_myrand(r) \\\n";
     for(my $i=0;$i<$N*$N;$i++){
-        print "   _complex_re((r).$cname\[$i\])=1.0*((double)rand())/(double)RAND_MAX; \\\n";
-        print "   _complex_im((r).$cname\[$i\])=1.0*((double)rand())/(double)RAND_MAX";
+        print "   (r).$cname\[$i\] =     1.0*((double)rand())/(double)RAND_MAX; \\\n";
+        print "   (r).$cname\[$i\]+= I*( 1.0*((double)rand())/(double)RAND_MAX)";
         if($i==$N*$N-1) { print "\n\n" } else { print ";\\\n"; }
     }
 }
@@ -3645,31 +3648,38 @@ sub old2_write_su2_multiply {
 
     if ($N==2) { #fundamental representation
         print "#define _${dataname}_multiply(r,u,s) \\\n";
-        print "   _complex_re((r).$cname\[0\])=(u).$cname\[0\]*_complex_re((s).$cname\[0\])-(u).$cname\[1\]*_complex_im((s).$cname\[1\])-(u).$cname\[2\]*_complex_re((s).$cname\[1\])-(u).$cname\[3\]*_complex_im((s).$cname\[0\]); \\\n";
-        print "   _complex_im((r).$cname\[0\])=(u).$cname\[0\]*_complex_im((s).$cname\[0\])+(u).$cname\[1\]*_complex_re((s).$cname\[1\])-(u).$cname\[2\]*_complex_im((s).$cname\[1\])+(u).$cname\[3\]*_complex_re((s).$cname\[0\]); \\\n";
-        print "   _complex_re((r).$cname\[1\])=(u).$cname\[0\]*_complex_re((s).$cname\[1\])-(u).$cname\[1\]*_complex_im((s).$cname\[0\])+(u).$cname\[2\]*_complex_re((s).$cname\[0\])+(u).$cname\[3\]*_complex_im((s).$cname\[1\]); \\\n";
-        print "   _complex_im((r).$cname\[1\])=(u).$cname\[0\]*_complex_im((s).$cname\[1\])+(u).$cname\[1\]*_complex_re((s).$cname\[0\])+(u).$cname\[2\]*_complex_im((s).$cname\[0\])-(u).$cname\[3\]*_complex_re((s).$cname\[1\]) \n\n";
+        print "   (r).$cname\[0\] =   (u).$cname\[0\]*_complex_re((s).$cname\[0\])-(u).$cname\[1\]*_complex_im((s).$cname\[1\])-(u).$cname\[2\]*_complex_re((s).$cname\[1\])-(u).$cname\[3\]*_complex_im((s).$cname\[0\]); \\\n";
+        print "   (r).$cname\[0\]+= I*((u).$cname\[0\]*_complex_im((s).$cname\[0\])+(u).$cname\[1\]*_complex_re((s).$cname\[1\])-(u).$cname\[2\]*_complex_im((s).$cname\[1\])+(u).$cname\[3\]*_complex_re((s).$cname\[0\])); \\\n";
+        print "   (r).$cname\[1\] =    (u).$cname\[0\]*_complex_re((s).$cname\[1\])-(u).$cname\[1\]*_complex_im((s).$cname\[0\])+(u).$cname\[2\]*_complex_re((s).$cname\[0\])+(u).$cname\[3\]*_complex_im((s).$cname\[1\]); \\\n";
+        print "   (r).$cname\[1\]+= I*((u).$cname\[0\]*_complex_im((s).$cname\[1\])+(u).$cname\[1\]*_complex_re((s).$cname\[0\])+(u).$cname\[2\]*_complex_im((s).$cname\[0\])-(u).$cname\[3\]*_complex_re((s).$cname\[1\])) \n\n";
 
     } elsif ($N==3) { #adjoint representation
         print "#define _${rdataname}_multiply(r,u,s) \\\n";
-        print "   _complex_re((r).$cname\[0\])=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        print "   _complex_re((r).$cname\[0\])+=2.*((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
-        print "   _complex_re((r).$cname\[0\])+=2.*((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_re((s).$cname\[2\]); \\\n";
-        print "   _complex_im((r).$cname\[0\])=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        print "   _complex_im((r).$cname\[0\])+=2.*((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\]); \\\n";
-        print "   _complex_im((r).$cname\[0\])+=2.*((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_im((s).$cname\[2\]); \\\n";
-        print "   _complex_re((r).$cname\[1\])=2.*((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        print "   _complex_re((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
-        print "   _complex_re((r).$cname\[1\])+=2.*((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-        print "   _complex_im((r).$cname\[1\])=2.*((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        print "   _complex_im((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\]); \\\n";
-        print "   _complex_im((r).$cname\[1\])+=2.*((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]); \\\n";
-        print "   _complex_re((r).$cname\[2\])=2.*((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        print "   _complex_re((r).$cname\[2\])+=2.*((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
-        print "   _complex_re((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-        print "   _complex_im((r).$cname\[2\])=2.*((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        print "   _complex_im((r).$cname\[2\])+=2.*((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\]); \\\n";
-        print "   _complex_im((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]) \n\n";
+        print "   (r).$cname\[0\] =   ((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
+        print "   (r).$cname\[0\]+=   2.*((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
+        print "   (r).$cname\[0\]+=   2.*((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_re((s).$cname\[2\]); \\\n";
+
+        print "   (r).$cname\[0\]+=I*(((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\])); \\\n";
+        print "   (r).$cname\[0\]+=I*(2.*((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\])); \\\n";
+        print "   (r).$cname\[0\]+=I*(2.*((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_im((s).$cname\[2\])); \\\n";
+
+
+        print "   (r).$cname\[1\] =   2.*((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
+        print "   (r).$cname\[1\]+=   ((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
+        print "   (r).$cname\[1\]+=   2.*((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
+
+        print "   (r).$cname\[1\]+=I*(2.*((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\])); \\\n";
+        print "   (r).$cname\[1\]+=I*(((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\])); \\\n";
+        print "   (r).$cname\[1\]+=I*(2.*((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\])); \\\n";
+
+
+        print "   (r).$cname\[2\]) =  2.*((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
+        print "   (r).$cname\[2\])+=  2.*((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
+        print "   (r).$cname\[2\])+=  ((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
+       
+        print "   (r).$cname\[2\])+=I*(2.*((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\])); \\\n";
+        print "   (r).$cname\[2\])+=I*(2.*((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\])); \\\n";
+        print "   (r).$cname\[2\])+=I*(((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\])) \n\n";
     } else {
         die("Undefined fermion representation in quaternionic code. Exiting...\n");
     }
@@ -3683,43 +3693,10 @@ sub write_su2_multiply {
 
     if ($N==2) { #fundamental representation
         print "#define _${dataname}_multiply(r,u,s) \\\n";
-        #print "   _complex_re((r).$cname\[0\])=(u).$cname\[0\]*_complex_re((s).$cname\[0\])-(u).$cname\[1\]*_complex_im((s).$cname\[1\])-(u).$cname\[2\]*_complex_re((s).$cname\[1\])-(u).$cname\[3\]*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])=(u).$cname\[0\]*_complex_im((s).$cname\[0\])+(u).$cname\[1\]*_complex_re((s).$cname\[1\])-(u).$cname\[2\]*_complex_im((s).$cname\[1\])+(u).$cname\[3\]*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])=(u).$cname\[0\]*_complex_re((s).$cname\[1\])-(u).$cname\[1\]*_complex_im((s).$cname\[0\])+(u).$cname\[2\]*_complex_re((s).$cname\[0\])+(u).$cname\[3\]*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])=(u).$cname\[0\]*_complex_im((s).$cname\[1\])+(u).$cname\[1\]*_complex_re((s).$cname\[0\])+(u).$cname\[2\]*_complex_im((s).$cname\[0\])-(u).$cname\[3\]*_complex_re((s).$cname\[1\]) \n\n";
         print "   (r).$cname\[0\]=((u).$cname\[0\]+I*(u).$cname\[3\])*(s).$cname\[0\]-((u).$cname\[2\]-I*(u).$cname\[1\])*(s).$cname\[1\]; \\\n";
         print "   (r).$cname\[1\]=((u).$cname\[2\]+I*(u).$cname\[1\])*(s).$cname\[0\]+((u).$cname\[0\]-I*(u).$cname\[3\])*(s).$cname\[1\]; \n\n";
     } elsif ($N==3) { #adjoint representation
         print "#define _${rdataname}_multiply(r,u,s) \\\n";
-        #print "   _complex_re((r).$cname\[0\])=((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_re((s).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=_complex_re((r).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        #
-        #print "   _complex_im((r).$cname\[0\])=((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_im((s).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=_complex_im((r).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        #
-        #print "   _complex_re((r).$cname\[1\])=((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=_complex_re((r).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
-        #
-        #print "   _complex_im((r).$cname\[1\])=((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=_complex_im((r).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\]); \\\n";
-        #
-        #print "   _complex_re((r).$cname\[2\])=((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_re((s).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=_complex_re((r).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-        #
-        #print "   _complex_im((r).$cname\[2\])=((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=_complex_im((r).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]) \n\n";
         print "  (r).$cname\[0\]=2*(((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*(s).$cname\[1\]+((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*(s).$cname\[2\]) +((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*(s).$cname\[0\]; \\\n";
         print "  (r).$cname\[1\]=2*(((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*(s).$cname\[0\]+((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*(s).$cname\[2\]) +((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*(s).$cname\[1\]; \\\n";
         print "  (r).$cname\[2\]=2*(((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*(s).$cname\[0\]+((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*(s).$cname\[1\]) +((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*(s).$cname\[2\]; \\\n";
@@ -3736,44 +3713,10 @@ sub write_su2_inverse_multiply {
 
     if ($N==2) { #fundamental representation
         print "#define _${dataname}_inverse_multiply(r,u,s) \\\n";
-        #print "   _complex_re((r).$cname\[0\])=(u).$cname\[0\]*_complex_re((s).$cname\[0\])+(u).$cname\[1\]*_complex_im((s).$cname\[1\])+(u).$cname\[2\]*_complex_re((s).$cname\[1\])+(u).$cname\[3\]*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])=(u).$cname\[0\]*_complex_im((s).$cname\[0\])-(u).$cname\[1\]*_complex_re((s).$cname\[1\])+(u).$cname\[2\]*_complex_im((s).$cname\[1\])-(u).$cname\[3\]*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])=(u).$cname\[0\]*_complex_re((s).$cname\[1\])+(u).$cname\[1\]*_complex_im((s).$cname\[0\])-(u).$cname\[2\]*_complex_re((s).$cname\[0\])-(u).$cname\[3\]*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])=(u).$cname\[0\]*_complex_im((s).$cname\[1\])-(u).$cname\[1\]*_complex_re((s).$cname\[0\])-(u).$cname\[2\]*_complex_im((s).$cname\[0\])+(u).$cname\[3\]*_complex_re((s).$cname\[1\]) \n\n";
         print "   (r).$cname\[0\]=((u).$cname\[0\]-I*(u).$cname\[3\])*(s).$cname\[0\]+((u).$cname\[2\]-I*(u).$cname\[1\])*(s).$cname\[1\]; \\\n";
         print "   (r).$cname\[1\]=-((u).$cname\[2\]+I*(u).$cname\[1\])*(s).$cname\[0\]+((u).$cname\[0\]+I*(u).$cname\[3\])*(s).$cname\[1\]; \n\n";
     } elsif ($N==3) { #adjoint representation
         print "#define _${rdataname}_inverse_multiply(r,u,s) \\\n";
-        #print "   _complex_re((r).$cname\[0\])=((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=_complex_re((r).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[0\]); \\\n";
-
-        #print "   _complex_im((r).$cname\[0\])=((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=_complex_im((r).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[0\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[0\]); \\\n";
-
-        #print "   _complex_re((r).$cname\[1\])=((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_re((s).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=_complex_re((r).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
-
-        #print "   _complex_im((r).$cname\[1\])=((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*_complex_im((s).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=_complex_im((r).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[1\])+=((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\]); \\\n";
-
-        #print "   _complex_re((r).$cname\[2\])=((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_re((s).$cname\[0\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_re((s).$cname\[1\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=_complex_re((r).$cname\[2\]); \\\n";
-        #print "   _complex_re((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_re((s).$cname\[2\]); \\\n";
-
-        #print "   _complex_im((r).$cname\[2\])=((u).$cname\[2\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[1\])*_complex_im((s).$cname\[0\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[2\]+(u).$cname\[1\]*(u).$cname\[3\])*_complex_im((s).$cname\[1\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=_complex_im((r).$cname\[2\]); \\\n";
-        #print "   _complex_im((r).$cname\[2\])+=((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]+(u).$cname\[3\]*(u).$cname\[3\])*_complex_im((s).$cname\[2\]) \n\n";
-
         print "   (r).$cname\[0\]=2*(((u).$cname\[1\]*(u).$cname\[2\]-(u).$cname\[0\]*(u).$cname\[3\])*(s).$cname\[1\] + ((u).$cname\[0\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[3\])*(s).$cname\[2\])+((u).$cname\[0\]*(u).$cname\[0\]-(u).$cname\[1\]*(u).$cname\[1\]+(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*(s).$cname\[0\]; \\\n";
 
         print "   (r).$cname\[1\]=2*(((u).$cname\[0\]*(u).$cname\[3\]+(u).$cname\[1\]*(u).$cname\[2\])*(s).$cname\[0\] + ((u).$cname\[1\]*(u).$cname\[3\]-(u).$cname\[0\]*(u).$cname\[2\])*(s).$cname\[2\])+((u).$cname\[0\]*(u).$cname\[0\]+(u).$cname\[1\]*(u).$cname\[1\]-(u).$cname\[2\]*(u).$cname\[2\]-(u).$cname\[3\]*(u).$cname\[3\])*(s).$cname\[1\]; \\\n";
@@ -4171,22 +4114,22 @@ sub write_suN_read_gpu {
     print "   do {  \\\n";
     print "      int __iz=(iy)+((x)*$rdim)*(stride); \\\n";
     for($i=0; $i<$dim-1; $i++) {
-        print "      _complex_re((v).c\[$i\])=((float*)(in))\[__iz\]; __iz+=(stride); \\\n";
-        print "      _complex_im((v).c\[$i\])=((float*)(in))\[__iz\]; __iz+=(stride); \\\n";
+        print "      (v).c\[$i\] =    ((float*)(in))\[__iz\]; __iz+=(stride); \\\n";
+        print "      (v).c\[$i\]+= I*(((float*)(in))\[__iz\]); __iz+=(stride); \\\n";
     }
-    print "      _complex_re((v).c\[$i\])=((float*)(in))\[__iz\]; __iz+=(stride); \\\n";
-    print "      _complex_im((v).c\[$i\])=((float*)(in))\[__iz\]; \\\n";
+    print "      (v).c\[$i\] =   ((float*)(in))\[__iz\]; __iz+=(stride); \\\n";
+    print "      (v).c\[$i\]+= I*(((float*)(in))\[__iz\]); \\\n";
     print "   } while (0) \n\n";
 
     print "#define _${dataname}_read_gpu(stride,v,in,iy,x) \\\n";
     print "   do {  \\\n";
     print "      int __iz=(iy)+((x)*$rdim)*(stride); \\\n";
     for($i=0; $i<$dim-1; $i++) {
-        print "      _complex_re((v).c\[$i\])=((double*)(in))\[__iz\]; __iz+=(stride); \\\n";
-        print "      _complex_im((v).c\[$i\])=((double*)(in))\[__iz\]; __iz+=(stride); \\\n";
+        print "      (v).c\[$i\] =    ((double*)(in))\[__iz\]; __iz+=(stride); \\\n";
+        print "      (v).c\[$i\]+= I*(((double*)(in))\[__iz\]); __iz+=(stride); \\\n";
     }
-    print "      _complex_re((v).c\[$i\])=((double*)(in))\[__iz\]; __iz+=(stride); \\\n";
-    print "      _complex_im((v).c\[$i\])=((double*)(in))\[__iz\]; \\\n";
+    print "      (v).c\[$i\] =    ((double*)(in))\[__iz\]; __iz+=(stride); \\\n";
+    print "      (v).c\[$i\]+= I*(((double*)(in))\[__iz\]); \\\n";
     print "   } while (0) \n\n";
 
 }
@@ -4388,10 +4331,10 @@ sub write_spNcomp_algebra_vector { # from write_suN_algebra_vector
 sub write_spNcomp { # from write_suN
     print $structdef;
     my $d=($N*$N/2);
-    print "   complex $cname\[$d\];\n";
+    print "   double complex $cname\[$d\];\n";
     print "} $dataname;\n\n";
     print $structdef;
-    print "   complex_flt $cname\[$d\];\n";
+    print "   float complex $cname\[$d\];\n";
     print "} ${dataname}_flt;\n\n";
 }
 
@@ -5196,17 +5139,17 @@ sub write_spN_expand {
     my $p = 0;
     for (my $i=0; $i<$N/2; $i++) {
         for (my $j=0; $j<$N/2; $j++) {
-            print "   _complex_re((v).$cname\[$n\]) = _complex_re((u).$cname\[$n\]);\\\n";
-            print "   _complex_im((v).$cname\[$n\]) = _complex_im((u).$cname\[$n\]);\\\n";
+            print "   (v).$cname\[$n\] =     _complex_re((u).$cname\[$n\]);\\\n";
+            print "   (v).$cname\[$n\]+= I*( _complex_im((u).$cname\[$n\]));\\\n";
             $p = $N*$N/2+$n+$N/2;
-            print "   _complex_re((v).$cname\[$p\]) = _complex_re((u).$cname\[$n\]);\\\n";
-            print "   _complex_im((v).$cname\[$p\]) =-_complex_im((u).$cname\[$n\]);\\\n";
+            print "   (v).$cname\[$p\] =      _complex_re((u).$cname\[$n\]);\\\n";
+            print "   (v).$cname\[$p\]+= I*( -_complex_im((u).$cname\[$n\]));\\\n";
             $m = $N/2+$n;
-            print "   _complex_re((v).$cname\[$m\]) = _complex_re((u).$cname\[$m\]);\\\n";
-            print "   _complex_im((v).$cname\[$m\]) = _complex_im((u).$cname\[$m\]);\\\n";
+            print "   (v).$cname\[$m\] =     _complex_re((u).$cname\[$m\]);\\\n";
+            print "   (v).$cname\[$m\]+= I*( _complex_im((u).$cname\[$m\]));\\\n";
             $p = $N*$N/2+$n;
-            print "   _complex_re((v).$cname\[$p\]) =-_complex_re((u).$cname\[$m\]);\\\n";
-            print "   _complex_im((v).$cname\[$p\]) = _complex_im((u).$cname\[$m\]);\\\n";
+            print "   (v).$cname\[$p\] =    -_complex_re((u).$cname\[$m\]);\\\n";
+            print "   (v).$cname\[$p\]+= I*( _complex_im((u).$cname\[$m\]));\\\n";
             $n++;
         }
         $n+=$N/2;
@@ -5296,6 +5239,29 @@ sub write_spN_mul {
         print "      }\\\n";
         for(my $i=0;$i<$mr2h;$i++){
             print "      _complex_mulr((u).$cname\[_i\],(r),(v).$cname\[_i\]); ++_i;\\\n";
+        }
+        print "   } while(0) \n\n";
+    }
+}
+
+sub write_spN_mul_assign {
+    print "/* u*=r (u mat, r real) */\n";
+    print "#define _${dataname}_mul_assign(u,r) \\\n";
+    my $dim=$N*$N/2;
+    if ($N<$Nmax or $dim<(2*$unroll+1)) { #unroll all
+        for(my $i=0; $i<$dim; $i++) {
+            print "   (u).$cname\[$i\]*=(r)";
+            if($i==$dim-1) {print "\n\n";} else { print ";\\\n"; }
+        }
+    } else { #partial unroll
+        print "   do { \\\n";
+        print "      int _i;for (_i=0; _i<$md2h; ){\\\n";
+        for(my $i=0;$i<$unroll;$i++){
+            print "         (u).$cname\[_i\]*=(r); ++_i;\\\n";
+        }
+        print "      }\\\n";
+        for(my $i=0;$i<$mr2h;$i++){
+            print "      (u).$cname\[_i\]*=(r); ++_i;\\\n";
         }
         print "   } while(0) \n\n";
     }
@@ -5438,6 +5404,47 @@ sub write_spN_sqnorm_m1 {
         print "   } while(0) \n\n";
     }
 }
+
+sub write_spN_trace {
+    print "/* k= Tr (u) */\n";
+    print "#define _${dataname}_trace(k,u) \\\n";
+    if ($N<$Nmax or $N<(2*$unroll+1) ) { #unroll all
+        print "   (k)=";
+        my $n=0;
+        for(my $i=0;$i<$N/2;$i++){
+            print "(u).$cname\[$n\]";
+            $n+=$N+1;
+            if($i==$N/2-1) { print ";\\\n"; } else { print "+ \\\n       "; }
+        }
+        print "      (k)*=2;\n\n";
+    } else { #partial unroll
+        print "   do { \\\n";
+        print "      int _i,_n=0;\\\n";
+        print "      (k)=0.;\\\n";
+        print "      for (_i=0; _i<$vdh; _i+=$unroll){\\\n";
+        print "         (k)+=";
+        my $n=0;
+        for(my $i=0;$i<$unroll;$i++){
+            if ($i==0) { print "(u).$cname\[_n\]"; }
+            else { print "(u).$cname\[_n+$n\]"; }
+            $n+=$N+1;
+            if($i==$unroll-1) { print ";\\\n"; } else { print "+ \\\n              "; }
+        }
+        print "         _n+=$n;\\\n";
+        print "      }\\\n";
+        $n=0;
+        print "      (k)+=" unless ($vrh==0);
+        for(my $i=0;$i<$vrh;$i++){
+            if ($i==0) { print "(u).$cname\[_n\]"; }
+            else { print "(u).$cname\[_n+$n\]"; }
+            $n+=$N+1;
+            if($i==$vrh-1) { print ";\\\n"; } else { print "+ \\\n           "; }
+        }
+        print "      (k)*=2;\\\n";
+        print "   } while(0) \n\n";
+    }
+}
+
 
 sub write_spN_trace_re {
     print "/* k=Re Tr (u) */\n";

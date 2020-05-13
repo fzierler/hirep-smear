@@ -27,7 +27,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
    (which is the full-matrix type) instead of `suNf_field`, which is the compressed
    case, in the calls to `complete_clover_force_sendrecv` and 
    `start_clover_force_sendrecv`.
- * complex.h +49 -0
+ * complex.h +49 -0 # DONE
    Defined a handful more of convenience macros.
  * global.h +8 -0
    Defining the clover term global variables `cl_term` and `cl_force` as
@@ -117,7 +117,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
   * HYP_smearing.c +2 -2
     Some functions not working for SPN are removed from compilation or throw an 
     error at runtime.
-  * TMPL/suN_exp.c.tmpl +24 -1
+  * TMPL/suN_exp.c.tmpl +24 -1 # DONE
     Added taylor exponentiation in the template
   * boundary_conditions.c +25 -1
     clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
@@ -168,6 +168,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
      * group_represent(): case for spn added, uses spmatrix
   * write_suN_headers.pl +1366 -14  
      Written the code for generating spn-compressed macros.
+     [partially automatically, mostly manually converted]
 
 * RenormalizationFactors/measure_Z_mom.c +2 -0 +2 -0 
   just logging in main() for SPN

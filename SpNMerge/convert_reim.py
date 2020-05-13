@@ -2,6 +2,8 @@
 '''
 This script converts the occurrences of '.im' and '.re' into 
 usages of _complex_im and _complex_re.
+
+WARNING: This is not what is needed for lvalues.
 '''
 import re
 from sys import argv

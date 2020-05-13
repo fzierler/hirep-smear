@@ -5,6 +5,9 @@
 
 #include "suN.h"
 #include "utils.h"
+#ifdef GAUGE_SPN
+#include "suN_repr_func.h" // for ExpX_taylor
+#endif
 #include <math.h>
 
 #if (NG!=$N$) 
@@ -49,13 +52,17 @@ static void su2_rotate(double *s,double complex *v1,double complex *v2)
 *  e sostituisce
 *  V.U -> U
 */
-#ifdef GAUGE_SON
+#if  defined(GAUGE_SON)
 void ExpX(double dt, suNg_algebra_vector *h, suNg *r)
 {
 	error(0==0,1,"ExpX [suN_epx.c]","This functiona has yet not been implementd for SON");
 }
 #else
+#if defined(GAUGE_SPN)
+void ExpX(double dt, suNg_algebra_vector *h, suNg *r)
+#else if defined(GAUGE_SUN)
 void ExpX(double dt, suNg_algebra_vector *h, suNg *u)
+#endif
 {
 #ifdef WITH_QUATERNIONS
 suNg v_tmp, u_tmp;

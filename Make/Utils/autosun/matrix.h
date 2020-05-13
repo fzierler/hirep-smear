@@ -102,7 +102,7 @@ class pmatrix : public sparsematrix<polynomial>
         string symplectic_compressed_assignment(const char* op, const char* name) const
         {
             ostringstream RET;
-            string tmp;
+            string tmpre,tmpim;
             if(isreal())
             {
                 cerr << "Error: A symplectic matrix set to have real values \n" ;
