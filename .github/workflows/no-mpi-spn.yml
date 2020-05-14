@@ -1,9 +1,8 @@
-name: no-mpi
+name: no-mpi-spn
 
 on:
   push:
     branches:
-      - master
       - spn-swansea-merge
 
 jobs:
@@ -14,9 +13,10 @@ jobs:
       # Ensures that jobs are not cancelled is one job fails
       fail-fast: false
       matrix:
-        nc: [2, 3]
-        repr: [FUND, ADJ]
-        expcsw: [-expcsw,-no-expcsw]
+        gaugegroup : SPN
+        nc: [4,6]
+        repr: [FUND, ADJ, ]
+        expcsw: [-no-expcsw]
 
     steps:
     - uses: actions/checkout@v1
@@ -25,7 +25,10 @@ jobs:
 
     - uses: ./.github/actions/runtests
       with:
+
         mpi: -no-mpi
         nc: ${{ matrix.nc }}
         repr: ${{ matrix.repr }}
         expcsw: ${{ matrix.expcsw }}
+        gaugegroup: ${{ matrix.gaugegroup }}
+

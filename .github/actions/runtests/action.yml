@@ -19,6 +19,10 @@ inputs:
     description: "Use ExpCSW"
     required: true
     default: -no-expclover
+  gaugegroup:
+    description: "Group - GAUGE_SUN, GAUGE_SPN..."
+    required: false 
+    default: SUN
 runs:
   using: 'docker'
   image: 'docker://cpica/hr-tests'
@@ -31,3 +35,5 @@ runs:
     - ${{ inputs.nc }}
     - -r
     - ${{ inputs.repr }}
+    - --gauge
+    - ${{ inputs.gaugegroup }}
