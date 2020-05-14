@@ -55,6 +55,7 @@ void init_pure_gauge_anisotropy(double *chi);
 
 void SF_classical_solution();
 
+inline int safe_mod(int x, int y) __attribute__((always_inline));
 inline int safe_mod(int x, int y)
 {
   if (x >= 0)

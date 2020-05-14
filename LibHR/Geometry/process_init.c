@@ -185,7 +185,13 @@ int setup_process(int *argc, char ***argv)
   }
 #endif
 
+#ifdef GAUGE_SON
+  lprintf("SYSTEM", 0, "Gauge group: SO(%d)\n", NG);
+#elif defined(GAUGE_SPN)
+  lprintf("SYSTEM", 0, "Gauge group: SP(%d)\n", NG);
+#elif defined(GAUGE_SUN)
   lprintf("SYSTEM", 0, "Gauge group: SU(%d)\n", NG);
+#endif
   lprintf("SYSTEM", 0, "Fermion representation: dim = %d\n", NF);
   lprintf("SYSTEM", 0, "[RepID: %d][world_size: %d]\n[MPI_ID: %d][MPI_size: %d]\n", RID, WORLD_SIZE, MPI_PID, MPI_WORLD_SIZE);
 

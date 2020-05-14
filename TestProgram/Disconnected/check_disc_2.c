@@ -368,3 +368,4 @@ void free_loops(double complex *loops) {
 
   lprintf("FREE",0,"Exact free correlators computed.\n");
 }
+// NOCOMPILE= GAUGE_SPN

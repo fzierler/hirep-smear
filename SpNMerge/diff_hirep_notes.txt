@@ -72,7 +72,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
     (clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
     REPR_FUNDAMENTAL)
 
- * Random/random_suNg.c +37 -2
+ * Random/random_suNg.c +37 -2 # DONE
    Adaptation to produce SPN random matrices 
 
  * Update +328 -86

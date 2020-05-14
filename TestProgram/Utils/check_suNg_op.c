@@ -109,3 +109,4 @@ int main(){
   return return_value;
 
 }
+// NOCOMPILE= GAUGE_SPN

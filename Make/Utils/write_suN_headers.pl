@@ -403,6 +403,7 @@ END
             write_spN_mul();
             write_spN_mul_assign();
             write_spN_mulc();
+            write_spN_mul_add();
             write_spN_add_assign();
             write_spN_sub_assign();
             write_spN_sqnorm();
@@ -5289,6 +5290,30 @@ sub write_spN_mulc {
         print "   } while(0) \n\n";
     }
 }
+
+sub write_spN_mul_add {
+    print "/* u=r*v+m*w */\n";
+    print "#define _${dataname}_mul_add(u,r,v,m,w) \\\n";
+    my $dim=$N*$N/2;
+    if ($N<$Nmax or $dim<(2*$unroll+1)) { #unroll all
+        for(my $i=0; $i<$dim; $i++) {
+            print "   (u).$cname\[$i\]=(r)*(v).$cname\[$i\]+(m)*(w).$cname\[$i\]";
+            if($i==$dim-1) {print "\n\n";} else { print ";\\\n"; }
+        }
+    } else { #partial unroll
+        print "   do { \\\n";
+        print "      int _i;for (_i=0; _i<$md2h; ){\\\n";
+        for(my $i=0;$i<$unroll;$i++){
+            print "   (u).$cname\[_i\]=(r)*(v).$cname\[_i\]+(m)*(w).$cname\[_i\]; ++_i;\\\n";
+        }
+        print "      }\\\n";
+        for(my $i=0;$i<$mr2h;$i++){
+            print "      (u).$cname\[_i\]=(r)*(v).$cname\[_i\]+(m)*(w).$cname\[_i\]; ++_i;\\\n";
+        }
+        print "   } while(0) \n\n";
+    }
+}
+
 
 sub write_spN_add_assign {
     print "/* u+=v */\n";

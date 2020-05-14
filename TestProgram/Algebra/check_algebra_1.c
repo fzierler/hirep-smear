@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     suNg_algebra_vector f[dAdj];
     suNg A, B, TMP, CAS;
     suNf a, b, tmp, cas;
-    double tau, trace,test_val;
+    double tau, trace;
     int i, j;
 #ifdef GAUGE_SUN
     lprintf("MAIN",0,"Gauge group: SU(%d)\n",NG);
@@ -161,7 +161,6 @@ int main(int argc, char *argv[])
             if (i == j)
             {
                 lprintf("MAIN", 0, "  [should be: %.4e]\n", -Tr);
-                test_val=-Tr;      
                 if(error_compare(-Tr,trace)){
                     lprintf("MAIN",0,"Matrix a:\n");
                     print_suNf(&a);
@@ -174,7 +173,6 @@ int main(int argc, char *argv[])
             else
             {
                 lprintf("MAIN", 0, "  [should be: 0.00]\n");
-                test_val=0.;
                 if(error_compare(0.0,trace)){
                     lprintf("MAIN",0,"Matrix tmp:\n");
                     print_suNf(&tmp);

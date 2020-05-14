@@ -138,3 +138,4 @@ int main(int argc, char *argv[])
 
   return ie;
 }
+// NOCOMPILE= GAUGE_SPN

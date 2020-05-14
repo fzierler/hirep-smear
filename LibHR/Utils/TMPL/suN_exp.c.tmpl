@@ -60,7 +60,7 @@ void ExpX(double dt, suNg_algebra_vector *h, suNg *r)
 #else
 #if defined(GAUGE_SPN)
 void ExpX(double dt, suNg_algebra_vector *h, suNg *r)
-#else if defined(GAUGE_SUN)
+#elif defined(GAUGE_SUN)
 void ExpX(double dt, suNg_algebra_vector *h, suNg *u)
 #endif
 {
