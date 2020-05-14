@@ -13,7 +13,7 @@ jobs:
       # Ensures that jobs are not cancelled is one job fails
       fail-fast: false
       matrix:
-        gaugegroup : SPN
+        gaugegroup : [SPN]
         nc: [4,6]
         repr: [FUND, ADJ, ]
         expcsw: [-no-expcsw]
