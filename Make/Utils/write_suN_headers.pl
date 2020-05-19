@@ -411,6 +411,7 @@ END
             write_spN_trace();
             write_spN_trace_re();
             write_spN_trace_im();
+            write_full_onto_spn_project();
             write_suN_FMAT();
             my $olddataname = $dataname;
             $dataname = $dataname."full";
@@ -5517,6 +5518,48 @@ sub write_spN_trace_im {
     print "   (k)=0;\n\n";
 }
 
+sub write_full_onto_spn_project{
+    print "/*********************************************************\\\n";
+    print " * Projects a full GL(N) matrix onto the                 *\\\n";
+    print " * algebra to which SP(N) matrices belong,               *\\\n";
+    print " * according to the scheme                               *\\\n";
+    print " *                                                       *\\\n";
+    print " *                 [[ XR+I*XI, YR+I*YI]                  *\\\n";
+    print " *                  [ ZR+I*ZI, TR+I*TI]]                 *\\\n";
+    print " *                           |                           *\\\n";
+    print " *                           v                           *\\\n";
+    print " *[[ (XR+TR)/2 + I*(XI-TI)/2 , (YR-ZR)/2 + I*(YI+ZI)/2 ],*\\\n";
+    print " * [          ...            ,          ...            ]]*\\\n",
+    print " * (The second line is neglected).                       *\\\n";
+    print " * NOTE: Unrolling is left to the compiler               *\\\n";
+    print " *       as we are in 2020, now.                         *\\\n";
+    print " ********************************************************/\\\n";
+    print "#define _project_to_spn(m,mfull)                          \\\n";
+    print "   do{                                                    \\\n";
+    print "      int _i,_j;                                          \\\n";
+    print "      for(_i=0;i<$N/2;++_i){                              \\\n";
+    print "         for(_j=0;j<$N/2;++_j){                           \\\n";
+    print "            int _idxout = _j+N*_i;                        \\\n";
+    print "            int _idxin2 = _j+N/2+N*(_i+N/2);              \\\n";
+    print "            (m).c[_idxout] =                              \\\n";
+    print "                (creal((mfull).c[_idxout])+               \\\n";
+    print "                 creal((mfull).c[_idxin2]))/2+            \\\n";
+    print "              I*(cimag((mfull).c[_idxout])-               \\\n";
+    print "                 cimag((mfull).c[_idxin2]))/2;            \\\n";
+    print "         }                                                \\\n";
+    print "         for(_j=$N/2;j<$N;++_j){                          \\\n";
+    print "            int _idxout = _j+N*_i;                        \\\n";
+    print "            int _idxin2 = _j-N/2+N*(_i+N/2);              \\\n";
+    print "            (m).c[_idxout] =                              \\\n";
+    print "                (creal((mfull).c[_idxout])-               \\\n";
+    print "                 creal((mfull).c[_idxin2]))/2+            \\\n";
+    print "              I*(cimag((mfull).c[_idxout])+               \\\n";
+    print "                 cimag((mfull).c[_idxin2]))/2;            \\\n";
+    print "         }                                                \\\n";
+    print "      }                                                   \\\n";
+    print "   }while(0)                                              \\\n";
+
+}
 sub write_spN_symplectic {
     print "/* u = Omega */\n";
     print "#define _symplectic(u) \\\n";

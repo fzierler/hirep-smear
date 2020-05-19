@@ -95,8 +95,11 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
     in force_hmc_ff
     * suNf -> suNf_FMAT
     * _algebra_project -> _algebra_project_FMAT
-  * force_scalar.c +4 -0
+  * force_scalar.c +4 -0 #DONE
     in the calculation of the outer product, the loop goes only until NG * NG / 2
+    NOTE: I suspect that this is wrong. It should actually be using a full NxN
+          matrix in the computations.
+    NOTE: Implemented possible fix.
   * luscherweisz.c +79 -20
     * redefinition of S (shift by a constant) in `test_wilson_action_and_force()`, 
       used only in Tests.

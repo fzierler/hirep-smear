@@ -55,7 +55,11 @@ static void force_scalar_s(double dt, void *vpar)
 	}
 }
 
+#ifdef GAUGE_SPN
+static void outer_product(suNgfull *u, suNg_vector *v1, suNg_vector *v2)
+#else
 static void outer_product(suNg *u, suNg_vector *v1, suNg_vector *v2)
+#endif
 {
 	for (int i = 0; i < NG * NG; i++)
 	{
@@ -72,15 +76,26 @@ static void force_scalar_g(double dt, void *vpar)
 
 	_MASTER_FOR(&glattice, ix)
 	{
-		suNg s1, s2;
 		suNg_algebra_vector f;
 
 		for (int mu = 0; mu < 4; mu++)
 		{
-			outer_product(&s1, pu_scalar(iup(ix, mu)), pu_scalar(ix));
-			_suNg_times_suNg(s2, *_4FIELD_AT(u_gauge, ix, mu), s1);
-			_fund_algebra_project(f, s2);
-			_algebra_vector_mul_add_assign_g(*_4FIELD_AT(force, ix, mu), -2.0 * dt, f);
+#ifdef GAUGE_SPN
+            suNgfull s1, s2full, sfield;
+#else
+            suNg s1;
+#endif
+            suNg s2;
+            outer_product(&s1, pu_scalar(iup(ix, mu)), pu_scalar(ix));
+#ifdef GAUGE_SPN
+            _suNg_expand(sfield,*_4FIELD_AT(u_gauge, ix, mu));
+            _suNgfull_times_suNgfull(s2full, sfield, s1);
+            _project_to_spn(s2, s2full); 
+#else
+            _suNg_times_suNg(s2, *_4FIELD_AT(u_gauge, ix, mu), s1);
+#endif
+            _fund_algebra_project(f, s2);
+            _algebra_vector_mul_add_assign_g(*_4FIELD_AT(force, ix, mu), -2.0 * dt, f);
 		}
 	}
 
