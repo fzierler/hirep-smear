@@ -132,7 +132,8 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
     In the SPN case the inverse is computed expanding to a full matrix and 
     then reusing the existing suN code.
   * suN_utils.c +26 -1
-    rewrite of project_to_suNg for the SPN case.
+    rewrite of project_to_suNg for the SPN case. 
+    NOTE: rewrite of project_to_suNg_flt for the SPN case IS MISSING - TODO
 
 * Make +1929 -63
  * MkRules +7 -0
