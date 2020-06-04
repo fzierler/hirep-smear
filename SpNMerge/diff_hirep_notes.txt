@@ -195,7 +195,8 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
    just logging in main() for SPN
  * WF_measure_adaptative.c +2 -0
    just logging in main() for SPN
- * wilsonflow.c +16 -4
+ * wilsonflow.c +16 -4 # DONE
    Changes in matrix size NG * NG -> NG * NG / 2 and algebra dimension 
    (NG * NG - 1) -> (NG * (NG + 1) / 2) for the SPN case
+   NOTE: Defined _MATRIX_DIM and _ALGEBRA_DIM macros (with #define and #undef
 
