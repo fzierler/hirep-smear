@@ -186,17 +186,21 @@ void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge,
   int i22 = i2*NG + i2;
 
   for (t=0; t<T; t++) for (x=0; x<X; x++) for (y=0; y<Y; y++) for (z=0; z<Z; z++){ idx=ipt(t,x,y,z);
-	  p = (zerocoord[0] + t + zerocoord[1] + x + zerocoord[2] + y + zerocoord[3] + z)%2; 
+	  p = (zerocoord[0] + t + zerocoord[1] + x + zerocoord[2] + y + zerocoord[3] + z)%2;
 	  if(p == parity){
 
 	    _suNg_zero(v1);
-	    for(mu=0;mu<4;mu++){ 
+	    for(mu=0;mu<4;mu++){
 	      if(mu != fix_dir){
 		u1=_4FIELD_AT(fixed_gauge,idx,mu);		//u_mu(x)
 		u2=_4FIELD_AT(fixed_gauge,idn(idx,mu),mu);	//u_mu(x - mu)
 
-		//v1 = u1 + u2^dag. v1 is not in SU(NG). 
+		//v1 = u1 + u2^dag. v1 is not in SU(NG).
+#ifdef GAUGE_SPN
+    for(i=0;i<NG/2;i++){ for(j=0;j<NG;j++){
+#else
 		for(i=0;i<NG;i++){ for(j=0;j<NG;j++){
+#endif
 #ifdef GAUGE_SON
 		    v1.c[i*NG + j]+= u1->c[i*NG+j]+u2->c[j*NG+i];
 #else

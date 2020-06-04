@@ -15,8 +15,9 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
    - added formats "fullSPN" and "compSPN" (compressed)
      (see /LibHR +920 -103/IO/spn_archive.c +406 -0)
 
-* GaugeFix/gaugefix.c +4 -0 +4 -0
+* GaugeFix/gaugefix.c +4 -0 +4 -0 # DONE
   for loop only up to NG/2 in the SPN case
+  NOTE: This has been moved to LibHR/Utils.
 
 * Include +101 -5
  * TMPL/suN_repr_func.h.tmpl +0 -0
