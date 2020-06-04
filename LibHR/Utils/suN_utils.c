@@ -117,6 +117,29 @@ void project_to_suNg(suNg *u)
 
   v1 = (suNg_vector *)(u);
   v2 = v1 + 1;
+#ifdef GAUGE_SPN
+  suNg Omega;
+  _symplectic(Omega);
+  complex z2;
+  normalize(v1);
+
+  for (i=1; i<NG/2; ++i ) {
+    suNg_vector v3;
+    for (j=i; j>0; --j) {
+      _vector_prod_g(z,*v1, *v2);
+      _vector_project_g(*v2, z, *v1);
+      _suNg_multiply(v3,Omega,*v1);
+      _vector_conjugate(v3);
+      _vector_prod_g(z2,v3, *v2);
+      _vector_project_g(*v2, z2, v3);
+      ++v1;
+    }
+    normalize(v2);
+    ++v2;
+    v1=(suNg_vector*)(u);
+  }
+
+#else
   normalize(v1);
   for (i = 1; i < NG; ++i)
   {
@@ -130,6 +153,7 @@ void project_to_suNg(suNg *u)
     ++v2;
     v1 = (suNg_vector *)(u);
   }
+#endif
 #endif
 #endif
 }
@@ -172,14 +196,35 @@ void project_to_suNg_flt(suNg_flt *u)
   _suNg_mul(*u, norm, *u);
 
 #else
-
   int i, j;
   suNg_vector_flt *v1, *v2;
   float complex z;
 
   v1 = (suNg_vector_flt *)(u);
   v2 = v1 + 1;
+#ifdef GAUGE_SPN
+  suNg_flt Omega;
+  _symplectic(Omega);
+  float complex z2;
+  normalize_flt(v1);
 
+  for (i=1; i<NG/2; ++i ) {
+    suNg_vector_flt v3;
+    for (j=i; j>0; --j) {
+      _vector_prod_g(z,*v1, *v2);
+      _vector_project_g(*v2, z, *v1);
+      _suNg_multiply(v3,Omega,*v1);
+      _vector_conjugate(v3);
+      _vector_prod_g(z2,v3, *v2);
+      _vector_project_g(*v2, z2, v3);
+      ++v1;
+    }
+    normalize(v2);
+    ++v2;
+    v1=(suNg_vector_flt*)(u);
+  }
+
+#else
   normalize_flt(v1);
   for (i = 1; i < NG; ++i)
   {
@@ -193,6 +238,7 @@ void project_to_suNg_flt(suNg_flt *u)
     ++v2;
     v1 = (suNg_vector_flt *)(u);
   }
+#endif
 #endif
 #endif
 }
