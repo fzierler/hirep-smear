@@ -5567,7 +5567,7 @@ sub write_spN_symplectic {
         for(my $j=0;$j<$N;$j++){
             my $k = $i*$N+$j;
             if($j == $i+$N/2){
-                print "   _complex_m1((u).c[$k])";
+                print "   (u).c[$k] = -1;";
                 if($i == $N/2-1 ) { print "\n\n";}
                 else {print ";\\\n";}
             }else{
