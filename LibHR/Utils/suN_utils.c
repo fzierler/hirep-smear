@@ -219,7 +219,7 @@ void project_to_suNg_flt(suNg_flt *u)
       _vector_project_g(*v2, z2, v3);
       ++v1;
     }
-    normalize(v2);
+    normalize_flt(v2);
     ++v2;
     v1=(suNg_vector_flt*)(u);
   }
@@ -243,7 +243,11 @@ void project_to_suNg_flt(suNg_flt *u)
 #endif
 }
 
-#ifndef GAUGE_SON
+#ifdef GAUGE_SPN
+// TODO: If this functions is needed for GAUGE_SPN, just use suNg_full matrices
+#warning "project_cooling_to_suNg not implemented for SPN"
+#endif
+#if !defined(GAUGE_SON) && !defined(GAUGE_SPN)
 void project_cooling_to_suNg(suNg *g_out, suNg *g_in, int cooling)
 {
 #ifdef WITH_QUATERNIONS
@@ -387,6 +391,11 @@ int project_to_suNg_real(suNg *out, suNg *in)
 }
 #endif
 
+#ifdef GAUGE_SPN
+// TODO: If this functions is needed for GAUGE_SPN, just use suNg_full matrices
+#warning "covariant_project_to_suNg not implemented for SPN"
+#endif
+#if !defined(GAUGE_SPN)
 void covariant_project_to_suNg(suNg *u)
 {
   int i, j, k;
@@ -430,3 +439,4 @@ void covariant_project_to_suNg(suNg *u)
 
   _suNg_times_suNg(*u, tmp1, tmp);
 }
+#endif
