@@ -33,12 +33,17 @@ void det_hermNg(double complex *res, suNg *a)
 
 void det_hermNg(double complex *res, suNg *a)
 {
-  suNg b;
   int indx[NG];
   double d;
   int i;
   double complex tmp;
-  b = *a;
+#ifdef GAUGE_SPN
+  // TODO: Simplifications may be possible for SPN
+  suNgfull b;
+  _suNg_expand(b,*a);
+#else
+  suNg b=*a;
+#endif
   ludcmp(b.c, indx, &d, NG);
   *res = d;
   for (i = 0; i < NG; ++i)

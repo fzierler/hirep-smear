@@ -126,12 +126,17 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
   * boundary_conditions.c +25 -1
     clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
     REPR_FUNDAMENTAL
-  * det_suNg.c +8 -2
+  * det_suNg.c +8 -2 # DONE
     In the SPN case the determinant is computed expanding to a full matrix and 
-    then reusing the existing suN code.
-  * inv_suNg.c +9 -2
+    then reusing the existing suN code. 
+    NOTE: The file name has been changed to det_hermNg.c
+  * inv_suNg.c +9 -2 # DONE 
     In the SPN case the inverse is computed expanding to a full matrix and 
     then reusing the existing suN code.
+    NOTE: The file name has been changed to inv_hermNg.c
+    NOTE: A change to the last loop in inv_hermNg (previously inv_suNg)
+          to prevent it from going beyond the last element of the SPN matrix
+          ss missing. # DONE
   * suN_utils.c +26 -1 # DONE
     rewrite of project_to_suNg for the SPN case. 
     NOTE: project_cooling_to_suNg and covariant_project_to_suNg not 

@@ -36,12 +36,17 @@ void inv_hermNg(suNg *a)
 #else
 void inv_hermNg(suNg *a)
 {
-  suNg b;
   double complex col[NG];
   int indx[NG];
   double d;
   int i, j;
-  b = *a;
+#ifdef GAUGE_SPN
+  // TODO: Simplifications are possible for SPN
+  suNgfull b;
+  _suNg_expand(b,*a);
+#else
+  suNg b=*a;
+#endif
   ludcmp(b.c, indx, &d, NG);
   for (j = 0; j < NG; j++)
   {
@@ -51,8 +56,14 @@ void inv_hermNg(suNg *a)
     }
     _complex_1(col[j]);
     lubksb(b.c, indx, col, NG);
-    for (i = 0; i < NG; i++)
-      a->c[i * NG + j] = col[i];
+#ifdef GAUGE_SPN
+#define _NGLIM NG/2
+#else
+#define _NGLIM NG
+#endif
+    for (i = 0; i < _NGLIM; i++)
+        a->c[i * NG + j] = col[i];
+#undef _NGLIM
   }
 }
 
