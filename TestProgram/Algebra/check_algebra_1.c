@@ -108,14 +108,20 @@ void print_suNg(suNg *m){
     double traceRe = 0;
 
     lprintf("SUNg",1,"\n");
-    for(i=0;i<NG;++i){
+#ifdef GAUGE_SPN
+#define _NG NG/2
+#else
+#define _NG NG
+#endif
+    for(i=0;i<_NG;++i){
         for(j=0;j<NG;++j){
-            lprintf("SUNg",1,"%+-.3f,%+-.3f ", creal(m->c[i*NF+j]), cimag(m->c[i*NF+j])); 
-            sumsq += cimag(m->c[i*NF+j])*cimag(m->c[i*NF+j]);
-            sumsq += creal(m->c[i*NF+j])*creal(m->c[i*NF+j]);
-            if(i==j) traceRe +=creal(m->c[i*NF+j]);
+            lprintf("SUNg",1,"%+-.3f,%+-.3f ", creal(m->c[i*NG+j]), cimag(m->c[i*NG+j])); 
+            sumsq += cimag(m->c[i*NG+j])*cimag(m->c[i*NG+j]);
+            sumsq += creal(m->c[i*NG+j])*creal(m->c[i*NG+j]);
+            if(i==j) traceRe +=creal(m->c[i*NG+j]);
         }
     }
+#undef _NG
     lprintf("SUNg",1,"SUM SQUARES: %f\n", sumsq);
     lprintf("SUNg",1,"TRACE RE: %f\n", traceRe);
 }
