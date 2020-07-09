@@ -139,9 +139,11 @@ string write_suntospn_algebra(){
     return ss.str();
 }
 
-enum CONV_DIRECTION { PTOU, UTOP};
+enum CONV_DIRECTION { PTOU // sPn to sUn
+                    , UTOP // sUn to sPn
+                    };
 
-string write_algebra_conversions_adj(CONV_DIRECTION dir){
+string write_conversions_adj_tensors(CONV_DIRECTION dir){
     /**
      * Writes the macro that, given an spn/sun algebra vector in the adjoint 
      * representation, expressed on the basis of the algebra of spn/sun, return 
@@ -149,6 +151,10 @@ string write_algebra_conversions_adj(CONV_DIRECTION dir){
      * adjoint representation.
      * The bases for the *fundamental representations* are created by 
      * group::init().
+     *
+     * Notice that the space of algebra vectors for spn is a subspace 
+     * of the space of algebra vectors for sun (so, the sun -> spn conversion
+     * is actually a projection), and that both are a subspace of GL(N).
      */
 
     smatrix *TSUN,*TSPN;
@@ -231,6 +237,10 @@ string write_algebra_conversions_adj(CONV_DIRECTION dir){
     };
 
     stringstream ss;
+    // src = spn, dst = sun:
+    // "#define _spntnosun_adj(sunadjm,spnadjm) \\\n";
+    // src = sun, dst = spn:
+    // "#define _suntnospn_adj(spnadjm,sunadjm) \\\n";
     ss << "#define _" << src <<  "to" << dst << "_adj("<< dst <<"adjm,"<< src <<"adjm) \\\n";
 
     for(int isu1 = 0; isu1 < dest_group_algebra_dim; ++isu1)
@@ -264,179 +274,11 @@ string write_algebra_conversions_adj(CONV_DIRECTION dir){
 }
 
 string write_spntosun_adj(){
-    //return write_algebra_conversions_adj(PTOU);
-    /**
-     * Writes the macro that, given an spn algebra vector in the adjoint 
-     * representation, expressed on the basis of the algebra of SPN, return 
-     * the components of it on the basis of the sun algebra vector in the 
-     * adjoint representation.
-     * The bases for the *fundamental representations* are created by 
-     * group::init().
-     */
+    return write_conversions_adj_tensors(PTOU);
 
-    smatrix *TSUN,*TSPN;
-    // create basis for SPN in the fundamental
-    group::init(group::N,group::TYPESPN,TSPN);
-    // create basis for SUN in the fundamental
-    group::init(group::N,group::TYPESUN,TSUN);
-
-    using group::N;
-    smatrix tmp;
-
-    using Entry =  tuple<int,double>;
-    using Row = vector<Entry>;
-    map<int,Row> sun_from_spn;
-
-    int sunAlgebraCount = N*N-1;
-    int spnAlgebraCount = N*(N+1)/2;
-
-    // computing scalar products between generators
-    // in the spn and the sun algebra - in the fundamental representation
-    for(int isu = 0; isu<sunAlgebraCount;++isu){
-        Row row;
-        for(int isp = 0; isp<spnAlgebraCount;++isp){
-            complex tmpd;
-            // scalar product between generators
-            tmp.mult(TSUN[isu],TSPN[isp]);
-            trace(tmpd,tmp);
-            tmpd *= 2 ;  // because the normalization of SUN generators is 
-                         // Tr(T^2) = 0.5
-            if(isnotzero(tmpd.im)){
-                cout << "tmpd.im != 0 " << endl;
-                exit(1);
-            }
-            if(isnotzero(tmpd.re)){
-                row.push_back(Entry(isp,tmpd.re));
-            }
-        }
-        sun_from_spn[isu] = row;
-    }
-
-    // now, using the transformation matrix computed for the 
-    // fundamental representation, compute the transformation matrix
-    // for a tensor having 2 indices in the adjoint of spn 
-    // from its representation in the basis of the tensor product of spn 
-    // adjoint with itself to the basis of the tensor product of 
-    // sun adjoint with itself.
-    
-    auto sunAdjIndex = [sunAlgebraCount](int i, int j){
-        return i*sunAlgebraCount + j;
-    };
-    auto spnAdjIndex = [spnAlgebraCount](int i, int j){
-        return i*spnAlgebraCount + j;
-    };
-
-    stringstream ss;
-    ss << "#define _spntosun_adj(sunadjm,spnadjm) \\\n";
-
-    for(int isu1 = 0; isu1 < sunAlgebraCount; ++isu1)
-        for(int isu2 = 0; isu2 < sunAlgebraCount; ++isu2){
-            int rowIndex = sunAdjIndex(isu1,isu2);
-            ss << "\tsunadjm[" << rowIndex << "]=";
-            map<int,double> newRow; // 
-            auto row1 = sun_from_spn.at(isu1);
-            auto row2 = sun_from_spn.at(isu2);
-            for(auto e1 : row1) for(auto e2 : row2){
-                int c1,c2;
-                double w1,w2;
-                tie(c1,w1) = e1;
-                tie(c2,w2) = e2;
-                int colIndex = spnAdjIndex(c1,c2);
-                newRow[colIndex] += w1*w2; 
-            }
-            for(auto entry: newRow){
-                int idx;
-                double w;
-                tie(idx,w) = entry;
-                ss << "+(" << setprecision(15) << w << "*spnadjm["
-                    << idx << "])";
-            }
-        ss << ";\\\n";
-        }
-    ss << "\n\n";
-    delete[] TSUN;
-    delete[] TSPN;
-    return ss.str();
 }
 string write_suntospn_adj(){
-    //return write_algebra_conversions_adj(UTOP);
-    /**
-     * given an spn algebra vector, retuns the corresponding 
-     * sun algebra vector 
-     */
-
-    smatrix *TSUN,*TSPN;
-    group::init(group::N,group::TYPESPN,TSPN);
-    group::init(group::N,group::TYPESUN,TSUN);
-
-
-    using group::N;
-    smatrix tmp;
-
-    using Entry =  tuple<int,double>;
-    using Row = vector<Entry>;
-    map<int,Row> spn_from_sun;
-
-    int sunAlgebraCount = N*N-1;
-    int spnAlgebraCount = N*(N+1)/2;
-
-    for(int isp = 0; isp<spnAlgebraCount;++isp){
-        Row row;
-        for(int isu = 0; isu<sunAlgebraCount;++isu){
-            complex tmpd;
-            tmp.mult(TSUN[isu],TSPN[isp]);
-            trace(tmpd,tmp);
-            tmpd *= 2 ;  // because the normalization of SUN generators is 
-                         // Tr(T^2) = 0.5
-            if(isnotzero(tmpd.im)){
-                cout << "tmpd.im != 0 " << endl;
-                exit(1);
-            }
-            if(isnotzero(tmpd.re)){
-                row.push_back(Entry(isu,tmpd.re));
-            }
-        }
-        spn_from_sun[isp] = row;
-    }
-
-    auto sunAdjIndex = [sunAlgebraCount](int i, int j){
-        return i*sunAlgebraCount + j;
-    };
-    auto spnAdjIndex = [spnAlgebraCount](int i, int j){
-        return i*spnAlgebraCount + j;
-    };
-
-    stringstream ss;
-    ss << "#define _suntospn_adj(spnadjm,sunadjm) \\\n";
-
-    for(int isp1 = 0; isp1 < spnAlgebraCount; ++isp1)
-        for(int isp2 = 0; isp2 < spnAlgebraCount; ++isp2){
-            int rowIndex = spnAdjIndex(isp1,isp2);
-            ss << "\tspnadjm[" << rowIndex << "]=";
-            map<int,double> newRow; // 
-            auto row1 = spn_from_sun.at(isp1);
-            auto row2 = spn_from_sun.at(isp2);
-            for(auto e1 : row1) for(auto e2 : row2){
-                int c1,c2;
-                double w1,w2;
-                tie(c1,w1) = e1;
-                tie(c2,w2) = e2;
-                int colIndex = sunAdjIndex(c1,c2);
-                newRow[colIndex] += w1*w2;
-            }
-            for(auto entry: newRow){
-                int idx;
-                double w;
-                tie(idx,w) = entry;
-                ss << "+(" << setprecision(15) << w << "*sunadjm["
-                    << idx << "])";
-            }
-        ss << ";\\\n";
-        }
-    ss << "\n\n";
-    delete[] TSUN;
-    delete[] TSPN;
-    return ss.str();
+    return write_conversions_adj_tensors(UTOP);
 }
 
 
