@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #Check macros in suN.h. There are several different cases, so do an exhaustive check.
+# This test takes ~25 seconds to run on a i5 from 2012 
+
 TESTDIR=$(pwd)
 TOPDIR=$(dirname $(dirname $TESTDIR))
 MAKEDIR=$TOPDIR/Make
@@ -102,7 +104,7 @@ check_reps(){
 
 }
 
-for N in 4 6 8 10 12 14 16 18 20 22 24 26 
+for N in 4 6 8 10 # 12 14 16 18 20 22 24 26 # cut for brevity
 do
     check_headers $N REPR_FUNDAMENTAL || exit
 done

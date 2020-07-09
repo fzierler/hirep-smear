@@ -5,6 +5,7 @@
 #include "SP.h"
 #include "SP_types.h"
 
+#include "colors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -109,9 +110,9 @@ void compare_suNg_SPg( suNg suNmatrix, SPg SPmatrix ){
   }
 
   if( sum < 1e-14 ){
-    printf("PASSED, diff=%g\n",sum);
+    printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",sum);
   } else {
-    printf("TEST FAILED, diff=%g\n",sum);
+    printf(BOLDRED "TEST FAILED" RESET ", diff=%g\n",sum);
     print_SPg(SPmatrix);
     print_suNg(suNmatrix);
     
@@ -150,9 +151,9 @@ void compare_represented( SPf spNadj, suNf suNadj){
 #endif
 
   if( sum < 1e-14 ){
-    printf("PASSED, diff=%g\n",sum);
+    printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",sum);
   } else {
-    printf("TEST FAILED, diff=%g\n",sum);
+    printf(BOLDRED "TEST FAILED" RESET ", diff=%g\n",sum);
 #if defined(REPR_ADJOINT) || defined(REPR_ANTISYMMETRIC)
     print_SPf(tmp);
 #endif
@@ -179,9 +180,9 @@ void compare_algebra( SPg_algebra_vector spNalg, suNg_algebra_vector suNalg){
   }
 
   if( sum < 1e-14 ){
-    printf("PASSED, diff=%g\n",sum);
+    printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",sum);
   } else {
-    printf("TEST FAILED, diff=%g\n",sum);
+    printf(BOLDRED "TEST FAILED" RESET ", diff=%g\n",sum);
     print_spNalg(spNalg_repr);
     print_spNalg(spNalg);
     print_suNalg(suNalg);
@@ -251,13 +252,13 @@ int main(void){
   SPg SPmatrix, SPresult;
   suNg_vector v1, v2, v3;
   
-  printf("Creating the matrices and testing similarity\n");
+  printf("Creating the matrices and testing similarity  ");
   SPmatrix = random_SPg();
   suNmatrix = SPg_to_suNg( SPmatrix );
   compare_suNg_SPg( suNmatrix, SPmatrix );
  
    
-  printf("Testing fund_algebra project\n");
+  printf("Testing fund_algebra project  ");
   SPg_algebra_vector spNalg;
   suNg_algebra_vector suNalg;
   _fund_algebra_project( suNalg, suNmatrix );
@@ -267,7 +268,7 @@ int main(void){
   /* For this test we need to project a matrix in the symplectic adjoint
      into the suN adjoint. The same member of the group is not represented
      by the same matrix. */
-  printf("Testing algebra project\n");
+  printf("Testing algebra project  ");
   SPf_FMAT* sp_fermion_matrix = (SPf_FMAT*) malloc(sizeof(SPf_FMAT));
   suNf* su_fermion_matrix = (suNf*) malloc(sizeof(suNf));
   random_SPf(sp_fermion_matrix);
@@ -285,24 +286,24 @@ int main(void){
   compare_algebra( spNalg, suNalg );
   
   
-  printf("Testing group represent\n");
+  printf("Testing group represent  ");
   SPf* sp_comp_matrix = (SPf*) malloc(sizeof(SPf));
   _group_represent( *su_fermion_matrix, suNmatrix );
   _spN_group_represent( *sp_comp_matrix, SPmatrix );
   compare_represented( *sp_comp_matrix, *su_fermion_matrix );
   
-  printf("Testing algebra represent\n");
+  printf("Testing algebra represent  ");
   _spntosun_algebra(suNalg.c,spNalg.c);
   _algebra_represent( *su_fermion_matrix, suNalg );
   _spN_algebra_represent( *sp_comp_matrix, spNalg);
   compare_represented( *sp_comp_matrix, *su_fermion_matrix );
   
-  printf("Testing fundamental algebra represent\n");
+  printf("Testing fundamental algebra represent  ");
   _fund_algebra_represent( suNmatrix, suNalg );
   _fund_spN_algebra_represent( SPmatrix, spNalg);
   compare_suNg_SPg( suNmatrix, SPmatrix );
   
-  printf("Testing ExpX - only at second order\n");
+  printf("Testing ExpX - only at second order  ");
   ExpX( 2.0e-4, &suNalg, &suNmatrix );
   SP_ExpX( 2.0e-4, &spNalg, &SPmatrix);
   compare_suNg_SPg( suNmatrix, SPmatrix );

@@ -4,8 +4,9 @@
 #include "SP.h"
 #include "SP_types.h"
 
+#include "colors.h"
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // for random
 #include <math.h>
 
 /* Printing for debugging:
@@ -52,9 +53,9 @@ void compare_suNg_SPg( suNg suNmatrix, SPg SPmatrix ){
     }
 
     if( sum < 1e-14 ){
-        printf("PASSED, diff=%g\n",sum);
+        printf( BOLDGREEN "PASSED" RESET ", diff=%g\n",sum);
     } else {
-        printf("TEST FAILED, diff=%g\n",sum);
+        printf( BOLDRED "TEST FAILED " RESET ", diff=%g\n",sum);
         print_SPg(SPmatrix);
         print_suNg(suNmatrix);
 
@@ -73,9 +74,9 @@ void compare_vectors( suNg_vector v1, suNg_vector v2 ){
     }
 
     if( sum < 1e-14 ){
-        printf("PASSED, diff=%g\n",sum);
+        printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",sum);
     } else {
-        printf("TEST FAILED, diff=%g\n",sum);
+        printf(BOLDRED "TEST FAILED" RESET ", diff=%g\n",sum);
         print_vector(v1);
         print_vector(v2);
         exit(1);
@@ -214,33 +215,33 @@ int main(void){
     _suNg_sqnorm( ksu,suNmatrix);
     _SPg_sqnorm( ksp, SPmatrix);
     if(fabs((ksp-ksu)/ksu) > 1e-14){
-        printf("SuN : %f , SPN: %f\n", ksu,ksp);
+        printf(BOLDRED "SuN : %f , SPN: %f\n" RESET, ksu,ksp);
         exit(1);
-    }else printf("PASSED, diff=%g\n",fabs((ksp-ksu)/ksu));
+    }else printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",fabs((ksp-ksu)/ksu));
 
     printf("(M-1) l2norm: ");
     _suNg_sqnorm_m1( ksu,suNmatrix);
     _SPg_sqnorm_m1( ksp, SPmatrix);
     if(fabs((ksp-ksu)/ksu) > 1e-14){
-        printf("SuN : %f , SPN: %f\n", ksu,ksp);
+        printf(BOLDRED "SuN : %f , SPN: %f\n" RESET, ksu,ksp);
         exit(1);
-    }else printf("PASSED, diff=%g\n",fabs((ksp-ksu)/ksu));
+    }else printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",fabs((ksp-ksu)/ksu));
 
     printf("trace re: ");
     _suNg_trace_re( ksu,suNmatrix);
     _SPg_trace_re( ksp, SPmatrix);
     if(fabs((ksp-ksu)/ksu) > 1e-14){
-        printf("SuN : %f , SPN: %f\n", ksu,ksp);
+        printf(BOLDRED "SuN : %f , SPN: %f\n" RESET, ksu,ksp);
         exit(1);
-    }else printf("PASSED, diff=%g\n",fabs((ksp-ksu)/ksu));
+    }else printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",fabs((ksp-ksu)/ksu));
 
     printf("trace im: ");
     _suNg_trace_im( ksu,suNmatrix);
     _SPg_trace_im( ksp, SPmatrix);
     if(fabs((ksp-ksu)) > 2e-14){
-        printf("SuN : %g , SPN: %G\n", ksu,ksp);
+        printf(BOLDRED "SuN : %g , SPN: %G\n" RESET, ksu,ksp);
         exit(1);
-    }else printf("PASSED, diff=%g\n",fabs(ksp-ksu));
+    }else printf(BOLDGREEN "PASSED" RESET ", diff=%g\n",fabs(ksp-ksu));
 
 
     return 0;

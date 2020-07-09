@@ -382,6 +382,7 @@ void write_mtp_adj(string progname, string acfname, int N, string mtpname){
     ofstream mtp(mtpname.c_str()); // macro test program
 
     mtp << "/** This file is produced automatically by " << progname << " */" << endl; 
+    mtp << "#include \"../colors.h\"" << endl;
     mtp << "#include <iostream>" << endl;
     mtp << "#include <iomanip>" << endl;
     mtp << "#include <cstdlib>" << endl;
@@ -409,13 +410,15 @@ void write_mtp_adj(string progname, string acfname, int N, string mtpname){
     mtp << "      for(int i = 0; i < "<<spnAlgebraCount<<"; ++i){ " << endl;
     mtp << "          double check = spnAlgebraVectorCheck[i]-spnAlgebraVector[i];" << endl;
     mtp << "          if(isnotzero(check)){" << endl;
+    mtp << "              cout << BOLDRED ;" << endl;
     mtp << "              cout << \"Problem With component \" << setw(4) << i << \" \" ;" << endl;
     mtp << "              cout << spnAlgebraVectorCheck[i] << \" vs  \" << spnAlgebraVector[i];" << endl;
     mtp << "              cout << endl;" << endl;
+    mtp << "              cout << RESET;" << endl;
     mtp << "              ok=false;" << endl;
     mtp << "          };" << endl;
     mtp << "      };" << endl;
-    mtp << "      if(ok) cout << \"All seems ok for the algebra.\" << endl; " << endl;
+    mtp << "      if(ok) cout << \"All seems\" BOLDGREEN \" ok  \" RESET \"for the algebra.\" << endl; " << endl;
     mtp << "      else exit(1);" << endl;
     mtp << "  }" << endl;
     int spnAlgebraCountSq = spnAlgebraCount*spnAlgebraCount;
@@ -438,7 +441,7 @@ void write_mtp_adj(string progname, string acfname, int N, string mtpname){
     mtp << "              ok=false;" << endl;
     mtp << "          };" << endl;
     mtp << "      };" << endl;
-    mtp << "      if(ok) cout << \"All seems ok for the adjmatrix.\" << endl; " << endl;
+    mtp << "      if(ok) cout << \"All seems\" BOLDGREEN \" ok  \" RESET \"for the adjmatrix.\" << endl; " << endl;
     mtp << "      else exit(1);" << endl;
     mtp << "  }" << endl;
     mtp << "  return 0; " << endl;
@@ -451,6 +454,7 @@ void write_mtp_asym(string progname, string acfname, int N, string mtpname){
     ofstream mtp(mtpname.c_str()); // macro test program
 
     mtp << "/** This file is produced automatically by " << progname << " */" << endl; 
+    mtp << "#include \"../colors.h\"" << endl;
     mtp << "#include <iostream>" << endl;
     mtp << "#include <iomanip>" << endl;
     mtp << "#include <cstdlib>" << endl;
@@ -479,13 +483,15 @@ void write_mtp_asym(string progname, string acfname, int N, string mtpname){
     mtp << "      for(int i = 0; i < "<<spnReprDimSq<<"; ++i){ " << endl;
     mtp << "          double check = spnAsymMatrixCheck[i]-spnAsymMatrix[i];" << endl;
     mtp << "          if(isnotzero(check)){" << endl;
+    mtp << "              cout << BOLDRED ;" << endl;
     mtp << "              cout << \"Problem With component \" << setw(4) << i << \" \" ;" << endl;
     mtp << "              cout << spnAsymMatrixCheck[i] << \" vs  \" << spnAsymMatrix[i];" << endl;
+    mtp << "              cout << RESET;" << endl;
     mtp << "              cout << endl;" << endl;
     mtp << "              ok=false;" << endl;
     mtp << "          };" << endl;
     mtp << "      };" << endl;
-    mtp << "      if(ok) cout << \"All seems ok for the asym matrix.\" << endl; " << endl;
+    mtp << "      if(ok) cout << \"All seems\" BOLDGREEN \" ok  \" RESET \"for the asym matrix.\" << endl; " << endl;
     mtp << "      else exit(1);" << endl;
     mtp << "  }" << endl;
     mtp << "  return 0; " << endl;

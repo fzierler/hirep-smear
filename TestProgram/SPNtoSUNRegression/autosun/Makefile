@@ -35,5 +35,8 @@ include $(MKDIR)/MkRules
 
 
 clean::
-	rm -f writeREPR spn_vs_sun_algconv.h spnalgtest lib.o spnalgmacros \
-		spnalgmacros.cpp spn_sun_algconv.h write_spn_sun_algconv
+	rm -f writeREPR spn_vs_sun_algconv.h spnalgtest lib.o \
+		spnalgmacros_adj spnalgmacros_adj.cpp \
+		spnalgmacros_asym spnalgmacros_asym.cpp \
+		spn_sun_algconv.h write_spn_sun_algconv \
+		spN* suN*

@@ -7,6 +7,7 @@
 #include <tuple>
 #include <map>
 #include <vector>
+#include "../colors.h"
 // functions for the test
 #include "lib.h"
 
@@ -25,12 +26,12 @@ void testGenerators(){
         ccheck -= 0.5;
         double check = ccheck.re*ccheck.re + ccheck.im*ccheck.im; 
         if(fabs(check) > 1e-14 ){
-            cout << "Problem with SUN generator no. " << isu << endl;
+            cout << BOLDRED "Problem with SUN generator no. " << isu << RESET << endl;
             cout << check<< endl;
             exit(1);
         }
     }
-    cout << "SUN CHECK OK" << endl;
+    cout << BOLDGREEN "SUN CHECK OK" RESET << endl;
     for(int isp = 0; isp<N*(N-1)/2;++isp){
         complex ccheck;
         tmp.mult(TSPN[isp],TSPN[isp]);
@@ -38,12 +39,12 @@ void testGenerators(){
         ccheck -= 0.5;
         double check = ccheck.re*ccheck.re + ccheck.im*ccheck.im; 
         if(fabs(check) > 1e-14 ){
-            cout << "Problem with SPN generator no. " << isp << endl;
+            cout << BOLDRED "Problem with SPN generator no. " << isp << RESET << endl;
             cout << check<< endl;
             exit(1);
         }
     }
-    cout << "SPN CHECK OK" << endl;
+    cout << BOLDGREEN "SPN CHECK OK" RESET << endl;
     delete[] TSUN;
     delete[] TSPN;
 
