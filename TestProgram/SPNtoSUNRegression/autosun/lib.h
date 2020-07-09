@@ -14,6 +14,7 @@ using namespace std;
 #include "./sparse.h"
 #include "./polynomial.h"
 #include "./matrix.h"
+#include "./antisymmetric.h"
 #include "./sun.h"
 
 double* convertSPNToSUNAlgebra( const double* spnAlgebraVector){
@@ -139,78 +140,30 @@ string write_suntospn_algebra(){
     return ss.str();
 }
 
-enum CONV_DIRECTION { PTOU // sPn to sUn
-                    , UTOP // sUn to sPn
-                    };
-
-string write_conversions_adj_tensors(CONV_DIRECTION dir){
-    /**
-     * Writes the macro that, given an spn/sun algebra vector in the adjoint 
-     * representation, expressed on the basis of the algebra of spn/sun, return 
-     * the components of it on the basis of the sun/spn algebra vector in the 
-     * adjoint representation.
-     * The bases for the *fundamental representations* are created by 
-     * group::init().
-     *
-     * Notice that the space of algebra vectors for spn is a subspace 
-     * of the space of algebra vectors for sun (so, the sun -> spn conversion
-     * is actually a projection), and that both are a subspace of GL(N).
-     */
-
-    smatrix *TSUN,*TSPN;
-    // create basis for SPN in the fundamental
-    group::init(group::N,group::TYPESPN,TSPN);
-    // create basis for SUN in the fundamental
-    group::init(group::N,group::TYPESUN,TSUN);
-
-    using group::N;
-    smatrix tmp;
-
+string write_conversions_base_tensors2(
+        smatrix* TSRC, int source_group_algebra_dim, string src
+        ,
+        smatrix* TDST, int dest_group_algebra_dim, string dst 
+        ,
+        string reptype, 
+        double basenorm
+        ){
     using Entry =  tuple<int,double>;
     using Row = vector<Entry>;
     map<int,Row> dst_from_src;
 
-    int dest_group_algebra_dim;
-    int source_group_algebra_dim;
-    string src,dst;
-    {
-        int sunAlgebraCount = N*N-1;
-        int spnAlgebraCount = N*(N+1)/2;
-        switch(dir){
-            case PTOU:
-                dest_group_algebra_dim = sunAlgebraCount;
-                source_group_algebra_dim = spnAlgebraCount;
-                dst = "sun";
-                src = "spn";
-                break;
-            case UTOP:
-                dest_group_algebra_dim = spnAlgebraCount;
-                source_group_algebra_dim = sunAlgebraCount;
-                dst = "spn";
-                src = "sun";
-                break;
-            default:
-                exit(1);
-        }
-    }
-    // computing scalar products between generators
-    // in the spn and the sun algebra - in the fundamental representation
+    // computing scalar products between basis tensors  
+    // in the spn and the sun adjoint representations
+    // (i.e., the generators in the fundamental representation)
     for(int idst = 0; idst<dest_group_algebra_dim;++idst){
         Row row;
         for(int isrc = 0; isrc<source_group_algebra_dim;++isrc){
             complex tmpd;
             // scalar product between generators
-            switch(dir){
-                case PTOU:
-                    tmp.mult(TSUN[idst],TSPN[isrc]);
-                    break;
-                case UTOP:
-                    tmp.mult(TSPN[idst],TSUN[isrc]);
-                    break;
-            }
+            smatrix tmp;
+            tmp.mult(TDST[idst],TSRC[isrc]);
             trace(tmpd,tmp);
-            tmpd *= 2 ;  // because the normalization of SUN generators is 
-                         // Tr(T^2) = 0.5
+            tmpd *= (double)1/basenorm ; 
             if(isnotzero(tmpd.im)){
                 cout << "tmpd.im != 0 " << endl;
                 exit(1);
@@ -229,24 +182,26 @@ string write_conversions_adj_tensors(CONV_DIRECTION dir){
     // adjoint with itself to the basis of the tensor product of 
     // sun/spn adjoint with itself.
     
-    auto dstAdjIndex = [dest_group_algebra_dim](int i, int j){
+    auto dstIndex = [dest_group_algebra_dim](int i, int j){
         return i*dest_group_algebra_dim + j;
     };
-    auto srcAdjIndex = [source_group_algebra_dim](int i, int j){
+    auto srcIndex = [source_group_algebra_dim](int i, int j){
         return i*source_group_algebra_dim + j;
     };
 
     stringstream ss;
+    // For the adjoint:
     // src = spn, dst = sun:
     // "#define _spntnosun_adj(sunadjm,spnadjm) \\\n";
     // src = sun, dst = spn:
     // "#define _suntnospn_adj(spnadjm,sunadjm) \\\n";
-    ss << "#define _" << src <<  "to" << dst << "_adj("<< dst <<"adjm,"<< src <<"adjm) \\\n";
+    ss << "#define _" << src <<  "to" << dst << "_"<< reptype << "("
+                      << dst << reptype << "m,"<< src << reptype << "m) \\\n";
 
     for(int isu1 = 0; isu1 < dest_group_algebra_dim; ++isu1)
         for(int isu2 = 0; isu2 < dest_group_algebra_dim; ++isu2){
-            int rowIndex = dstAdjIndex(isu1,isu2);
-            ss << "\t"<< dst << "adjm[" << rowIndex << "]=";
+            int rowIndex = dstIndex(isu1,isu2);
+            ss << "\t"<< dst << reptype << "m[" << rowIndex << "]=";
             map<int,double> newRow; // 
             auto row1 = dst_from_src.at(isu1);
             auto row2 = dst_from_src.at(isu2);
@@ -255,32 +210,159 @@ string write_conversions_adj_tensors(CONV_DIRECTION dir){
                 double w1,w2;
                 tie(c1,w1) = e1;
                 tie(c2,w2) = e2;
-                int colIndex = srcAdjIndex(c1,c2);
+                int colIndex = srcIndex(c1,c2);
                 newRow[colIndex] += w1*w2; 
             }
             for(auto entry: newRow){
                 int idx;
                 double w;
                 tie(idx,w) = entry;
-                ss << "+(" << setprecision(15) << w << "*" << src << "adjm["
+                ss << "+(" << setprecision(15) << w << "*" << src << reptype << "m["
                     << idx << "])";
             }
         ss << ";\\\n";
         }
     ss << "\n\n";
-    delete[] TSUN;
-    delete[] TSPN;
+    delete[] TSRC;
+    delete[] TDST;
     return ss.str();
 }
 
 string write_spntosun_adj(){
-    return write_conversions_adj_tensors(PTOU);
+    /**
+     * Writes the macro that, given an spn algebra vector in the adjoint 
+     * representation, expressed on the basis of the algebra of spn, return 
+     * the components of it on the basis of the sun algebra vector in the 
+     * adjoint representation.
+     * The bases for the *fundamental representations* are created by 
+     * group::init().
+     */
+
+
+    smatrix *TSUN,*TSPN;
+    // create basis for SPN in the fundamental
+    group::init(group::N,group::TYPESPN,TSPN);
+    // create basis for SUN in the fundamental
+    group::init(group::N,group::TYPESUN,TSUN);
+
+    using group::N;
+    int sunAlgebraCount = N*N-1;
+    int spnAlgebraCount = N*(N+1)/2;
+
+    return write_conversions_base_tensors2(
+            TSPN,spnAlgebraCount,string("spn") // src
+            ,
+            TSUN,sunAlgebraCount,string("sun") // dst
+            ,
+            string("adj"), // reptype
+            0.5 // the normalisation of all the generators
+            );
 
 }
+
 string write_suntospn_adj(){
-    return write_conversions_adj_tensors(UTOP);
+    /**
+     * Writes the macro that, given an sun algebra vector in the adjoint 
+     * representation, expressed on the basis of the algebra of sun, return 
+     * the components of it on the basis of the spn algebra vector in the 
+     * adjoint representation.
+     * The bases for the *fundamental representations* are created by 
+     * group::init().
+     *
+     * Notice that the space of algebra vectors for spn is a subspace 
+     * of the space of algebra vectors for sun (so, the sun -> spn conversion
+     * is actually a projection), and that both are a subspace of GL(N).
+     */
+
+
+    smatrix *TSUN,*TSPN;
+    // create basis for SPN in the fundamental
+    group::init(group::N,group::TYPESPN,TSPN);
+    // create basis for SUN in the fundamental
+    group::init(group::N,group::TYPESUN,TSUN);
+
+    using group::N;
+    int sunAlgebraCount = N*N-1;
+    int spnAlgebraCount = N*(N+1)/2;
+
+    return write_conversions_base_tensors2(
+            TSUN,sunAlgebraCount,string("sun") // src
+            ,                                
+            TSPN,spnAlgebraCount,string("spn") // dst
+            , 
+            string("adj"), // reptype
+            0.5 // the normalisation of all the generators
+            );
+
 }
 
+string write_spntosun_asym(){
+    /**
+     * Writes the macro that, given a 2-index tensor in the antysimmetric 
+     * representation of spn, returns the components of it on the basis of the 
+     * antisymmetric representation of sun.
+     * The bases for the *antisymmetric representations* are created by 
+     * get_asymtensors_base*().
+     */
+
+
+    smatrix *ASYMSUN,*ASYMSPN;
+    // create basis for SPN in the fundamental
+    ASYMSPN = get_asymtensors_base_spn();
+    // create basis for SUN in the fundamental
+    ASYMSUN = get_asymtensors_base_sun();
+
+    using group::N;
+    int sunDim = N*(N-1)/2;
+    int spnDim = sunDim -1;
+
+    return write_conversions_base_tensors2(
+            ASYMSPN,spnDim,string("spn") // src
+            ,
+            ASYMSUN,sunDim,string("sun") // dst
+            , 
+            string("asym"), // reptype
+            1 // the normalisation of the base tensors
+            );
+
+}
+
+
+string write_suntospn_asym(){
+    /**
+     * Writes the macro that, given a 2-index tensor in the antysimmetric 
+     * representation of sun, returns the components of it on the basis of the 
+     * antisymmetric representation of spn.
+     * The bases for the *antisymmetric representations* are created by 
+     * get_asymtensors_base*().
+     *
+     * Notice that the space of antisymmetric tensors for spn is a subspace 
+     * of the space of antisymmetric tensors for sun (so, the sun -> spn 
+     * conversion is actually a projection), and that both are a subspace of 
+     * GL(N).
+     */
+
+
+    smatrix *ASYMSUN,*ASYMSPN;
+    // create basis for SPN in the fundamental
+    ASYMSPN = get_asymtensors_base_spn();
+    // create basis for SUN in the fundamental
+    ASYMSUN = get_asymtensors_base_sun();
+
+    using group::N;
+    int sunDim = N*(N-1)/2;
+    int spnDim = sunDim -1;
+
+    return write_conversions_base_tensors2(
+            ASYMSUN,sunDim,string("sun") // src
+            ,
+            ASYMSPN,spnDim,string("spn") // dst
+            , 
+            string("asym"), // reptype
+            1 // the normalisation of the base tensors
+            );
+
+}
 
 void write_acf(string progname, string acfname, int N){ // algebra converter file
 	group::N = N;
@@ -289,12 +371,14 @@ void write_acf(string progname, string acfname, int N){ // algebra converter fil
     acf << "#define N " << N << endl << endl;
     acf << write_spntosun_adj();
     acf << write_suntospn_adj();
+    acf << write_spntosun_asym();
+    acf << write_suntospn_asym();
     acf << write_spntosun_algebra();
     acf << write_suntospn_algebra();
     acf.close();
 }
 
-void write_mtp(string progname, string acfname, int N, string mtpname){
+void write_mtp_adj(string progname, string acfname, int N, string mtpname){
     ofstream mtp(mtpname.c_str()); // macro test program
 
     mtp << "/** This file is produced automatically by " << progname << " */" << endl; 
@@ -363,4 +447,50 @@ void write_mtp(string progname, string acfname, int N, string mtpname){
 
 }
 
+void write_mtp_asym(string progname, string acfname, int N, string mtpname){
+    ofstream mtp(mtpname.c_str()); // macro test program
+
+    mtp << "/** This file is produced automatically by " << progname << " */" << endl; 
+    mtp << "#include <iostream>" << endl;
+    mtp << "#include <iomanip>" << endl;
+    mtp << "#include <cstdlib>" << endl;
+    mtp << "#include <cmath>" << endl;
+    mtp << "#include \"./" << acfname << "\"" << endl;
+    mtp << "using namespace std;" << endl;
+
+    mtp << "bool isnotzero(double x){" << endl;
+    mtp << "    const double threshold = 1e-14;" << endl;
+    mtp << "    return fabs(x)>threshold;" << endl;
+    mtp << "}" << endl;
+    mtp << "int main(){" << endl;
+    int sunReprDim = N*(N-1)/2;
+    int spnReprDim = sunReprDim - 1;
+    int spnReprDimSq = spnReprDim*spnReprDim;
+    int sunReprDimSq = sunReprDim*sunReprDim;
+    mtp << "  {" << endl;
+    mtp << "      bool ok = true;" << endl;
+    mtp << "      double spnAsymMatrix["<<spnReprDimSq<<"]; " << endl;
+    mtp << "      double spnAsymMatrixCheck["<<spnReprDimSq <<"]; " << endl;
+    mtp << "      double sunAsymMatrix["<<sunReprDimSq <<"]; " << endl;
+    mtp << "      for(int i = 0; i < "<<spnReprDimSq<<"; ++i) " << endl;
+    mtp << "          spnAsymMatrix[i] = (double)random()/RAND_MAX;" << endl;
+    mtp << "      _spntosun_asym(sunAsymMatrix,spnAsymMatrix);" << endl;
+    mtp << "      _suntospn_asym(spnAsymMatrixCheck,sunAsymMatrix);" << endl;
+    mtp << "      for(int i = 0; i < "<<spnReprDimSq<<"; ++i){ " << endl;
+    mtp << "          double check = spnAsymMatrixCheck[i]-spnAsymMatrix[i];" << endl;
+    mtp << "          if(isnotzero(check)){" << endl;
+    mtp << "              cout << \"Problem With component \" << setw(4) << i << \" \" ;" << endl;
+    mtp << "              cout << spnAsymMatrixCheck[i] << \" vs  \" << spnAsymMatrix[i];" << endl;
+    mtp << "              cout << endl;" << endl;
+    mtp << "              ok=false;" << endl;
+    mtp << "          };" << endl;
+    mtp << "      };" << endl;
+    mtp << "      if(ok) cout << \"All seems ok for the asym matrix.\" << endl; " << endl;
+    mtp << "      else exit(1);" << endl;
+    mtp << "  }" << endl;
+    mtp << "  return 0; " << endl;
+    mtp << "}" << endl;
+    mtp.close();
+
+}
 

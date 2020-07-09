@@ -132,24 +132,28 @@ void compare_represented( SPf spNadj, suNf suNadj){
     sum += diff*diff;
   }
   
-#else
+#elif defined(REPR_ANTISYMMETRIC)
+  SPf tmp;
+  _suntospn_asym(tmp.c,suNadj.c);
+  for(int i=0; i<SPNF*SPNF;i++){
+    double diff = tmp.c[i] - spNadj.c[i];
+    sum += diff*diff;
+  }
 
-#ifdef  REPR_FUNDAMENTAL  // using fundamental representation, fermion matrix is symplectic
+#elif defined(REPR_FUNDAMENTAL)  // using fundamental representation, fermion matrix is symplectic
   for(int i=0; i<NF*NF/2;i++){
-#else 
-  for(int i=0; i<NF*NF;i++){
-#endif
     double complex diff = suNadj.c[i] - spNadj.c[i];
     sum += creal(diff*conj(diff));
   }
-  
+#else
+#error : REPR_SYMMETRIC not implemented.
 #endif
 
   if( sum < 1e-14 ){
     printf("PASSED, diff=%g\n",sum);
   } else {
     printf("TEST FAILED, diff=%g\n",sum);
-#ifdef REPR_ADJOINT
+#if defined(REPR_ADJOINT) || defined(REPR_ANTISYMMETRIC)
     print_SPf(tmp);
 #endif
     print_SPf(spNadj);
@@ -269,6 +273,8 @@ int main(void){
   random_SPf(sp_fermion_matrix);
 #ifdef REPR_ADJOINT
   _spntosun_adj(su_fermion_matrix->c,sp_fermion_matrix->c);
+#elif defined(REPR_ANTISYMMETRIC)
+  _spntosun_asym(su_fermion_matrix->c,sp_fermion_matrix->c);
 #else
   for(int i=0;i<NF*NF;++i){
     su_fermion_matrix->c[i] = sp_fermion_matrix->c[i];

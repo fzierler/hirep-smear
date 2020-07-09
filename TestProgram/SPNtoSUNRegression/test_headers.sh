@@ -37,11 +37,6 @@ check_headers(){
     ./test_headers || {  echo Found a bug ; exit ; }
 }
 
-for N in 4 6 8 10 12 14 16 18 20 22 24 26 
-do
-    check_headers $N REPR_FUNDAMENTAL || exit
-done
-
 #Check the representation 
 
 cp $MAKEDIR/MkFlags $MAKEDIR/MkFlags.bu
@@ -65,7 +60,6 @@ run_spnalgtest(){
     cd $TESTDIR
 }
 
-run_spnalgtest || exit
 
 check_reps(){
 
@@ -87,12 +81,13 @@ check_reps(){
     make write_spn_sun_algconv   || { echo Problem compiling write_spn_sun_algconv; exit ; }
     ./write_spn_sun_algconv $N   || { echo Problem running write_spn_sun_algconv; exit ; }
     mv spn_sun_algconv.h $TESTDIR
+    echo "Building WriteREPR - GAUGE_SUN"
     sed -i 's/GAUGETYPE/GAUGE_SUN/'  $MAKEDIR/MkFlags || exit
     cd $AUTOSUNDIR
-    echo "Building WriteREPR"
     make 
     ./writeREPR $N $TESTDIR/suN_repr_func.h.tmpl > $TESTDIR/suN_func.h || { exit ; } 
     ./writeREPR $N $TESTDIR/suN_exp.c.tmpl > $TESTDIR/suN_exp.h || { exit ; } 
+    echo "Building WriteREPR - GAUGE_SPN"
     sed -i 's/GAUGE_SUN/GAUGE_SPN/'  $MAKEDIR/MkFlags
     make 
     ./writeREPR $N $TESTDIR/SP_repr_func.h.tmpl > $TESTDIR/spN_func.h || { exit ; }
@@ -102,13 +97,21 @@ check_reps(){
     sed -i 's/suN/SP/g' spN_exp.h
     #compile and run the test
     gcc -o test_reps -O0 -g -I $TOPDIR/Include/ test_reps.c -D$rep || { echo Problem compiling the representation test ; exit ; }
+    echo "Running test"
     ./test_reps || { echo Found a bug ; exit ; }
 
 }
 
-for rep in REPR_FUNDAMENTAL REPR_ADJOINT 
+for N in 4 6 8 10 12 14 16 18 20 22 24 26 
 do
-    for N in 4 6 8  
+    check_headers $N REPR_FUNDAMENTAL || exit
+done
+
+run_spnalgtest || exit
+
+for rep in REPR_FUNDAMENTAL REPR_ADJOINT REPR_ANTISYMMETRIC
+do
+    for N in 4 #6 8  
     do
        check_reps $N $rep || exit
     done #rep

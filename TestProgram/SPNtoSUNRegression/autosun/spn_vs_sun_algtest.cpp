@@ -53,15 +53,18 @@ void testGenerators(){
 int main(int argc, char* argv[]){
 
     string acfname("spn_sun_algconv.h");// algebra converter file
-    string mtpname("spnalgmacros.cpp"); // macro test program
+    string mtpname_adj("spnalgmacros_adj.cpp"); // macro test program
+    string mtpname_asym("spnalgmacros_asym.cpp"); // macro test program
 
 	int N = atoi(argv[1]);
 	group::N = N;
     testGenerators();
 
     write_acf(string(argv[0]), acfname, N);
-    write_mtp(string(argv[0]), acfname, N, mtpname);
-    system("g++ -o spnalgmacros spnalgmacros.cpp && ./spnalgmacros");
+    write_mtp_adj(string(argv[0]), acfname, N, mtpname_adj);
+    write_mtp_asym(string(argv[0]), acfname, N, mtpname_asym);
+    system("g++ -o spnalgmacros_adj spnalgmacros_adj.cpp && ./spnalgmacros_adj");
+    system("g++ -o spnalgmacros_asym spnalgmacros_asym.cpp && ./spnalgmacros_asym");
 
     return 0;
 
