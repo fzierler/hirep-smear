@@ -440,7 +440,8 @@ void lw_force(double dt, void *vpar)
 	apply_BCs_on_momentum_field(force);
 }
 
-/*
+#ifndef NDEBUG
+#include <assert.h>
 void test_wilson_action_and_force(double beta) {
    double s1,s2,diff,err;
    suNg_av_field *f1,*f2;
@@ -455,7 +456,8 @@ void test_wilson_action_and_force(double beta) {
 
    err=0.;
    _MASTER_FOR(&glattice,ix) {
-     s1=(beta/((double)NG))*(6.*NG-local_plaq(ix));
+     //s1=(beta/((double)NG))*(6.*NG-local_plaq(ix)); // CHECK
+     s1=-(beta/((double)NG))*local_plaq(ix);           // CHECK
      s2=lw_action_density(ix,beta,1.0,0.0);
      diff=fabs(s1-s2);
      if(diff>err) err=diff;
@@ -476,27 +478,33 @@ void test_wilson_action_and_force(double beta) {
 	par.c0 = 1;
 	par.c1 = 0;
 	par.beta = beta;
-   lw_force(1.,f2,&par);
+    lw_force(1.,f2,&par);
 
    err=0.;
    _MASTER_FOR(&glattice,ix) {
       for(int mu=0; mu<4; mu++) {
          v1=_4FIELD_AT(f1,ix,mu);
          v2=_4FIELD_AT(f2,ix,mu);
-         for(int i=0;i<NG*NG-1;i++) {
+#ifdef GAUGE_SUN
+#define _ALGEBRADIM NG*NG-1
+#elif defined(GAUGE_SPN)
+#define _ALGEBRADIM NG*(NG+1)/2
+#endif
+         for(int i=0;i< _ALGEBRADIM;i++) {
             diff=fabs(v1->c[i]-v2->c[i]);
             if(diff>err) err=diff;
          }
+#undef _ALGEBRADIM
       }
    }
    global_max(&err,1);
 
    lprintf("TEST",0,"beta=%f :  Error Wilson force = %e\n",beta,err);
+   assert(err< 1.0e-14);
 
    free_avfield(f1);
    free_avfield(f2);
 }
-
 
 static void random_g(suNg_field* g)
 {
@@ -565,6 +573,7 @@ void test_ginv_lw_action(double beta, double c0, double c1) {
    global_max(&err,1);
 
    lprintf("TEST",0,"pars=(%f,%f,%f) :  Gauge invariance LW action = %e\n",beta,c0,c1,err);
+   assert(err<1.0e-14);
 
    free(s);
    free_gtransf(g);
@@ -609,10 +618,16 @@ void test_gcov_lw_force(double beta, double c0, double c1) {
          v1=_4FIELD_AT(f1,ix,mu);
          v2=_4FIELD_AT(f2,ix,mu);
          double loc=0.;
-         for(int i=0;i<NG*NG-1;i++) {
+#ifdef GAUGE_SUN
+#define _ALGEBRADIM NG*NG-1
+#elif defined(GAUGE_SPN)
+#define _ALGEBRADIM NG*(NG+1)/2
+#endif
+         for(int i=0;i<_ALGEBRADIM;i++) {
             diff=fabs(v1->c[i]-v2->c[i]);
             if(diff>err) loc=diff;
          }
+#undef _ALGEBRADIM
          if(loc>err) err=loc;
          // lprintf("TEST",0,"ix=%d mu=%d   err = %e\n",ix,mu,loc);
       }
@@ -620,6 +635,7 @@ void test_gcov_lw_force(double beta, double c0, double c1) {
    global_max(&err,1);
 
    lprintf("TEST",0,"pars=(%f,%f,%f) :  Gauge covariance LW force = %e\n",beta,c0,c1,err);
+   assert(err<1.0e-14);
 
    free_avfield(f1);
    free_avfield(f2);
@@ -681,7 +697,13 @@ void test_lw_force(double beta, double c0, double c1) {
 
          for(int mu=0;mu<4;mu++) {
             if(local) {
-               gauss((double*)(&mom),NG*NG-1);
+#ifdef GAUGE_SUN
+#define _ALGEBRADIM NG*NG-1
+#elif defined(GAUGE_SPN)
+#define _ALGEBRADIM NG*(NG+1)/2
+#endif
+               gauss((double*)(&mom),_ALGEBRADIM);
+#undef _ALGEBRADIM
                ExpX(eps,&mom,pu_gauge(ix,mu));
             }
             start_gf_sendrecv(u_gauge);
@@ -696,9 +718,15 @@ void test_lw_force(double beta, double c0, double c1) {
 
             double Xf=0.;
             if(local) {
-               for(int i=0;i<NG*NG-1;i++) {
+#ifdef GAUGE_SUN
+#define _ALGEBRADIM NG*NG-1
+#elif defined(GAUGE_SPN)
+#define _ALGEBRADIM NG*(NG+1)/2
+#endif
+               for(int i=0;i<_ALGEBRADIM;i++) {
                   Xf += _FUND_NORM2 * mom.c[i] * _4FIELD_AT(f,ix,mu)->c[i];
                }
+#undef _ALGEBRADIM
             }
             global_sum(&Xf,1);
 
@@ -715,10 +743,12 @@ void test_lw_force(double beta, double c0, double c1) {
 
       lprintf("TEST",0,"pars=(%f,%f,%f) :  Derivative of the action,  eps = %.3e     fabs(DeltaS - eps*X.force)/eps^2 = %e\n",beta,c0,c1,eps,err/eps);
 
+      assert((err/eps)<20);
+
       eps*=.1;
    }
 
    free_gfield(u);
    free(s);
 }
-*/
+#endif

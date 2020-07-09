@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 
-#if NG==2
+#if (NG==2) && defined(GAUGE_SUN)
 static void project_on_suN(suNg *A) {
   project_cooling_to_suNg(A,A,0);
 }
@@ -21,7 +21,7 @@ static void project_on_suN(suNg *A) {
 //#error ERROR: The cooling parameter must be chosen!!!
 static void project_on_suN(suNg *A) {
   error(1,1,"project_on_suN",
-      "Error function only defined for NG=2");
+      "Error function only defined for SU(2)");
 }
 
 #endif

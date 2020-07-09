@@ -1,0 +1,152 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb} 
+\newcommand*{\QEDB}{\null\nobreak\hfill\ensuremath{\square}}
+
+
+%opening
+\title{A not too concise proof of the
+equivalence of the symmetric and the adjoint representations of $SP(2N)$
+}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    The result follows from $ - \Omega U \Omega = U^\dagger$ (where $U$ is a
+    member of $SP(2N)$) and from the fact that  $ T\Omega $ (where $T$ is any
+    generator of $SP(2N)$ is a symmetric matrix.
+\end{abstract}
+
+\section{Intro}
+
+For a matrix $U$ belonging to $SU(2N)$ we have 
+\begin{equation}
+U^\dagger U=1.
+\label{sun}
+\end{equation}
+The $SP(2N)$ subgroup is defined as the subset of $SU(2N)$ that satisfies
+\begin{equation}
+ U^T \Omega U = \Omega
+ \label{symplectic}
+\end{equation}
+where 
+\begin{equation}
+ \Omega = \left\{
+ \begin{array}{cc}
+  0_{N} & 1_{N} \\
+  -1_{N} & 0_{N} 
+ \end{array}
+ \right.
+ \label{omega}
+\end{equation}
+Since $(U_1 U_2)^T = U_2^T U_1^T$, this is obviously still a group. \\
+First of all, we write $U$ as 
+\begin{equation}
+ U = \left\{
+ \begin{array}{cc}
+  A & B \\
+  C & D 
+ \end{array}
+ \right.
+\end{equation}
+With $U$ in this form Eq.\ref{sun} can be seen as an orthonormality relation 
+between the set of rows represented by $(A\ B)$ and the set of rows represented 
+by $(C\ D)$, and similarly between columns. 
+Expanding Eq.\ref{symplectic}, and looking e.g. at the upper right 
+corner, we see that $(D^\ast\ -B^\ast)$ needs 
+to be ``proportional'' to $(A\ C)$, and other similar relations that lead us to
+conclude that $U$ can be written in the form
+\begin{equation}
+ U = \left\{
+ \begin{array}{cc}
+  A & B \\
+  -B^\ast & A^\ast
+ \end{array}
+ \right.
+ \label{usymp}
+\end{equation}
+Writing the infinitesimal version of $U = 1_{2N} + i\lambda_i \tau_i$ and plugging it into 
+Eq.\ref{symplectic}, it turns out that 
+\begin{equation}
+\tau^T \Omega + \Omega \tau = 0
+\end{equation}
+or
+\begin{equation}
+    \Omega \tau + (\Omega \tau)^T = 0
+    \label{symp_generators_constraints}
+\end{equation}
+which means that $\tau \Omega$ is a symmetric matrix.
+Moreover, in order for $U$ to be of the form in Eq. \ref{usymp},
+$\tau$ must have the form
+\begin{equation}
+    \tau = \left\{
+        \begin{array}{cc}
+            \alpha & \beta \\
+            \beta^\ast & -\alpha^\ast
+        \end{array}
+    \right. 
+\end{equation}
+The $SU(N)$ constraints for $\tau$ of being a Hermitean matrix 
+mean that $\alpha = \alpha^\dagger$ (this ensures also that $\tau$ be traceless)
+and $\beta = \beta^T$. We have $(\frac{N}{2})^2$ degrees of freedom for $\alpha$, and
+$\frac{N}{2}\left(\frac{N}{2}+1\right)$ degrees of freedom for $\beta$. 
+This means that the dimension of the algebra is 
+\begin{equation}
+ D_{adj} = \frac{N (N+1)}{2}
+\end{equation}
+which is curiously equal to the dimension of the space of \emph{real} 
+(or \emph{imaginary}) symmetric tensors of dimension $N$, i.e. the dimension 
+of the real symmetric representation.
+
+\section{The symmetric and adjoint representations}
+
+The transformation of a symmetric tensor can be written as
+\begin{equation}
+    S' = U^T S U
+\end{equation}
+which, expliciting the components 
+\begin{equation}
+    S_{a'b'}' = S_{ab} U^{a}_{a'}  U^{b}_{b'}  .
+\end{equation}
+Thanks just to the symmetricity of S, we have 
+\begin{equation}
+    S_{a'b'}' = S_{ab} \left( \frac{U^{a}_{a'}  U^{b}_{b'} + U^{a}_{b'}  U^{b}_{a'} } {2}\right) .
+\end{equation}
+which defines the symmetric representation.
+For the adjoint representation, we have 
+\begin{equation}
+    A' = U^\dagger A U .
+    \label{adjoint}
+\end{equation}
+where $A$ and $A'$ are linear combinations of the generators of $SP(2N)$.
+Multiplying both sides of Eq.\ref{symplectic} by $\Omega^T$ ( which is also
+$-\Omega$ and $\Omega^-1$) and remembering the unitarity of $U$ we have 
+\begin{equation}
+    U^\dagger = \Omega^T U^T \Omega
+\end{equation}
+Plugging this into Eq.\ref{adjoint} we have 
+\begin{equation}
+    \Omega A' = U^T \Omega A U
+\end{equation}
+Now, from Eq.\ref{symp_generators_constraints} we know that $\Omega A$ is a 
+symmetric matrix.
+Moreover, we know that the adjoint representation is real, because for a real
+(imaginary)
+$A_\pm$ (e.g., $A_\pm = B \pm B^\dagger$ with $B$ in the $SP(2N)$ algebra) we have 
+that 
+\begin{equation}
+    A_\pm' = U^\dagger A_\pm U .
+\end{equation}
+is real (imaginary) as well.  \\
+We also know that the space spanned by $\Omega A$ has the 
+same dimension of the space of \emph{real} (or \emph{imaginary}) symmetric 
+tensors in dimension $N$. 
+
+We can thus conclude that for $SP(2N)$ the complex symmetric representation is
+reducible into two copies of the adjoint representation, which is real.
+
+\QEDB
+\end{document}

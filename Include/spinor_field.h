@@ -53,6 +53,10 @@ _DECLARE_FIELD_STRUCT(suNg_av_field, suNg_algebra_vector);
 _DECLARE_FIELD_STRUCT(scalar_field, double);
 _DECLARE_FIELD_STRUCT(ldl_field, ldl_t);
 _DECLARE_FIELD_STRUCT(suNfc_field, suNfc);
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+_DECLARE_FIELD_STRUCT(suNffull_field, suNffull);
+#endif
+
 
 
 /* LOOPING MACRO */

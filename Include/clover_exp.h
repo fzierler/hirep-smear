@@ -17,7 +17,13 @@ void clover_exp(suNfc *Aplus, suNfc *expAplus);
 void evaluate_sw_order(double * mass);
 
 void clover_exp_taylor(suNfc *Aplus, suNfc *expAplus);
-void doublehorner(double *C, suNfc *A);
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _SUNFC suNffull
+#else
+#define _SUNFC suNfc
+#endif
+void doublehorner(double *C, _SUNFC *A);
+#undef _SUNFC
 void init_clover_exp();
 int get_NNexp();
 void factorialCoef(double *C);

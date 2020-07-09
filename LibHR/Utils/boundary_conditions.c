@@ -296,6 +296,28 @@ void apply_BCs_on_spinor_field_flt(spinor_field_flt *sp)
 #endif
 }
 
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && defined(BC_T_OPEN)
+static void cl_open_BCs(suNffull_field *);
+#endif
+#if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && (defined(BASIC_SF) || defined(ROTATED_SF))
+static void cl_SF_BCs(suNffull_field *);
+#endif
+
+void apply_BCs_on_clover_term(suNffull_field *cl)
+{
+#if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && defined(BC_T_OPEN)
+  cl_open_BCs(cl);
+#endif
+
+#if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && (defined(BASIC_SF) || defined(ROTATED_SF))
+  cl_SF_BCs(cl);
+#endif
+}
+
+#else  //defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+
+
 #if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && defined(BC_T_OPEN)
 static void cl_open_BCs(suNfc_field *);
 #endif
@@ -313,6 +335,8 @@ void apply_BCs_on_clover_term(suNfc_field *cl)
   cl_SF_BCs(cl);
 #endif
 }
+#endif //defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+
 
 /***************************************************************************/
 /* BOUNDARY CONDITIONS TO BE APPLIED ON THE REPRESENTED GAUGE FIELD        */
@@ -938,7 +962,11 @@ static void mf_open_BCs(suNg_av_field *force)
 /* BOUNDARY CONDITIONS TO BE APPLIED ON THE CLOVER TERM                    */
 /***************************************************************************/
 #if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && (defined(BASIC_SF) || defined(ROTATED_SF))
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+static void cl_SF_BCs(suNffull_field *cl)
+#else
 static void cl_SF_BCs(suNfc_field *cl)
+#endif
 {
   int index;
   suNfc u;
@@ -983,7 +1011,11 @@ static void cl_SF_BCs(suNfc_field *cl)
 }
 #endif
 #if (defined(WITH_EXPCLOVER) || defined(WITH_CLOVER)) && defined(BC_T_OPEN)
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+static void cl_open_BCs(suNffull_field *cl)
+#else
 static void cl_open_BCs(suNfc_field *cl)
+#endif
 {
   int index;
   suNfc u;

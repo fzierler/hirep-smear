@@ -226,6 +226,8 @@ int main(int argc,char *argv[]) {
 
 #ifdef GAUGE_SON
   lprintf("MAIN",0,"Gauge group: SO(%d)\n",NG);
+#elif GAUGE_SPN
+  lprintf("MAIN",0,"Gauge group: SP(%d)\n",NG);
 #else
   lprintf("MAIN",0,"Gauge group: SU(%d)\n",NG);
 #endif

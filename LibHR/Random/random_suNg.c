@@ -47,12 +47,16 @@ static void rotate(suNg_vector *pu1, suNg_vector *pu2, double s[4]) /* same as i
 
 #ifndef GAUGE_SON
 #ifdef GAUGE_SPN
-void random_suNg(suNg *r) {
+#define _VARNAME r
+#else 
+#define _VARNAME u
+#endif
+void random_suNg(suNg *_VARNAME) {
+#undef _VARNAME
+#ifdef GAUGE_SPN
     suNgfull ut, *u;
     _suNg_expand(ut,*r);
     u=&ut;
-#else
-    void random_suNg(suNg *u) {
 #endif
 #ifdef WITH_QUATERNIONS
         random_su2(0.,u->c);
@@ -100,12 +104,8 @@ void random_suNg(suNg *r) {
 #ifdef GAUGE_SPN
         for (int i=0; i<NG*NG/2; ++i) { r->c[i]=ut.c[i]; }
 #endif
-#ifdef GAUGE_SPN
-    }
-#else
 }
-#endif
-#else
+#else // vv GAUGE_SON case vv
 void random_suNg(suNg *u) {
     suNg tmp;
     double gr[NG*NG];

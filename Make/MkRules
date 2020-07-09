@@ -84,6 +84,13 @@ ifndef REPR
   $(error Error: must specify fermion representation!)
 endif
 
+# SP2 is not a valid target (use SU2 instead)
+ifeq "$(GAUGE_GROUP)" "GAUGE_SPN" 
+   ifeq "$(NG)"  "2" 
+      $(error Error: Not supported. For NG=2 use GAUGE_SUN instead.)
+   endif
+endif
+
 
 _MkRules_default_target: $(EXES) $(OBJS) $(ALIBNAME)
 

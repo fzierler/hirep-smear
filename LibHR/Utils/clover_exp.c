@@ -569,6 +569,8 @@ inline void doublehorner(double *C, suNfc *A)
   error(0, 1, "doublehorner "__FILE__, "Force only implemented for NF=2 and NF=3");
 #endif
 }
+#undef _SUNFC
+
 
 void factorialCoef(double *C)
 {

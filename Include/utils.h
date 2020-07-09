@@ -49,7 +49,12 @@ void apply_BCs_on_momentum_field(suNg_av_field *force);
 void apply_BCs_on_spinor_field(spinor_field *sp);
 void apply_BCs_on_spinor_field_flt(spinor_field_flt *sp);
 void apply_background_field_zdir(suNg_field *V, double Q, int n);
+
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+void apply_BCs_on_clover_term(suNffull_field *);
+#else
 void apply_BCs_on_clover_term(suNfc_field *);
+#endif
 
 void init_pure_gauge_anisotropy(double *chi);
 

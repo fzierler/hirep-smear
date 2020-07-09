@@ -44,11 +44,18 @@ typedef struct _format_type
   void (*read)(char *);
   void (*write)(char *);
 } format_type;
-
-#ifdef WITH_QUATERNIONS
-#define nformats 10
+#ifdef GAUGE_SPN
+  #ifdef WITH_QUATERNIONS
+    #error "GAUGE_SPN incompatible with WITH_QUATERIONS"
+  #else
+    #define nformats 12
+  #endif
 #else
-#define nformats 11
+  #ifdef WITH_QUATERNIONS
+    #define nformats 10
+  #else
+    #define nformats 11
+  #endif
 #endif
 
 format_type format[nformats] = {
@@ -63,6 +70,10 @@ format_type format[nformats] = {
     {.name = "fortran", .read = read_gauge_field_fortran, .write = NULL},
 #ifdef WITH_QUATERNIONS
     {.name = "su2q", .read = read_gauge_field_su2q, .write = write_gauge_field_su2q},
+#endif
+#ifdef GAUGE_SPN
+    { .name="compSPN" ,  .read=read_gauge_field,  .write=write_gauge_field },
+    { .name="fullSPN" ,  .read=read_gauge_field_fullSPN ,  .write=write_gauge_field_fullSPN },
 #endif
     {.name = "openQCD", .read = read_gauge_field_openQCD, .write = write_gauge_field_openQCD}};
 

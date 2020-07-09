@@ -128,7 +128,7 @@ sub write_prolog_suN {
 #include "suN_types.h"
 
 END
-}
+}# sub write_prolog_suN 
 
 sub write_prolog_suN_types {
     print <<END
@@ -146,7 +146,7 @@ sub write_prolog_suN_types {
 #include "hr_complex.h"
 
 END
-}
+}# write_prolog_suN_types 
 
 sub write_epilog {
     print <<END
@@ -267,7 +267,7 @@ END
             $dataname=$ldn;
             $rdataname=$lrdn;
 
-        }
+        } # if($gauge_group eq "GAUGE_SPN");elsif ($su2quat==0); else
 
 
 
@@ -413,8 +413,12 @@ END
             write_spN_trace_im();
             write_full_onto_spn_project();
             write_suN_FMAT();
+            # For some operations, we need the full matrix.
+            # To this aim, we use the functions to write the suN macros,
+            # changing temporarily the name of the datatype to "*full".
             my $olddataname = $dataname;
             $dataname = $dataname."full";
+            write_suN_dagger();
             write_suN_times_suN();
             write_suN_times_suN_dagger();
             write_suN_dagger_times_suN();

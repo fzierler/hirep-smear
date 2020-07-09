@@ -20,8 +20,13 @@ void start_sf_sendrecv(spinor_field *gf);
 void complete_sc_sendrecv(suNg_scalar_field *gf);
 void start_sc_sendrecv(suNg_scalar_field *gf);
 
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+void complete_clover_force_sendrecv(suNffull_field *gf);
+void start_clover_force_sendrecv(suNffull_field *gf);
+#else
 void complete_clover_force_sendrecv(suNf_field *gf);
 void start_clover_force_sendrecv(suNf_field *gf);
+#endif
 
 void complete_gt_sendrecv(suNg_field *gf);
 void start_gt_sendrecv(suNg_field *gf);

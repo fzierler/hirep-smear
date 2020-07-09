@@ -198,7 +198,13 @@ void read_gauge_field_eolexi_BE(char filename[])
     int ix=ipt(0,0,0,0);
     for(mu=0;mu<4;mu++) {
       lprintf("IO",20,"x=(0,0,0,0) mu=%d pu_gauge =\n",mu);
-      for(i=0; i<NG; i++) {
+#ifdef GAUGE_SPN
+#define _NGLIMIT NG/2
+#else 
+#define _NGLIMIT NG
+#endif
+      for(i=0; i<_NGLIMIT; i++) {
+#undef _NGLIMIT
         lprintf("IO",20,"[ ");
         for(j=0; j<NG; j++){
 #ifdef GAUGE_SON
@@ -378,7 +384,13 @@ void read_gauge_field_eolexi_LE(char filename[])
     int ix=ipt(0,0,0,0);
     for(mu=0;mu<4;mu++) {
       lprintf("IO",20,"x=(0,0,0,0) mu=%d pu_gauge =\n",mu);
-      for(i=0; i<NG; i++) {
+#ifdef GAUGE_SPN
+#define _NGLIMIT NG/2
+#else
+#define _NGLIMIT NG
+#endif
+      for(i=0; i<_NGLIMIT; i++) {
+#undef _NGLIMIT
         lprintf("IO",20,"[ ");
         for(j=0; j<NG; j++){
 #ifdef GAUGE_SON

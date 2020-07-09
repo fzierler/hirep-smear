@@ -45,10 +45,19 @@ suNg_av_field *alloc_avfield(geometry_descriptor* type);
 
 void free_clover_ldl(ldl_field *u);
 ldl_field *alloc_clover_ldl(geometry_descriptor* type);
+
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+void free_clover_term(suNffull_field *u);
+suNffull_field* alloc_clover_term(geometry_descriptor* type);
+void free_clover_force(suNffull_field *u);
+suNffull_field* alloc_clover_force(geometry_descriptor* type);
+#else
 void free_clover_term(suNfc_field *u);
 suNfc_field* alloc_clover_term(geometry_descriptor* type);
 void free_clover_force(suNf_field *u);
 suNf_field* alloc_clover_force(geometry_descriptor* type);
+#endif
+
 
 void free_spinor_field_f(spinor_field *s);
 spinor_field* alloc_spinor_field_f(unsigned int n, geometry_descriptor *type);

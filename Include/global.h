@@ -137,8 +137,13 @@ GLB_VAR(suNg_field_flt,*u_gauge_flt,=NULL);
 GLB_VAR(suNf_field,*u_gauge_f,=NULL);
 GLB_VAR(suNg_field,*u_gauge_s,=NULL);
 GLB_VAR(suNf_field_flt,*u_gauge_f_flt,=NULL);
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+GLB_VAR(suNffull_field,*cl_term,=NULL);
+GLB_VAR(suNffull_field,*cl_force,=NULL);
+#else
 GLB_VAR(suNfc_field,*cl_term,=NULL);
 GLB_VAR(suNf_field,*cl_force,=NULL);
+#endif
 GLB_VAR(ldl_field,*cl_ldl,=NULL);
 GLB_VAR(suNg_av_field,*suN_momenta,=NULL);
 GLB_VAR(suNg_scalar_field,*scalar_momenta,=NULL);

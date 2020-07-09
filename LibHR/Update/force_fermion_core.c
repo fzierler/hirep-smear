@@ -249,10 +249,19 @@ static void g5_sigma(suNf_spinor *s, suNf_spinor *u, int mu, int nu)
 	}
 }
 
+#ifdef GAUGE_SPN
+static suNffull fmat_create(suNf_spinor *a_lhs, suNf_spinor *a_rhs, suNf_spinor *b_lhs, suNf_spinor *b_rhs)
+#else
 static suNf fmat_create(suNf_spinor *a_lhs, suNf_spinor *a_rhs, suNf_spinor *b_lhs, suNf_spinor *b_rhs)
+#endif
 {
+#ifdef GAUGE_SPN
+	suNffull fmat;
+	_suNffull_zero(fmat);
+#else
 	suNf fmat;
 	_suNf_zero(fmat);
+#endif
 	for (int i = 0; i < NF; i++)
 	{
 		for (int j = 0; j < NF; j++)
@@ -300,8 +309,13 @@ static void force_clover_core(double dt)
 
 		_SITE_FOR(&glattice, xp, ix)
 		{
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+			suNffull *Z[6], W[9];
+			suNffull s1, s2, s3, fmat;
+#else
 			suNf *Z[6], W[9];
 			suNf s1, s2, s3, fmat;
+#endif
 			suNg_algebra_vector f;
 			int num, sign;
 
@@ -339,36 +353,64 @@ static void force_clover_core(double dt)
 					Z[5] = _6FIELD_AT(cl_force, o2, num);
 
 					// Construct links
-					_suNf_dagger(W[0], *pu_gauge_f(o3, mu));
-					W[1] = *pu_gauge_f(o3, nu);
-					W[2] = *pu_gauge_f(o1, nu);
-					_suNf_dagger(W[3], *pu_gauge_f(o2, mu));
-					_suNf_dagger(W[4], *pu_gauge_f(ix, nu));
-					_suNf_dagger(W[5], *pu_gauge_f(o4, nu));
-					_suNf_times_suNf(W[6], W[0], W[1]);
-					_suNf_times_suNf(W[7], W[2], W[3]);
-					_suNf_times_suNf(s1, W[5], W[6]);
-					_suNf_times_suNf(W[8], W[7], W[4]);
-					_suNf_sub_assign(W[8], s1);
+					{
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+						suNf Wg[9];
+#define _WMATRIX Wg
+#else
+#define _WMATRIX W
+#endif
+						_suNf_dagger(_WMATRIX[0], *pu_gauge_f(o3, mu));
+						_WMATRIX[1] = *pu_gauge_f(o3, nu);
+						_WMATRIX[2] = *pu_gauge_f(o1, nu);
+						_suNf_dagger(_WMATRIX[3], *pu_gauge_f(o2, mu));
+						_suNf_dagger(_WMATRIX[4], *pu_gauge_f(ix, nu));
+						_suNf_dagger(_WMATRIX[5], *pu_gauge_f(o4, nu));
+						_suNf_times_suNf(_WMATRIX[6], _WMATRIX[0], _WMATRIX[1]);
+						_suNf_times_suNf(_WMATRIX[7], _WMATRIX[2], _WMATRIX[3]);
+						_suNf_times_suNf(s1, _WMATRIX[5], _WMATRIX[6]);
+						_suNf_times_suNf(_WMATRIX[8], _WMATRIX[7], _WMATRIX[4]);
+						_suNf_sub_assign(_WMATRIX[8], s1);
+#undef _WMATRIX
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+						for(int i=0; i<9; i++){
+							_suNf_expand(W[i],Wg[i]);
+						}
+#endif
+					}
 
 					// Calculate sum of forces
-					_suNf_times_suNf(fmat, W[8], *Z[0]);
-					_suNf_times_suNf(s1, *Z[1], W[8]);
-					_suNf_add_assign(fmat, s1);
-					_suNf_times_suNf(s1, W[0], *Z[2]);
-					_suNf_times_suNf(s2, s1, W[1]);
-					_suNf_times_suNf(s3, *Z[3], W[6]);
-					_suNf_add_assign(s2, s3);
-					_suNf_times_suNf(s1, W[5], s2);
-					_suNf_sub_assign(fmat, s1);
-					_suNf_times_suNf(s1, W[2], *Z[4]);
-					_suNf_times_suNf(s2, s1, W[3]);
-					_suNf_times_suNf(s3, W[7], *Z[5]);
-					_suNf_add_assign(s2, s3);
-					_suNf_times_suNf(s1, s2, W[4]);
-					_suNf_add_assign(fmat, s1);
-					_suNf_times_suNf(s1, *pu_gauge_f(ix, mu), fmat);
-
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _MULMACRO _suNffull_times_suNffull
+#define _ADDASSIGNMACRO _suNffull_add_assign
+#define _SUBASSIGNMACRO	_suNffull_sub_assign
+#else
+#define _MULMACRO _suNf_times_suNf
+#define _ADDASSIGNMACRO _suNf_add_assign
+#define _SUBASSIGNMACRO _suNf_sub_assign
+#endif
+					_MULMACRO(fmat, W[8], *Z[0]);
+					_MULMACRO(s1, *Z[1], W[8]);
+					_ADDASSIGNMACRO(fmat, s1);
+					_MULMACRO(s1, W[0], *Z[2]);
+					_MULMACRO(s2, s1, W[1]);
+					_MULMACRO(s3, *Z[3], W[6]);
+					_ADDASSIGNMACRO(s2, s3);
+					_MULMACRO(s1, W[5], s2);
+					_SUBASSIGNMACRO(fmat, s1);
+					_MULMACRO(s1, W[2], *Z[4]);
+					_MULMACRO(s2, s1, W[3]);
+					_MULMACRO(s3, W[7], *Z[5]);
+					_ADDASSIGNMACRO(s2, s3);
+					_MULMACRO(s1, s2, W[4]);
+					_ADDASSIGNMACRO(fmat, s1);
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+					_suNf_expand(s2,*pu_gauge_f(ix,mu));
+#endif
+					_MULMACRO(s1, *pu_gauge_f(ix, mu), fmat);
+#undef _MULMACRO
+#undef _ADDASSIGNMACRO
+#undef _SUBASSIGNMACRO
 					// Project on force
 					_algebra_project(f, s1);
 					_algebra_vector_mul_add_assign_g(*_4FIELD_AT(force_sum, ix, mu), sign * coeff, f);
@@ -378,7 +420,7 @@ static void force_clover_core(double dt)
 	}			  // pieces
 }
 
-#endif
+#endif //#if defined(WITH_CLOVER) || defined(WITH_EXPCLOVER)
 
 #if defined(WITH_CLOVER)
 void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
@@ -389,7 +431,15 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 	{
 		suNf_spinor tmp_lhs, tmp_rhs;
 		suNf_spinor *rhs, *lhs;
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+		suNffull *fm, fm_tmp;
+#define _MULMACRO _suNffull_mul
+#define _ADDASSIGNMACRO _suNffull_add_assign
+#else
 		suNf *fm, fm_tmp;
+#define _MULMACRO _suNf_mul
+#define _ADDASSIGNMACRO _suNf_add_assign
+#endif
 
 		// (mu,nu) = (0,1)
 		rhs = _FIELD_AT(Xs, ix);
@@ -398,9 +448,8 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 0, 1);
 		g5_sigma(&tmp_lhs, lhs, 0, 1);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
-
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
 		// (mu,nu) = (0,2)
 		rhs = _FIELD_AT(Xs, ix);
 		lhs = _FIELD_AT(Ys, ix);
@@ -408,8 +457,8 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 0, 2);
 		g5_sigma(&tmp_lhs, lhs, 0, 2);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
 
 		// (mu,nu) = (1,2)
 		rhs = _FIELD_AT(Xs, ix);
@@ -418,8 +467,8 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 1, 2);
 		g5_sigma(&tmp_lhs, lhs, 1, 2);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
 
 		// (mu,nu) = (0,3)
 		rhs = _FIELD_AT(Xs, ix);
@@ -428,9 +477,8 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 0, 3);
 		g5_sigma(&tmp_lhs, lhs, 0, 3);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
-
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
 		// (mu,nu) = (1,3)
 		rhs = _FIELD_AT(Xs, ix);
 		lhs = _FIELD_AT(Ys, ix);
@@ -438,9 +486,8 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 1, 3);
 		g5_sigma(&tmp_lhs, lhs, 1, 3);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
-
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
 		// (mu,nu) = (2,3)
 		rhs = _FIELD_AT(Xs, ix);
 		lhs = _FIELD_AT(Ys, ix);
@@ -448,8 +495,11 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		g5_sigma(&tmp_rhs, rhs, 2, 3);
 		g5_sigma(&tmp_lhs, lhs, 2, 3);
 		fm_tmp = fmat_create(&tmp_lhs, rhs, &tmp_rhs, lhs);
-		_suNf_mul(fm_tmp, residue, fm_tmp);
-		_suNf_add_assign(*fm, fm_tmp);
+		_MULMACRO(fm_tmp, residue, fm_tmp);
+		_ADDASSIGNMACRO(*fm, fm_tmp);
+
+#undef _MULMACRO
+#undef _ADDASSIGNMACRO
 	}
 }
 
@@ -457,29 +507,51 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 
 #if defined(WITH_EXPCLOVER)
 
-static void A_times_spinor(suNf_spinor *out, suNfc *Aplus, suNfc *Aminus, suNf_spinor *in)
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _SUNFC suNffull
+#define _SUNFCMULTIPLY suNffull_multiply
+#else
+#define _SUNFC suNfc
+#define _SUNFCMULTIPLY _suNfc_multiply
+#endif
+static void A_times_spinor(suNf_spinor *out, _SUNFC *Aplus, _SUNFC *Aminus, suNf_spinor *in)
 {
-
 	suNf_vector aux;
 
 	// Comp 0 1
-	_suNfc_multiply(out->c[0], Aplus[0], in->c[0]);
-	_suNfc_multiply(aux, Aplus[1], in->c[1]);
+	_SUNFCMULTIPLY(out->c[0], Aplus[0], in->c[0]);
+	_SUNFCMULTIPLY(aux, Aplus[1], in->c[1]);
 	_vector_add_assign_f(out->c[0], aux);
 
-	_suNfc_multiply(out->c[1], Aplus[2], in->c[0]);
-	_suNfc_multiply(aux, Aplus[3], in->c[1]);
+	_SUNFCMULTIPLY(out->c[1], Aplus[2], in->c[0]);
+	_SUNFCMULTIPLY(aux, Aplus[3], in->c[1]);
 	_vector_add_assign_f(out->c[1], aux);
 	// Comp 2 3
-	_suNfc_multiply(out->c[2], Aminus[0], in->c[2]);
-	_suNfc_multiply(aux, Aminus[1], in->c[3]);
+	_SUNFCMULTIPLY(out->c[2], Aminus[0], in->c[2]);
+	_SUNFCMULTIPLY(aux, Aminus[1], in->c[3]);
 	_vector_add_assign_f(out->c[2], aux);
 
-	_suNfc_multiply(out->c[3], Aminus[2], in->c[2]);
-	_suNfc_multiply(aux, Aminus[3], in->c[3]);
+	_SUNFCMULTIPLY(out->c[3], Aminus[2], in->c[2]);
+	_SUNFCMULTIPLY(aux, Aminus[3], in->c[3]);
 	_vector_add_assign_f(out->c[3], aux);
 }
+#undef _SUNFC
 
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _SUNF suNffull
+#define _SUNFC suNffull
+#define _SUNFMUL _suNffull_mul
+#define _SUNFCMULTIPLY suNffull_multiply
+#define _SUNFDAGGER _suNffull_dagger
+#define _SUNFADDASSIGN _suNffull_add_assign
+#else
+#define _SUNF suNf
+#define _SUNFC suNfc
+#define _SUNFMUL _suNf_mul
+#define _SUNFCMULTIPLY _suNfc_multiply
+#define _SUNFDAGGER _suNf_dagger
+#define _SUNFADDASSIGN _suNf_add_assign
+#endif
 //EXP CSW FORCE TERM
 void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 {
@@ -496,11 +568,11 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 	suNf_vector v1, v2, v3, v4;
 
 	suNf_spinor *rhs, *lhs;
-	suNf *fm, fm_tmp;
+	_SUNF *fm, fm_tmp;
 
-	suNfc Aplus[4];
-	suNfc Aminus[4];
-	suNfc *s0, *s1, *s2, *s3;
+	_SUNFC Aplus[4];
+	_SUNFC Aminus[4];
+	_SUNFC *s0, *s1, *s2, *s3;
 
 	double Cplus[2 * NF * 2 * NF];
 	double Cminus[2 * NF * 2 * NF];
@@ -515,17 +587,19 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 		s2 = _4FIELD_AT(cl_term, ix, 2);
 		s3 = _4FIELD_AT(cl_term, ix, 3);
 
-		_suNf_mul(Aplus[0], invexpmass, *s0);
-		_suNf_mul(Aplus[1], invexpmass, *s1);
-		_suNf_dagger(Aplus[2], Aplus[1]);
-		_suNf_mul(Aplus[3], -invexpmass, *s0);
+		_SUNFMUL(Aplus[0], invexpmass, *s0);
+		_SUNFMUL(Aplus[1], invexpmass, *s1);
+		_SUNFDAGGER(Aplus[2], Aplus[1]);
+		_SUNFMUL(Aplus[3], -invexpmass, *s0);
 
-		_suNf_mul(Aminus[0], invexpmass, *s2);
-		_suNf_mul(Aminus[1], invexpmass, *s3);
-		_suNf_dagger(Aminus[2], Aminus[1]);
-		_suNf_mul(Aminus[3], -invexpmass, *s2);
+		_SUNFMUL(Aminus[0], invexpmass, *s2);
+		_SUNFMUL(Aminus[1], invexpmass, *s3);
+		_SUNFDAGGER(Aminus[2], Aminus[1]);
+		_SUNFMUL(Aminus[3], -invexpmass, *s2);
 
-		//double horner scheme
+		//double horner scheme 
+        // NOTE: 'doublehorner' is only defined for NF in {2,3} which is not 
+        //       relevant for SP(2N)
 		doublehorner(Cplus, Aplus);
 		doublehorner(Cminus, Aminus);
 
@@ -550,18 +624,18 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 			}
 			else
 			{
-				// Comp 0 1
-				_suNfc_multiply(v1, Aplus[0], rhs_k.c[0]);
-				_suNfc_multiply(v2, Aplus[1], rhs_k.c[1]);
-				_suNfc_multiply(v3, Aplus[2], rhs_k.c[0]);
-				_suNfc_multiply(v4, Aplus[3], rhs_k.c[1]);
+				// Comp 0 1 
+				_SUNFCMULTIPLY(v1, Aplus[0], rhs_k.c[0]);
+				_SUNFCMULTIPLY(v2, Aplus[1], rhs_k.c[1]);
+				_SUNFCMULTIPLY(v3, Aplus[2], rhs_k.c[0]);
+				_SUNFCMULTIPLY(v4, Aplus[3], rhs_k.c[1]);
 				_vector_add_f(rhs_k.c[0], v1, v2);
 				_vector_add_f(rhs_k.c[1], v3, v4);
 				// Comp 2 3
-				_suNfc_multiply(v1, Aminus[0], rhs_k.c[2]);
-				_suNfc_multiply(v2, Aminus[1], rhs_k.c[3]);
-				_suNfc_multiply(v3, Aminus[2], rhs_k.c[2]);
-				_suNfc_multiply(v4, Aminus[3], rhs_k.c[3]);
+				_SUNFCMULTIPLY(v1, Aminus[0], rhs_k.c[2]);
+				_SUNFCMULTIPLY(v2, Aminus[1], rhs_k.c[3]);
+				_SUNFCMULTIPLY(v3, Aminus[2], rhs_k.c[2]);
+				_SUNFCMULTIPLY(v4, Aminus[3], rhs_k.c[3]);
 				_vector_add_f(rhs_k.c[2], v1, v2);
 				_vector_add_f(rhs_k.c[3], v3, v4);
 			}
@@ -582,52 +656,74 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 1);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 1);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (0,2)
 			fm = _6FIELD_AT(cl_force, ix, 1);
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 2);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 2);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (1,2)
 			fm = _6FIELD_AT(cl_force, ix, 2);
 			g5_sigma(&tmp_rhs, &rhs_k, 1, 2);
 			g5_sigma(&tmp_lhs, &lhs_k, 1, 2);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (0,3)
 			fm = _6FIELD_AT(cl_force, ix, 3);
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (1,3)
 			fm = _6FIELD_AT(cl_force, ix, 4);
 			g5_sigma(&tmp_rhs, &rhs_k, 1, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 1, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (2,3)
 			fm = _6FIELD_AT(cl_force, ix, 5);
 			g5_sigma(&tmp_rhs, &rhs_k, 2, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 2, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 		}
 	}
 }
+#undef _SUNF
+#undef _SUNFC
+#undef _SUNFMUL
+#undef _SUNFCMULTIPLY
+#undef _SUNFDAGGER
+#undef _SUNFADDASSIGN
 
+
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _SUNF suNffull
+#define _SUNFC suNffull
+#define _SUNFMUL _suNffull_mul
+#define _SUNFCMULTIPLY suNffull_multiply
+#define _SUNFDAGGER _suNffull_dagger
+#define _SUNFADDASSIGN _suNffull_add_assign
+#else
+#define _SUNF suNf
+#define _SUNFC suNfc
+#define _SUNFMUL _suNf_mul
+#define _SUNFCMULTIPLY _suNfc_multiply
+#define _SUNFDAGGER _suNf_dagger
+#define _SUNFADDASSIGN _suNf_add_assign
+#endif
 void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double residue)
 {
 	double invexpmass =  get_dirac_mass();
@@ -646,11 +742,11 @@ void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double resi
 	suNf_vector v1, v2, v3, v4;
 
 	suNf_spinor *rhs, *lhs;
-	suNf *fm, fm_tmp;
+	_SUNF *fm, fm_tmp;
 
-	suNfc Aplus[4];
-	suNfc Aminus[4];
-	suNfc *s0, *s1, *s2, *s3;
+	SUNFC Aplus[4];
+	SUNFC Aminus[4];
+	SUNFC *s0, *s1, *s2, *s3;
 	factorialCoef(Coef);
 	// Construct force matrices
 	_MASTER_FOR(&glattice, ix)
@@ -662,15 +758,15 @@ void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double resi
 		s2 = _4FIELD_AT(cl_term, ix, 2);
 		s3 = _4FIELD_AT(cl_term, ix, 3);
 
-		_suNf_mul(Aplus[0], invexpmass, *s0);
-		_suNf_mul(Aplus[1], invexpmass, *s1);
-		_suNf_dagger(Aplus[2], Aplus[1]);
-		_suNf_mul(Aplus[3], -invexpmass, *s0);
+		_SUNFMUL(Aplus[0], invexpmass, *s0);
+		_SUNFMUL(Aplus[1], invexpmass, *s1);
+		_SUNFDAGGER(Aplus[2], Aplus[1]);
+		_SUNFMUL(Aplus[3], -invexpmass, *s0);
 
-		_suNf_mul(Aminus[0], invexpmass, *s2);
-		_suNf_mul(Aminus[1], invexpmass, *s3);
-		_suNf_dagger(Aminus[2], Aminus[1]);
-		_suNf_mul(Aminus[3], -invexpmass, *s2);
+		_SUNFMUL(Aminus[0], invexpmass, *s2);
+		_SUNFMUL(Aminus[1], invexpmass, *s3);
+		_SUNFDAGGER(Aminus[2], Aminus[1]);
+		_SUNFMUL(Aminus[3], -invexpmass, *s2);
 
 		//Remember rhs = eta, lhs  = xi
 
@@ -694,17 +790,17 @@ void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double resi
 			else
 			{
 				// Comp 0 1
-				_suNfc_multiply(v1, Aplus[0], rhs_k.c[0]);
-				_suNfc_multiply(v2, Aplus[1], rhs_k.c[1]);
-				_suNfc_multiply(v3, Aplus[2], rhs_k.c[0]);
-				_suNfc_multiply(v4, Aplus[3], rhs_k.c[1]);
+				_SUNFCMULTIPLY(v1, Aplus[0], rhs_k.c[0]);
+				_SUNFCMULTIPLY(v2, Aplus[1], rhs_k.c[1]);
+				_SUNFCMULTIPLY(v3, Aplus[2], rhs_k.c[0]);
+				_SUNFCMULTIPLY(v4, Aplus[3], rhs_k.c[1]);
 				_vector_add_f(rhs_k.c[0], v1, v2);
 				_vector_add_f(rhs_k.c[1], v3, v4);
 				// Comp 2 3
-				_suNfc_multiply(v1, Aminus[0], rhs_k.c[2]);
-				_suNfc_multiply(v2, Aminus[1], rhs_k.c[3]);
-				_suNfc_multiply(v3, Aminus[2], rhs_k.c[2]);
-				_suNfc_multiply(v4, Aminus[3], rhs_k.c[3]);
+				_SUNFCMULTIPLY(v1, Aminus[0], rhs_k.c[2]);
+				_SUNFCMULTIPLY(v2, Aminus[1], rhs_k.c[3]);
+				_SUNFCMULTIPLY(v3, Aminus[2], rhs_k.c[2]);
+				_SUNFCMULTIPLY(v4, Aminus[3], rhs_k.c[3]);
 				_vector_add_f(rhs_k.c[2], v1, v2);
 				_vector_add_f(rhs_k.c[3], v3, v4);
 			}
@@ -725,51 +821,58 @@ void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double resi
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 1);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 1);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (0,2)
 			fm = _6FIELD_AT(cl_force, ix, 1);
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 2);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 2);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (1,2)
 			fm = _6FIELD_AT(cl_force, ix, 2);
 			g5_sigma(&tmp_rhs, &rhs_k, 1, 2);
 			g5_sigma(&tmp_lhs, &lhs_k, 1, 2);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (0,3)
 			fm = _6FIELD_AT(cl_force, ix, 3);
 			g5_sigma(&tmp_rhs, &rhs_k, 0, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 0, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (1,3)
 			fm = _6FIELD_AT(cl_force, ix, 4);
 			g5_sigma(&tmp_rhs, &rhs_k, 1, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 1, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 
 			// (mu,nu) = (2,3)
 			fm = _6FIELD_AT(cl_force, ix, 5);
 			g5_sigma(&tmp_rhs, &rhs_k, 2, 3);
 			g5_sigma(&tmp_lhs, &lhs_k, 2, 3);
 			fm_tmp = fmat_create(&tmp_lhs, &rhs_k, &tmp_rhs, &lhs_k);
-			_suNf_mul(fm_tmp, residue, fm_tmp);
-			_suNf_add_assign(*fm, fm_tmp);
+			_SUNFMUL(fm_tmp, residue, fm_tmp);
+			_SUNFADDASSIGN(*fm, fm_tmp);
 		}
 	}
 }
+#undef _SUNF
+#undef _SUNFC
+#undef _SUNFMUL
+#undef _SUNFCMULTIPLY
+#undef _SUNFDAGGER
+#undef _SUNFADDASSIGN
+
 
 #endif
 
@@ -953,7 +1056,11 @@ void fermion_force_begin()
 	{
 		for (int mu = 0; mu < 6; mu++)
 		{
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+			_suNf_FMAT_zero(*_6FIELD_AT(cl_force,ix,mu));
+#else
 			_suNf_zero(*_6FIELD_AT(cl_force, ix, mu));
+#endif
 		}
 	}
 

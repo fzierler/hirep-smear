@@ -230,7 +230,11 @@ static void sync_gauge_field(suNg_field *gf) {
   }
 }
 
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+static void sync_clover_force_field(suNffull_field *gf) {
+#else
 static void sync_clover_force_field(suNf_field *gf) {
+#endif
   int i;
   geometry_descriptor *gd=gf->type;
   /* int j, mu, x, y; */
@@ -299,8 +303,11 @@ static void sync_scalar_field(suNg_scalar_field *p) {
  *
  */ 
 /* static unsigned int comm_status=0; */
-
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+void complete_clover_force_sendrecv(suNffull_field *gf) {
+#else
 void complete_clover_force_sendrecv(suNf_field *gf) {
+#endif
 #ifdef WITH_MPI
   int mpiret; (void)mpiret; // Remove warning of variable set but not used
   int nreq=2*gf->type->nbuffers_gauge;
@@ -344,7 +351,11 @@ void complete_clover_force_sendrecv(suNf_field *gf) {
 #endif /* WITH_MPI */
 }
 
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+void start_clover_force_sendrecv(suNffull_field *gf) {
+#else
 void start_clover_force_sendrecv(suNf_field *gf) {
+#endif
 #ifdef WITH_MPI
   int i, mpiret;(void)mpiret; // Remove warning of variable set but not used
   geometry_descriptor *gd=gf->type;

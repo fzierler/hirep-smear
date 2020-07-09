@@ -6,11 +6,13 @@ where
 COMMI_BEFORE_FORK = 6b232fe0146751d9d19e2e9d8f2b06003e9b2fc5 
 LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
 
-* Converter +30 -0
- * archive_eolexi.c +16 -0
+* Converter +30 -0 # DONE 
+ * archive_eolexi.c +16 -0 # DONE
    Changes to archive only the upper half of the matrix (compressed format). Added ` ifdef` 
    to change range of the for loop.
- * converter.c +14 -0
+   Note: implemented change in a slightly different way, #defin-ing _NGLIMIT 
+         and #undef-ining it.
+ * converter.c +14 -0 # DONE
    - trigger compilation error if using quaternions with `GAUGE_SPN`
    - added formats "fullSPN" and "compSPN" (compressed)
      (see /LibHR +920 -103/IO/spn_archive.c +406 -0)
@@ -19,113 +21,138 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
   for loop only up to NG/2 in the SPN case
   NOTE: This has been moved to LibHR/Utils.
 
-* Include +101 -5
- * TMPL/suN_repr_func.h.tmpl +0 -0
+* Include +101 -5 # DONE (except update_ghmc_stripped() )
+ * TMPL/suN_repr_func.h.tmpl +0 -0 # DONE
    added _`algebra_project_FMAT` macro (see autosun)
- * communications.h +5 -0
+ * communications.h +5 -0 # DONE
    **For the Clover term**
-   In the case of SPN in the fundamental representation, use `suNffuld_field` 
+   In the case of SPN in the fundamental representation, use `suNffull_field` 
    (which is the full-matrix type) instead of `suNf_field`, which is the compressed
    case, in the calls to `complete_clover_force_sendrecv` and 
    `start_clover_force_sendrecv`.
  * complex.h +49 -0 # DONE
    Defined a handful more of convenience macros.
- * global.h +8 -0
+   NOTE: On the master branch, the name of this file has been changed to
+         hr_complex.h
+ * global.h +8 -0 # DONE
    Defining the clover term global variables `cl_term` and `cl_force` as
    `suNffull_field` when using GAUGE_SPN in the fundamental representation.
    Added global variable for debug.
- * io.h +6 -0
+ * io.h +6 -0 # DONE
    Added functions to read full matrices when using GAUGE_SPN
- * memory.h +12 -3
+ * memory.h +12 -3 # DONE
    `suNffull_field` type used for clover-related allocations and deallocations 
    instead of `suNfc_field` when using GAUGE_SPN in the fundamental representation.
- * moreio.h +5 -0
+ * moreio.h +5 -0 # DONE
    Added functions to read full matrices when using GAUGE_SPN
- * update.h +3 -0
+ * spinor_field.h: # DONE
+   new field type (suNffull_field) declared for GAUGE_SPN and REPR_FUNDAMENTAL
+ * update.h +3 -0 # WILL NOT BE DONE 
    Added debug function
- * utils.h +5 -1
+   NOTE: the new function is named update_ghmc_stripped, and I am avoiding 
+         adding it to the new version because it might not be necessary or 
+         even useful.
+ * utils.h +5 -1 # DONE
    clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
    REPR_FUNDAMENTAL
 
 * LibHR +920 -103
- * Geometry/communications.c +12 -1
+ * Geometry/communications.c +12 -1 # DONE
    clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
    REPR_FUNDAMENTAL
 
- * IO +428 -5
-  * archive_su2quat.c +18 -1
+ * IO +428 -5 # DONE
+  * archive_su2quat.c +18 -1 # DONE
     added functions to translate between quaternion and compressed spn format.
-  * logger.c +4 -4
+  * logger.c +4 -4 # WILL NOT NOT BE DONE
     Changes unrelated to SPN (initialised pointers to null).
-  * spn_archive.c +406 -0
+  * spn_archive.c +406 -0 # DONE
     Totally new file. SPN-full implementations of 
     * write_gauge_field
     * write_gauge_field_matrix
     * read_gauge_field
     * read_gauge_field_matrix
     with a '_fullSPN' suffix. These functions are only used in converter.c    
+    Note: Just copied the file "as is" for now.
 
- * Memory +20 -0
-  * amalloc.c +14 -0
+ * Memory +20 -0 # DONE
+  * amalloc.c +14 -0 # WILL NOT BE DONE
     Debugging function added - unrelated to SPN
-  * field_alloc.c +6 -0
+  * field_alloc.c +6 -0 # DONE
     Declaration of memory function for clover terms must use `suNffull_field`.
     (clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
     REPR_FUNDAMENTAL)
 
  * Random/random_suNg.c +37 -2 # DONE
    Adaptation to produce SPN random matrices 
+   NOTE: simplified #ifdefs
 
- * Update +328 -86
-  * Dphi.c +9 -9
+ * Update +328 -86 # DONE
+  * Dphi.c +9 -9 # DONE
     Changes to `Cphi_`. (_)
+    NOTE: Added changes, but enclosed in #ifdefs.
     We need to use full matrix operations instead of compressed matrix ones.
-  * cabmar.c +86 -1
+  * cabmar.c +86 -1 # DONE
     implementation of the Cabibbo-Marinari algorithm for SPN
-  * clover_tools.c +16 -7
+    NOTE: Just copy-pasted the new implementation of the Cabibbo-Marinari 
+          algorithm for SPN enclosed in #ifdefs.
+  * clover_tools.c +16 -7 # DONE
     clover term-related logic uses `suNffull` when using GAUGE_SPN and 
     REPR_FUNDAMENTAL (clover loop is fine with compressed matrices, though).
-  * force_fermion_core.c +55 -45
+  * force_fermion_core.c +55 -45 # DONE (cheking)
     * clover term-related logic uses `suNffull` when using GAUGE_SPN and 
       REPR_FUNDAMENTAL . Calculations done in compressed formats need to be expanded.
       Full matrix operations are needed here in the clover, spn, fundamental case.
     * in force_fermion_core, 
       * suNf -> suNf_FMAT
       * _algebra_project -> _algebra_project_FMAT
-  * force_hmc_ff.c +0 -0
+    # NOTES: 1. There are a number of new functions that were not in the 
+                version of the code we worked on for SPN. 
+             2. The matrix types must be checked. Should "FMAT" types be able
+                to hold the full matrix so that we do not need the "full" 
+                versions? (who knows?)
+             3. The "WITH_EXPCLOVER" flag is not compatible with GAUGE_SPN, 
+                as it requires the routine "doublehorner" to be defined,
+                but it is defined only for NF in {2,3}
+
+  * force_hmc_ff.c +0 -0 # DONE
     in force_hmc_ff
     * suNf -> suNf_FMAT
     * _algebra_project -> _algebra_project_FMAT
+    # NOTES: Relevant changes were already made.
   * force_scalar.c +4 -0 #DONE
     in the calculation of the outer product, the loop goes only until NG * NG / 2
     NOTE: I suspect that this is wrong. It should actually be using a full NxN
           matrix in the computations.
     NOTE: Implemented possible fix.
-  * luscherweisz.c +79 -20
+  * luscherweisz.c +79 -20 # DONE
     * redefinition of S (shift by a constant) in `test_wilson_action_and_force()`, 
       used only in Tests.
     * loop on generators NG * NG - 1 -> NG * (NG+1) /2 for SPN 
     (changes to make the tests work again?)
-  * random_momenta.c +1 -3
+  * random_momenta.c +1 -3 # DONE
     Redefinition of the number of generators as
     ```
     const int ngen=sizeof(suNg_algebra_vector)/sizeof(double);
     ```
-  * representation.c +6 -1
+  * representation.c +6 -1 # DONE
     For SPN, the function _group_represent2 is just a thin wrapper around the macro
     _group_represent.
-  * update_mt.c +72 -0
+  * update_mt.c +72 -0 # DONE 
     new function `update_ghmc_stripped` for debug purposes.
+    NOTE: new function not implemented in merge.
 
- * Utils +95 -9
-  * HYP_smearing.c +2 -2
+ * Utils +95 -9 # DONE
+  * HYP_smearing.c +2 -2 # DONE
     Some functions not working for SPN are removed from compilation or throw an 
     error at runtime.
   * TMPL/suN_exp.c.tmpl +24 -1 # DONE
     Added taylor exponentiation in the template
-  * boundary_conditions.c +25 -1
+  * boundary_conditions.c +25 -1 # DONE
     clover term-related logic uses `suNffull_field` when using GAUGE_SPN and 
     REPR_FUNDAMENTAL
+    # NOTES: There are a number of nwe functions that were not in the version
+             of the code we worked on for spn.
   * det_suNg.c +8 -2 # DONE
     In the SPN case the determinant is computed expanding to a full matrix and 
     then reusing the existing suN code. 
@@ -144,7 +171,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
     NOTE: rewrite of project_to_suNg_flt for the SPN case IS MISSING #DONE
 
 * Make +1929 -63
- * MkRules +7 -0
+ * MkRules +7 -0 # DONE
    Guard against use of SP2
 
  * Utils +1908 -48 # FIRST PASS DONE
@@ -182,28 +209,33 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
      Written the code for generating spn-compressed macros.
      [partially automatically, mostly manually converted]
 
-* RenormalizationFactors/measure_Z_mom.c +2 -0 +2 -0 
+* RenormalizationFactors/measure_Z_mom.c +2 -0 +2 -0  # DONE
   just logging in main() for SPN
 
-* Spectrum +6 -0
- * measure_formfactor.c +2 -0
+* Spectrum +6 -0 # DONE
+ * measure_formfactor.c +2 -0 # DONE 
    just logging in main() for SPN
- * measure_spectrum.c +2 -0
+ * measure_spectrum.c +2 -0 # WILL NOT BE DONE
    just logging in main() for SPN
- * mk_mesons_with_z2semwall_new.c +2 -0
+   NOTES: The part of the code where the change was made does not exist any
+          more
+ * mk_mesons_with_z2semwall_new.c +2 -0 # DONE
    just logging in main() for SPN
 
 * TestProgram +2423 -80 
   A number of test programs were broken. Some of them were fixed, and some
   have been added (see, e.g., SPNtoSUNRegression) with some convenience scripts.
 
-* WilsonFlow +20 -4
- * WF_measure.c +2 -0
+* WilsonFlow +20 -4 # DONE
+ * WF_measure.c +2 -0 # WILL NOT BE DONE
    just logging in main() for SPN
- * WF_measure_adaptative.c +2 -0
+   NOTES: The part of the code where the change was made does not exist any
+          more
+ * WF_measure_adaptative.c +2 -0 # WILL NOT BE DONE
    just logging in main() for SPN
+   NOTES: The file does not exist any more 
  * wilsonflow.c +16 -4 # DONE
    Changes in matrix size NG * NG -> NG * NG / 2 and algebra dimension 
    (NG * NG - 1) -> (NG * (NG + 1) / 2) for the SPN case
-   NOTE: Defined _MATRIX_DIM and _ALGEBRA_DIM macros (with #define and #undef
+   NOTE: Defined _MATRIX_DIM and _ALGEBRA_DIM macros (with #define and #undef)
 

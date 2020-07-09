@@ -768,7 +768,11 @@ static void Cphi_(double mass, spinor_field *dptr, spinor_field *sptr, int assig
 
   suNf_vector v1, v2;
   suNf_spinor *out, *in, tmp;
+#ifdef GAUGE_SPN
+  suNffull *s0, *s1, *s2, *s3;
+#else
   suNfc *s0, *s1, *s2, *s3;
+#endif
 
   // Loop over local sites
   _MASTER_FOR(dptr->type, ix)
@@ -783,23 +787,43 @@ static void Cphi_(double mass, spinor_field *dptr, spinor_field *sptr, int assig
     s3 = _4FIELD_AT(cl_term, ix, 3);
 
     // Component 0
+#ifdef GAUGE_SPN
+    _suNffull_multiply(v1, *s0, in->c[0]);
+    _suNffull_multiply(v2, *s1, in->c[1]);
+#else
     _suNfc_multiply(v1, *s0, in->c[0]);
     _suNfc_multiply(v2, *s1, in->c[1]);
+#endif
     _vector_add_f(tmp.c[0], v1, v2);
 
     // Component 1
+#ifdef GAUGE_SPN
+    _suNffull_inverse_multiply(v1, *s1, in->c[0]);
+    _suNffull_multiply(v2, *s0, in->c[1]);
+#else
     _suNfc_inverse_multiply(v1, *s1, in->c[0]);
     _suNfc_multiply(v2, *s0, in->c[1]);
+#endif
     _vector_sub_f(tmp.c[1], v1, v2);
 
     // Component 2
+#ifdef GAUGE_SPN
+    _suNffull_multiply(v1, *s2, in->c[2]);
+    _suNffull_multiply(v2, *s3, in->c[3]);
+#else
     _suNfc_multiply(v1, *s2, in->c[2]);
     _suNfc_multiply(v2, *s3, in->c[3]);
+#endif
     _vector_add_f(tmp.c[2], v1, v2);
 
     // Component 3
+#ifdef GAUGE_SPN
+    _suNffull_inverse_multiply(v1, *s3, in->c[2]);
+    _suNffull_multiply(v2, *s2, in->c[3]);
+#else
     _suNfc_inverse_multiply(v1, *s3, in->c[2]);
     _suNfc_multiply(v2, *s2, in->c[3]);
+#endif
     _vector_sub_f(tmp.c[3], v1, v2);
 
     // Add mass
