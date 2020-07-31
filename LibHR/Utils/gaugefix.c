@@ -197,15 +197,20 @@ void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge,
 
 		//v1 = u1 + u2^dag. v1 is not in SU(NG).
 #ifdef GAUGE_SPN
+    suNgfull _u2;
+    _suNg_expand(_u2,*u2);
+#define _U2 (_u2)
     for(i=0;i<NG/2;i++){ for(j=0;j<NG;j++){
 #else
+#define _U2 (*u2)
 		for(i=0;i<NG;i++){ for(j=0;j<NG;j++){
 #endif
 #ifdef GAUGE_SON
 		    v1.c[i*NG + j]+= u1->c[i*NG+j]+u2->c[j*NG+i];
 #else
-		    _complex_add_star_assign(v1.c[i*NG + j], (u1->c[i*NG+j]), (u2->c[j*NG+i]) );
+		    _complex_add_star_assign(v1.c[i*NG + j], (u1->c[i*NG+j]), ((_U2).c[j*NG+i]) );
 #endif
+#undef _U2
 		  }}
 	      }}
 #ifdef GAUGE_SON

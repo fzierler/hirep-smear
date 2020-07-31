@@ -20,6 +20,10 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
 * GaugeFix/gaugefix.c +4 -0 +4 -0 # DONE
   for loop only up to NG/2 in the SPN case
   NOTE: This has been moved to LibHR/Utils.
+        Also: in the computation of v1 on line 207, the transpose of u2 is used
+              (the conjugation is done inside the _complex_add_star_assign 
+              macro). During this, nonexisting elements of u2 are accessed.
+              Fixed this resorting to the full type.
 
 * Include +101 -5 # DONE (except update_ghmc_stripped() )
  * TMPL/suN_repr_func.h.tmpl +0 -0 # DONE
