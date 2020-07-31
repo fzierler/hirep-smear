@@ -140,4 +140,3 @@ int main(int argc, char *argv[])
   finalize_process();
   return 0;
 }
-// NOCOMPILE= GAUGE_SPN

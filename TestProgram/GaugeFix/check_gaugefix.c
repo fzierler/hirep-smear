@@ -214,4 +214,3 @@
     return return_value;
   }
 
-// NOCOMPILE= GAUGE_SPN
