@@ -2,6 +2,9 @@
   *
   * Test gauge fixing. 
   * Original : R. Arthur ?
+  *
+  * // The logic for SPN must be fixed in the library first
+  * NOCOMPILE= GAUGE_SPN  
   * 
   *******************************************************************************/
 
