@@ -243,10 +243,6 @@ void project_to_suNg_flt(suNg_flt *u)
 #endif
 }
 
-#ifdef GAUGE_SPN
-// TODO: If this functions is needed for GAUGE_SPN, just use suNg_full matrices
-#warning "project_cooling_to_suNg not implemented for SPN"
-#endif
 #if !defined(GAUGE_SON) && !defined(GAUGE_SPN)
 void project_cooling_to_suNg(suNg *g_out, suNg *g_in, int cooling)
 {
@@ -391,10 +387,6 @@ int project_to_suNg_real(suNg *out, suNg *in)
 }
 #endif
 
-#ifdef GAUGE_SPN
-// TODO: If this functions is needed for GAUGE_SPN, just use suNg_full matrices
-#warning "covariant_project_to_suNg not implemented for SPN"
-#endif
 #if !defined(GAUGE_SPN)
 void covariant_project_to_suNg(suNg *u)
 {
