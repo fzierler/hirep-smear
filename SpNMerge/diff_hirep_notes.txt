@@ -17,13 +17,20 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
    - added formats "fullSPN" and "compSPN" (compressed)
      (see /LibHR +920 -103/IO/spn_archive.c +406 -0)
 
-* GaugeFix/gaugefix.c +4 -0 +4 -0 # DONE
+* GaugeFix/gaugefix.c # NOT DONE
   for loop only up to NG/2 in the SPN case
-  NOTE: This has been moved to LibHR/Utils.
-        Also: in the computation of v1 on line 207, the transpose of u2 is used
-              (the conjugation is done inside the _complex_add_star_assign 
-              macro). During this, nonexisting elements of u2 are accessed.
-              Fixed this resorting to the full type.
+  NOTE1: This has been moved to LibHR/Utils.
+         Also: in the computation of v1 on line 207, the transpose of u2 is 
+         used (the conjugation is done inside the _complex_add_star_assign 
+         macro). During this, nonexisting elements of u2 are accessed. 
+         Fixed this resorting to the full type.
+  NOTE2: Even after the fix in NOTE1, the su2_hit function was causing 
+         stack corruption, likely because v1 and v2 should be full 
+         matrices as well. 
+         After further inspection, it seems that the su2_hit function may 
+         not be correct for SP(N), as the list of SU(2) subgroups for 
+         SU(N) and for SP(N) is not the same.  
+         This requires further thinking and fixes
 
 * Include +101 -5 # DONE (except update_ghmc_stripped() )
  * TMPL/suN_repr_func.h.tmpl +0 -0 # DONE
