@@ -31,6 +31,11 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
          not be correct for SP(N), as the list of SU(2) subgroups for 
          SU(N) and for SP(N) is not the same.  
          This requires further thinking and fixes
+  NOTE3: There are a number of functions that use su2_hit. 
+         A DAG of functions that depend on su2_hit needs not to be compiled
+         when using GAUGE_SPN.
+         See 'su2_hit_issue.txt'.
+         
 
 * Include +101 -5 # DONE (except update_ghmc_stripped() )
  * TMPL/suN_repr_func.h.tmpl +0 -0 # DONE

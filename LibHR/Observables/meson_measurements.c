@@ -301,6 +301,7 @@ void measure_spectrum_semwall_fixedbc(int dt, int nm, double* m, int nhits,int c
 }
 
 
+#ifndef GAUGE_SPN //FIXFORSPN
 /****************************************
 *	Gauge Fixed Wall Sources	*
 *****************************************/
@@ -383,7 +384,7 @@ void measure_spectrum_gfwall_fixedbc(int dt, int nm, double* m, int conf_num, do
   free_spinor_field_f(prop);
   free_gfield(u_gauge_old);
 }
-
+#endif
 
 /****************************************
 *	Disconnected Measurements	*
@@ -410,6 +411,7 @@ void measure_spectrum_discon_semwall(int nm, double* m, int nhits,int conf_num, 
   free_spinor_field_f(prop);
 }
 
+#ifndef GAUGE_SPN //FIXFORSPN
 void measure_spectrum_discon_gfwall(int nm, double* m, int conf_num, double precision){
   spinor_field* source = alloc_spinor_field_f(4,&glattice);
   spinor_field* prop =  alloc_spinor_field_f(4*nm,&glattice);
@@ -450,7 +452,7 @@ void measure_spectrum_discon_gfwall(int nm, double* m, int conf_num, double prec
   free_spinor_field_f(prop);
   free_gfield(u_gauge_old);
 }
-
+#endif
 void measure_spectrum_discon_volume(int nm, double* m, int conf_num, double precision, int dil){
   //Spin diluted
   spinor_field* source = alloc_spinor_field_f(4,&glattice);

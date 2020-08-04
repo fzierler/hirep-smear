@@ -237,6 +237,8 @@ void  	measure_bilinear_loops_4spinorfield(spinor_field *prop, spinor_field *sou
 		lprintf("TIMING", 0, "Contractions for source %d done and all timeslices [%ld sec %ld usec]\n", k, etime.tv_sec, etime.tv_usec);
 }
 
+
+#ifndef GAUGE_SPN // FIXFORSPN
 void measure_loops(int nm, double *m, int nhits, int conf_num, double precision, int source_type, int n_mom, double complex ***out_corr)
 {
 
@@ -405,7 +407,7 @@ void measure_loops(int nm, double *m, int nhits, int conf_num, double precision,
 	timeval_subtract(&etime, &end, &start);
 	lprintf("TIMING", 0, "Sources generation, invert and contract for %i sources done [%ld sec %ld usec]\n", nhits, etime.tv_sec, etime.tv_usec);
 }
-
+#endif
 void measure_bilinear_loops_spinorfield(spinor_field *prop, spinor_field *source, int k, int nm, int n_mom, double complex ***out_corr)
 {
 	int px, py, pz, ip;

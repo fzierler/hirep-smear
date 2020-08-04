@@ -290,6 +290,9 @@ int main(int argc,char *argv[]) {
     lprintf("MAIN",0,"initial plaq %1.6f\n",p2);
 
     gettimeofday(&start,0);
+#ifdef GAUGE_SPN //FIXFORSPN
+#error "gaugefix is not implemented for SPN"
+#endif
     double act = gaugefix(10, //= 0, 1, 2, 3 for Coulomb guage else Landau
                           1.8,	//overrelax
                           10000,	//maxit

@@ -8,6 +8,8 @@
 * VD: DOES NOT WORK.
 * Author: Vincent Drach
 *
+* NOCOMPILE= GAUGE_SPN //FIXFORSPN
+*
 ******************************************************************************/
 
 #define MAIN_PROGRAM

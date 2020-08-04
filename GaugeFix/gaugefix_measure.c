@@ -213,7 +213,10 @@
             p2 = calc_plaq(fixed_gauge);
             lprintf("TEST",0,"gt unit_gauge plaq %1.6f\n",p2);
           }
-            double act = gaugefix(10, //= 0, 1, 2, 3 for Coulomb gauge else Landau
+          #ifdef GAUGE_SPN
+          #error "gaugefix must be adapted for GAUGE_SPN"
+          #endif
+          double act = gaugefix(10, //= 0, 1, 2, 3 for Coulomb gauge else Landau
           gaugefix_var.overrelax,	//overrelax
           gaugefix_var.maxit,	//maxit
           gaugefix_var.tol, //tolerance

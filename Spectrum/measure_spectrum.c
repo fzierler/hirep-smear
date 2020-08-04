@@ -311,6 +311,15 @@ int main(int argc, char *argv[])
     tau = 0;
     if (four_fermion_active == 0)
     {
+#ifdef GAUGE_SPN
+      if (mes_var.def_gfwall || 
+          mes_var.fixed_gfwall || 
+          mes_var.discon_gfwall){
+          
+          error(1, 1, "main [measure_spectrum.c]",
+                "gauge fixing needs to be implemented for SPN");
+      }
+#endif
 
       if (mes_var.def_semwall)
       {

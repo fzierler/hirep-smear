@@ -1,6 +1,5 @@
 /* arXiv:1006.4518 [hep-lat] */
 
-#ifndef GAUGE_SPN
 // There are a number of things to fix to make this work for SP(2N).
 // A subset of these is marked with '//FIXFORSPN'
 
@@ -152,7 +151,7 @@ double gaugefix_action(int fix_dir, suNg_field *gauge ){
     return action;
 }
 
-
+#ifndef GAUGE_SPN // FIXFORSPN
 // FIXFORSPN the SU(2) subgroups of SP(N) are a subset of the subgroups of 
 //           SU(N).
 void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge, int c )
@@ -274,9 +273,9 @@ void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge,
     start_gf_sendrecv(g);
     complete_gf_sendrecv(g);
 } 
+#endif
 
-
-
+#ifndef GAUGE_SPN // FIXFORSPN
 double gaugefixstep(int fix_dir,double overrelax, suNg_field *fixed_gauge )
 {
     int c, parity;
@@ -290,7 +289,9 @@ double gaugefixstep(int fix_dir,double overrelax, suNg_field *fixed_gauge )
     }
     return gaugefix_action(fix_dir, fixed_gauge );
 } 
+#endif
 
+#ifndef GAUGE_SPN // FIXFORSPN
 double gaugefix(int fix_dir,double overrelax,int max_it,
         double fix_tol, suNg_field *fixed_gauge )
 {
@@ -323,5 +324,4 @@ double gaugefix(int fix_dir,double overrelax,int max_it,
     free_g();
     return new_act;
 }
-
 #endif

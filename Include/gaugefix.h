@@ -27,14 +27,13 @@ void reunit(suNg_field *fixed_gauge);
 
 double calc_plaq(suNg_field* V);
 
-void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge, int c );
-
 double gaugefix_action(int fix_dir, suNg_field *gauge );
-
+#ifndef GAUGE_SPN // FIXFORSPN
+void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge, int c );
 double gaugefixstep(int fix_dir,double overrelax, suNg_field *fixed_gauge );
-
 double gaugefix(int fix_dir,double overrelax,int max_it,
 	      double fix_tol, suNg_field *fixed_gauge );
+#endif
 
 #endif /* GAUGEFIX_H */
 

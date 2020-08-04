@@ -155,6 +155,9 @@ int main(int argc, char *argv[])
 
 		lprintf("CORR", 0, "Number of noise vector : nhits = %i \n", disc_var.nhits);
 
+        #ifdef GAUGE_SPN //FIXFORSPN
+        #error "measure_loops must be adapted for SPN"
+        #endif
 		measure_loops(nm, m, disc_var.nhits, i, disc_var.precision, disc_var.source_type, disc_var.n_mom, NULL);
 
 		if (list == NULL)
