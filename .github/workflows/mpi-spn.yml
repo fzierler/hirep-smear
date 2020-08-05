@@ -1,0 +1,33 @@
+name: mpi
+
+on:
+  push:
+    branches:
+      - master
+      - spn-swansea-merge
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      # Ensures that jobs are not cancelled is one job fails
+      fail-fast: false
+      matrix:
+        gaugegroup : [SPN]
+        nc: [4, 6]
+        repr: [FUND, 2A ]
+        ecsw: [-no-clover]
+    
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    - uses: ./.github/actions/runtests
+      with:
+        mpi: -mpi
+        nc: ${{ matrix.nc }}
+        repr: ${{ matrix.repr }}
+        ecsw: ${{ matrix.ecsw }}
+        gaugegroup: ${{ matrix.gaugegroup }}

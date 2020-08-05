@@ -15,8 +15,8 @@ jobs:
       matrix:
         gaugegroup : [SPN]
         nc: [4,6]
-        repr: [FUND, ADJ, ]
-        expcsw: [-no-expcsw]
+        repr: [FUND, 2A ]
+        expcsw: [-no-clover]
 
     steps:
     - uses: actions/checkout@v1
