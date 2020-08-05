@@ -257,4 +257,3 @@ void free_correlators(double **triplets) {
 lprintf("FREE",0,"Exact free correlators computed.\n");
 
 }
-// NOCOMPILE= GAUGE_SPN
