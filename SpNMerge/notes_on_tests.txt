@@ -1,0 +1,13 @@
+# Tests that are not run for SP(N)
+
+- Gaugefix (see su2_hit issue)
+
+# Tests that do not work for SP(N) 
+
+- Mesons/check_triplets_3
+- Mesons/check_triplets_4
+
+NOTE: they don't work on the master branch for SUN and on our branch for SUN 
+      either (fail with segmentation fault in both cases).
+      The SUN cases seem to succeed on the github CI, so maybe it can be due
+      to compiler/libraries versions.

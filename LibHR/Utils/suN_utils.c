@@ -387,7 +387,9 @@ int project_to_suNg_real(suNg *out, suNg *in)
 }
 #endif
 
-#if !defined(GAUGE_SPN)
+// FIXFORSPN 
+// Does this algorithm work for SP(N)?
+#if !defined(GAUGE_SPN) 
 void covariant_project_to_suNg(suNg *u)
 {
   int i, j, k;
@@ -401,6 +403,8 @@ void covariant_project_to_suNg(suNg *u)
   _suNg_mul_assign(*u, norm);
 
   _suNg_dagger_times_suNg(tmp, *u, *u);
+
+  //FIXFORSPN: tmp -> suNgfull
 
 #ifdef WITH_QUATERNIONS
   /*With quaternions the only hermitian matrix that can be reqpresented is proportional to the idetity*/

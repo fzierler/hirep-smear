@@ -81,6 +81,9 @@ static void sort1(int n, double d[], double v[])
 	}
 }
 
+// sort in d in ascending order
+// permute columns v according to permutation of d 
+// (v in row-major order)
 static void sort2(int n, double d[], double complex v[])
 {
 	int i, j, k;
@@ -103,9 +106,11 @@ static void sort2(int n, double d[], double complex v[])
 
 		if (k != i)
 		{
+            // swap d[i] <-> d[k]
 			d[k] = d[i];
 			d[i] = p;
 
+            // swap v[j][i] <-> v[j][k]
 			for (j = 0; j < n; j++)
 			{
 				q = v[n * j + i];
