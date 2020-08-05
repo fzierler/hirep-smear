@@ -316,4 +316,3 @@ int main(void)
    }
    return return_value;
 }
-// NOCOMPILE= GAUGE_SPN

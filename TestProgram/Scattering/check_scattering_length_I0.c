@@ -622,4 +622,3 @@ int main(int argc,char *argv[])
 
   return return_value;
 }
-// NOCOMPILE= GAUGE_SPN
