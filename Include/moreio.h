@@ -27,6 +27,8 @@ void read_gauge_field_fortran(char filename[]);
 void read_gauge_field_openQCD(char filename[]);
 void read_gauge_field_openQCD_SF(char filename[]);
 void write_gauge_field_openQCD(char filename[]);
+void write_gauge_field_hirep_pbc_to_obc(char filename[]);
+void write_gauge_field_hirep_pbc_to_sf(char filename[]);
 
 #ifdef GAUGE_SPN
 void read_gauge_field_fullSPN(char filename[]);
