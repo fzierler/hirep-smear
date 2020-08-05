@@ -2,6 +2,9 @@
 *
 * Check of the gauge invariance of the spatial APE smearing and of the covariant gauge projection.
 *
+* //FIXFORSPN
+* NOCOMPILE= GAUGE_SPN
+*
 *******************************************************************************/
 
 #define MAIN_PROGRAM

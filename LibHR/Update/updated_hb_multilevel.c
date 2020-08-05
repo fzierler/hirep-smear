@@ -285,7 +285,7 @@ void set_max_mh_level(int lev)
 {
     max_mh_level = lev;
 }
-
+#ifndef GAUGE_SPN
 void update_hb_multilevel_gb_measure(int lev, double *beta, int nhb, int nor, int *ml_up, int *ml_skip, int nblocking, double *smear_val, cor_list *lcor)
 {
     int i, j;
@@ -346,3 +346,4 @@ void update_hb_multilevel_gb_measure(int lev, double *beta, int nhb, int nor, in
         lprintf("HB MULTILEVEL", 0, "1pt writing done [%ld sec %ld usec]\n", etime.tv_sec, etime.tv_usec);
     }
 }
+#endif
