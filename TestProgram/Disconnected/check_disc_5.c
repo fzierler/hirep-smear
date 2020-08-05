@@ -8,7 +8,8 @@
 *
 * Author: Vincent Drach
 *
-* NOCOMPILE= GAUGE_SPN //FIXFORSPN
+* //FIXFORSPN
+* NOCOMPILE= GAUGE_SPN 
 *
 ******************************************************************************/
 
