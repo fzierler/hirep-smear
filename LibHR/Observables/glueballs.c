@@ -7,7 +7,6 @@
 #include "glueballs.h"
 #include "global.h"
 
-#ifndef GAUGE_SPN //FIXFORSPN
 void measure_1pt_glueballs(int nblocking, double *smear_val, double complex *gb_storage)
 {
     int i, nt;
@@ -38,4 +37,3 @@ void measure_1pt_glueballs(int nblocking, double *smear_val, double complex *gb_
 
     release_wrk_space(wrk2);
 }
-#endif

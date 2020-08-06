@@ -84,7 +84,13 @@ void print_suNf(suNf *m){
     double traceRe = 0;
 
     lprintf("SUNf",1,"\n");
-    for(i=0;i<NF;++i){
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
+#define _NROWS NF/2
+#else
+#define _NROWS NF/2
+#endif
+    for(i=0;i<_NROWS;++i){
+#undef _NROWS
         for(j=0;j<NF;++j){
 #ifdef COMPLEX_REP
             lprintf("SUNf",1,"%+-.3f,%+-.3f ", creal(m->c[i*NF+j]), cimag(m->c[i*NF+j])); 
