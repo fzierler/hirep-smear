@@ -305,7 +305,6 @@ void assign_spatial_rotated_wrkspace(int *map, int idx_wrkspace)
     }
 }
 
-#ifndef GAUGE_SPN //FIXFORSPN
 int spatial_APE_smear_wrkspace(double *smear_val, int wrkspace_in)
 {
     suNg staple, tr1, tr2;
@@ -384,4 +383,3 @@ int spatial_APE_smear_wrkspace(double *smear_val, int wrkspace_in)
     set_wrk_space(wrkspace_out);
     return wrkspace_out;
 }
-#endif

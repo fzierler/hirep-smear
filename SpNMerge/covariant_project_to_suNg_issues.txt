@@ -1,4 +1,7 @@
+This function is actually necessary because we need the APE smearing:
 void covariant_project_to_suNg
+
+It needs to be fixed in order for the following tree of functions to work correctly:
 
 LibHR/Utils/spatial_transformations.c:int spatial_APE_smear_wrkspace
   LibHR/Observables/glueballs.c:void measure_1pt_glueballs(int nblocking, double *smear_val, double complex *gb_storage)
