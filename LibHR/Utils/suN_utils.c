@@ -387,52 +387,63 @@ int project_to_suNg_real(suNg *out, suNg *in)
 }
 #endif
 
-// FIXFORSPN 
+// TODO: FIXFORSPN
 // Does this algorithm work for SP(N)?
-#if !defined(GAUGE_SPN) 
 void covariant_project_to_suNg(suNg *u)
 {
   int i, j, k;
   suNg tmp, tmp1;
-  double eval[NG];
   double complex norm;
-  double complex evec[NG * NG];
 
   det_hermNg(&norm, u);
   norm = cpow(norm, -1. / NG);
   _suNg_mul_assign(*u, norm);
 
   _suNg_dagger_times_suNg(tmp, *u, *u);
-
-  //FIXFORSPN: tmp -> suNgfull
-
-#ifdef WITH_QUATERNIONS
-  /*With quaternions the only hermitian matrix that can be reqpresented is proportional to the idetity*/
-  eval[0] = u->c[0];
-  eval[1] = u->c[0];
-  evec[0] = evec[3] = 1.0;
-  evec[1] = evec[2] = 0.0;
+  {
+    double eval[NG];
+    double complex evec[NG * NG];
+#ifdef GAUGE_SPN
+    suNgfull tmpfull, tmp1full;
+#define _TMP tmpfull
+#define _TMP1 tmp1full
 #else
-  jacobi2(NG, tmp.c, eval, evec);
+#define _TMP tmp
+#define _TMP1 tmp1
 #endif
 
-  for (i = 0; i < NG; i++)
-    eval[i] = 1 / sqrt(eval[i]);
+#ifdef WITH_QUATERNIONS
+    /*With quaternions the only hermitian matrix that can be reqpresented is proportional to the idetity*/
+    eval[0] = u->c[0];
+    eval[1] = u->c[0];
+    evec[0] = evec[3] = 1.0;
+    evec[1] = evec[2] = 0.0;
+#else
+    jacobi2(NG, (_TMP).c, eval, evec);
+#endif
 
-  for (i = 0; i < NG; i++)
-    for (j = 0; j < NG; j++)
-      tmp1.c[NG * i + j] = eval[i] * conj(evec[NG * j + i]);
+    for (i = 0; i < NG; i++)
+      eval[i] = 1 / sqrt(eval[i]);
 
-  for (i = 0; i < NG; i++)
-    for (j = 0; j < NG; j++)
-    {
-      tmp.c[NG * i + j] = 0.;
-      for (k = 0; k < NG; k++)
-        tmp.c[NG * i + j] += evec[NG * i + k] * tmp1.c[NG * k + j];
-    }
+    for (i = 0; i < NG; i++)
+      for (j = 0; j < NG; j++)
+        (_TMP1).c[NG * i + j] = eval[i] * conj(evec[NG * j + i]);
+
+    for (i = 0; i < NG; i++)
+      for (j = 0; j < NG; j++)
+      {
+        (_TMP).c[NG * i + j] = 0.;
+        for (k = 0; k < NG; k++)
+          (_TMP).c[NG * i + j] += evec[NG * i + k] * (_TMP1).c[NG * k + j];
+      }
+#ifdef GAUGE_SPN
+    for(i = 0; i<NG*NG/2; ++i) tmp.c[i] = tmpfull.c[i];
+#endif
+#undef _TMP
+#undef _TMP1
+  }
 
   tmp1 = *u;
 
   _suNg_times_suNg(*u, tmp1, tmp);
 }
-#endif
