@@ -409,6 +409,8 @@ END
             write_spN_sqnorm();
             write_spN_sqnorm_m1();
             write_spN_trace();
+            write_spN_trace_half();
+            write_spN_trace_algebra();
             write_spN_trace_re();
             write_spN_trace_im();
             write_full_onto_spn_project();
@@ -5435,9 +5437,9 @@ sub write_spN_sqnorm_m1 {
     }
 }
 
-sub write_spN_trace {
-    print "/* k= Tr (u) */\n";
-    print "#define _${dataname}_trace(k,u) \\\n";
+sub write_spN_trace_half {
+    print "/* k= 2*Tr (u_upper_left_block) */\n";
+    print "#define _${dataname}_trace_half(k,u) \\\n";
     if ($N<$Nmax or $N<(2*$unroll+1) ) { #unroll all
         print "   (k)=";
         my $n=0;
@@ -5446,7 +5448,6 @@ sub write_spN_trace {
             $n+=$N+1;
             if($i==$N/2-1) { print ";\\\n"; } else { print "+ \\\n       "; }
         }
-        print "      (k)*=2;\n\n";
     } else { #partial unroll
         print "   do { \\\n";
         print "      int _i,_n=0;\\\n";
@@ -5470,11 +5471,25 @@ sub write_spN_trace {
             $n+=$N+1;
             if($i==$vrh-1) { print ";\\\n"; } else { print "+ \\\n           "; }
         }
-        print "      (k)*=2;\\\n";
-        print "   } while(0) \n\n";
+        print "   } while(0)";
     }
+    print "      \n\n";
 }
 
+sub write_spN_trace_algebra {
+    print "/* k= Tr (h)              * \n";
+    print " * Where h is in the form * \n";
+    print " *  A   B                 * \n";
+    print " *  B* -A*                * \n";
+    print " *  (Should be zero for   * \n";
+    print " *   proper generators.)  */\n";
+    print "#define _${dataname}_trace_algebra(k,u) \\\n";
+    print "   do {                              \\\n";
+    print "        _${dataname}_trace_half(k,u);\\\n";
+    print "        k = 2*cimag(k);              \\\n";
+    print "   } while(0); \n\n";
+
+}
 
 sub write_spN_trace_re {
     print "/* k=Re Tr (u) */\n";
@@ -5514,6 +5529,16 @@ sub write_spN_trace_re {
         print "      (k)*=2;\\\n";
         print "   } while(0) \n\n";
     }
+}
+
+sub write_spN_trace{
+    print "/* k= Tr (u)              * \n";
+    print " * Where u is in the form * \n";
+    print " *  A   B                 * \n";
+    print " * -B*  A*                */\n";
+    print "#define _${dataname}_trace(k,u) \\\n";
+    print "        _${dataname}_trace_re(k,u) \n\n";
+
 }
 
 sub write_spN_trace_im {
