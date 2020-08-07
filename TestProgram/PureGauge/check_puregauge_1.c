@@ -47,7 +47,7 @@ int main(int argc,char *argv[])
    _suNf_sub_assign(e,tmp);
 
    _suNf_sqnorm(tau,e);
-   printf("checking that _group_represent works on E: %.3f\n",tau);
+   printf("checking that _group_represent works on E: %.18e\n",tau);
    printf("(should be 0.00)\n");
    if (tau > 1e-30){
      printf("Test failed ?\n");
@@ -71,7 +71,7 @@ int main(int argc,char *argv[])
    _suNf_sub_assign(c,tmp);
 
    _suNf_sqnorm(tau,c);
-   printf("checking that _group_represent is a homo: %.3f\n",tau);
+   printf("checking that _group_represent is a homo: %.18e\n",tau);
    printf("(should be 0.00)\n");
    if (tau > 2e-30){
      printf("Test failed ?\n");
