@@ -73,7 +73,7 @@ int main(int argc,char *argv[])
    _suNf_sqnorm(tau,c);
    printf("checking that _group_represent is a homo: %.3f\n",tau);
    printf("(should be 0.00)\n");
-   if (tau > 1e-30){
+   if (tau > 2e-30){
      printf("Test failed ?\n");
      return_value +=1;
    }
