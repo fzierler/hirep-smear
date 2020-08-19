@@ -1,0 +1,118 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\newcommand*{\QEDB}{\null\nobreak\hfill\ensuremath{\square}}
+
+
+% opening
+\title{On the correctness of the covariant projection on group for
+  SP(2N)
+}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  The algorithm for the covariant projection on SU(N) described on page 3 of
+  arXiv:hep-lat/9304011v1 needs no changes in order to work for SP(N).
+\end{abstract}
+
+\section{Description of the algorithm for SU(N)}
+Take the set of paths on a lattice starting on a given point $P_{S}$ and ending on
+another point $P_{E}$.
+Take the parallel transport operators corresponding to those paths.
+A linear combination $M$ of those operators do not belong to the gauge group,
+but it transforms covariantly under a gauge transformation.
+
+There is an algorithm to obtain an $U$ belonging to the gauge group
+that is \emph{covariant} with $M$, that is: if
+\begin{equation}
+  U = f(M)
+\end{equation}
+and
+\begin{equation}
+  M'= G_{1}^{\dagger} M G_{2} ,
+\end{equation}
+then
+\begin{equation}
+  U' = f(M') = G_{1}^{\dagger} f(M) G_{2} \ .
+\end{equation}
+This algorithm is described in arXiv:hep-lat/9304011v1, and amounts to the
+following steps.
+\begin{enumerate}
+  \item Given any nonsingular matrix $M$, $\mathcal{H} = M^{\dagger}M$ is
+    Hermitean.
+    \label{step1}
+  \item Notice that if $M = H U$, with $U$ unitary, then
+    $\mathcal{H}=H^{\dagger}H$.
+    \label{step2}
+  \item We can diagonalize $\mathcal{H}$ with a unitary transformation $D$, so
+    that $\mathcal{H}= D^{\dagger} \Delta D$ with $\Delta$ real.
+    \label{step3}
+  \item We can choose $H = D^{\dagger} \Delta^{\frac{1}{2}} D$, as $H^{\dagger} = H$.
+    \label{step4}
+  \item This leads us to a unitary $U = H^{-1} M$, where the inverse of $H$ can
+    be easily computed as $D^{\dagger} \Delta^{-\frac{1}{2}} D$.
+  \label{step5}
+\end{enumerate}
+Notice that if $M$ is already unitary, $U=M$. Also, for
+$M' = G_{1}^{\dagger}M G_{2}$, we obtain a $H' = G_{2}^{\dagger} H G_{2}$ which
+leads to $U'=G_{1}^{\dagger}U G_{2}$, as needed.
+
+\section{The SP(N) case}
+
+A matrix $S$ belongs to $SP(N)$ if it is a $SU(N)$ matrix and if
+$S^{T} \Omega S = \Omega$. If $\Omega$ is a matrix of the form
+\begin{equation}
+  \Omega = \left\{
+    \begin{array}{cc}
+      0_{N} & 1_{N} \\
+      -1_{N} & 0_{N}
+    \end{array}
+  \right.
+  \label{omega}
+\end{equation}
+In addition to belonging to $SU(N)$, $S$ must also have the form
+\begin{equation}
+  S = \left\{
+    \begin{array}{cc}
+      A & B \\
+      -B^\ast & A^\ast
+    \end{array}
+  \right. .
+  \label{ssymp}
+\end{equation}
+(see, e.g., \verb|spn-adjoint-symmetric.tex| for a brief justification of this).
+It is obvious that matrices of the form in Eq.(\ref{ssymp}) form a vector space.
+It can be also verified easily that nonsingular matrices of the form in
+Eq.(\ref{ssymp}) do form a group - meaning that if two matrices $S$ and $T$ are in
+that form, their product is as well. We call the algebra of matrices in the form
+Eq.(\ref{ssymp}) $\mathcal{A}$.
+
+This means that linear combination of $SP(N)$ parallel transport operators still
+belong to $\mathcal{A}$.
+
+\begin{enumerate}
+  \item If we apply the algorithm described for $SU(N)$ to a matrix
+    $M \in \mathcal{A}$, we obtain also a Hermitean $\mathcal{H}\in \mathcal{A}$.
+  \item $\mathcal{H}$ can be diagonalized with a unitary transformation $D$, but
+    we can show that $D \in \mathcal{A}$. Indeed, if $w = (V ,W)$ is an
+    eigenvector of $\mathcal{H}$ we can easily prove that the vector
+    $\tilde{w} = (-W^{\ast},V^{\ast})$ is another eigenvector with the same
+    eigenvalue.
+
+    Note that if $\tilde{w} = k w$, then $w$ is zero.
+
+    This means that also $D \in \mathcal{A}$.
+  \item This means that also $H \in \mathcal{A}$, which in turn means that
+    $U \in \mathcal{A}$. In addition to the fact that $U \in SU(N)$, this means
+    that $U \in SP(N)$.
+\end{enumerate}
+
+Moreover, the fact that the algorithm is covariant for $SU(N)$ and
+$SP(N) \subset SU(N)$, means that the algoriwhm is covariant for $SP(N)$ as well.
+
+\QEDB
+\end{document}
