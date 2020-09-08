@@ -1,4 +1,4 @@
-name: mpi
+name: mpi-spn
 
 on:
   push:
