@@ -146,6 +146,8 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
       used only in Tests.
     * loop on generators NG * NG - 1 -> NG * (NG+1) /2 for SPN 
     (changes to make the tests work again?)
+    * the calls to lw_force and force0 had the wrong number of parameters. Changed the
+      way arguments are passed to them.
   * random_momenta.c +1 -3 # DONE
     Redefinition of the number of generators as
     ```
