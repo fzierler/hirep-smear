@@ -311,10 +311,11 @@ static void sync_scalar_field(suNg_scalar_field *p) {
  */
 /* static unsigned int comm_status=0; */
 #if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
-void complete_clover_force_sendrecv(suNffull_field *gf) {
+void complete_clover_force_sendrecv(suNffull_field *gf)
 #else
-void complete_clover_force_sendrecv(suNf_field *gf) {
+void complete_clover_force_sendrecv(suNf_field *gf)
 #endif
+{
 #ifdef WITH_MPI
   int mpiret;
   (void)mpiret; // Remove warning of variable set but not used
@@ -359,10 +360,11 @@ void complete_clover_force_sendrecv(suNf_field *gf) {
 }
 
 #if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
-void start_clover_force_sendrecv(suNffull_field *gf) {
+void start_clover_force_sendrecv(suNffull_field *gf)
 #else
-void start_clover_force_sendrecv(suNf_field *gf) {
+void start_clover_force_sendrecv(suNf_field *gf)
 #endif
+{
 #ifdef WITH_MPI
   int i, mpiret;
   (void)mpiret; // Remove warning of variable set but not used
