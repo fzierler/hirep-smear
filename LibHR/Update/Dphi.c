@@ -768,7 +768,7 @@ static void Cphi_(double mass, spinor_field *dptr, spinor_field *sptr, int assig
 
   suNf_vector v1, v2;
   suNf_spinor *out, *in, tmp;
-#ifdef GAUGE_SPN
+#if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
   suNffull *s0, *s1, *s2, *s3;
 #else
   suNfc *s0, *s1, *s2, *s3;
