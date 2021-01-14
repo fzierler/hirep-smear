@@ -16,7 +16,7 @@ jobs:
         gaugegroup : [SPN]
         nc: [4,6]
         repr: [FUND, 2A ]
-        expcsw: [-no-clover]
+        ecsw: [-no-clover]
 
     steps:
     - uses: actions/checkout@v1
@@ -29,6 +29,6 @@ jobs:
         mpi: -no-mpi
         nc: ${{ matrix.nc }}
         repr: ${{ matrix.repr }}
-        expcsw: ${{ matrix.expcsw }}
+        ecsw: ${{ matrix.expcsw }}
         gaugegroup: ${{ matrix.gaugegroup }}
 
