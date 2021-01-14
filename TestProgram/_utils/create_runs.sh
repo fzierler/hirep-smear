@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 _UTILS=$(dirname ${BASH_SOURCE[0]})
 source $_UTILS/test_build_lists.sh
 
@@ -16,6 +17,8 @@ create_run_scripts(){
         (
             cat $HEADER
             echo cd $(pwd)/$MASTER_TEST_DIR/$I/TestProgram
+            echo echo run_test.sh arguments: $LINE
+            echo echo test script: \$0
             echo ./run_tests.sh $LINE
         ) > $MASTER_TEST_DIR/script$I.sh
     done < .runs
