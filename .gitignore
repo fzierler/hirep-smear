@@ -22,3 +22,9 @@ LibHR/Utils/suN_exp.c
 .vscode
 **/.DS_Store
 **/SnoopDogg*
+
+# file related to code linting frameworks 
+.ccls-cache
+**/clangd
+.ycm_extra_conf.py*
+compile_commands.json
