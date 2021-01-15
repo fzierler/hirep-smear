@@ -15,9 +15,7 @@ create_run_scripts(){
     do
         I=$((I+1))
         (
-            cat $HEADER
-            echo "#SBATCH -o out$I.out"
-            echo "#SBATCH -e out$I.err"
+            sed 's/SED_I/'$I'/' $HEADER
             echo cd $(pwd)/$MASTER_TEST_DIR/$I/TestProgram
             echo echo run_test.sh arguments: $LINE
             echo echo test script: \$0

@@ -22,7 +22,7 @@ header_check(){
 
 header_check
 
-NTESTS=$(create_run_scripts $MASTER_TEST_DIR $HEADER)&&
+NTESTS=$(create_run_scripts $MASTER_TEST_DIR $HEADER) &&
     create_numbered_hirep_repo_clones $HIREP_REPO $MASTER_TEST_DIR $NTESTS
 
 
