@@ -2,8 +2,11 @@
 
 # These functions create list of tests to execute,
 # to be passed to TestProgram/run_tests.sh
-# One group of options per line
-# 
+# One group of options per line.
+# See:
+# .github/actrions/runtests/action.yml
+# Make/Utils/write_mkflags.pl
+
 sun_run_option_list(){
     for mpi in -no-mpi -mpi
     do 
@@ -11,15 +14,15 @@ sun_run_option_list(){
         do
             for matrix_repr in FUND ADJ
             do
-                for matrix_ecsw in expclover -no-expclover
+                for matrix_ecsw in -expclover -no-expclover
                 do
                     echo \
                         -no-ccache\
                         ${mpi} \
                         ${matrix_ecsw} \
-                        ${matrix_nc} \
-                        ${matrix_repr} \
-                        SUN
+                        -n ${matrix_nc} \
+                        -r ${matrix_repr} \
+                        --gauge SUN
                 done
             done
         done
@@ -39,9 +42,9 @@ spn_run_option_list(){
                         -no-ccache\
                         ${mpi} \
                         ${matrix_ecsw} \
-                        ${matrix_nc} \
-                        ${matrix_repr} \
-                        SPN
+                        -n ${matrix_nc} \
+                        -r ${matrix_repr} \
+                        --gauge SPN
                 done
             done
         done
