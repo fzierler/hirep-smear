@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - spn-swansea-merge
+      - spn-swansea-merge-dev
 
 jobs:
   build:
