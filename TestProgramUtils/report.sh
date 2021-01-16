@@ -25,7 +25,7 @@ check_ok(){
 
 analyse_file(){
     local FILENAME=$1
-    printf "## %s %s\n" "$(get_options $FILENAME )" "$(check_ok $FILENAME)"
+    printf "## ($FILENAME) %s %s\n" "$(get_options $FILENAME )" "$(check_ok $FILENAME)"
 }
 
 for FILENAME in out*.txt
