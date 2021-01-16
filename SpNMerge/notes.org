@@ -7,12 +7,16 @@ For explanations, please have a look at Appendix A
 in 
 ["Sp(4) gauge theory on the lattice: towards SU(4)/Sp(4) composite Higgs (and beyond)"](https://arxiv.org/pdf/1712.04220.pdf)
 
+This is the second time the merge is performed.
+The notest from the first time are in the [old_merge_notes.md](old_merge_notes.md)
+file.
+
 *  Testing
 ** Tests that are not run for SP(N)
-- Gaugefix (see su2_hit issue)
+   - Gaugefix (see su2_hit issue)
 ** Tests that do not work for SP(N) 
-- Mesons/check_triplets_3
-- Mesons/check_triplets_4
+   - Mesons/check_triplets_3
+   - Mesons/check_triplets_4
 
 NOTE: they don't work on the master branch for SUN and on our branch for SUN 
       either (fail with segmentation fault in both cases).
@@ -22,107 +26,107 @@ NOTE: they don't work on the master branch for SUN and on our branch for SUN
 * State of the implementation of some functions for SPN 
 
 ** ~su2_hit~: TODO
-This is a (reversed) tree of functions that depend on su2_hit,
-which is not implemented
-correctly for SP(2N), 
-and as such must not be compiled for this case.
-The reason this does not work for SP(2N) 
-is that in order to remain in SP(2N)
-we need to act on 2 SU(2) subgroups 
-at the same time
-(See, for example, the implementation of 
-the  Cabibbo-Marinari algorithm for SU(2)).
-
-- LibHR/Utils/gaugefix.c:double gaugefixstep()
-  - LibHR/Utils/gaugefix.c:double gaugefix()
-    - GaugeFix/gaugefix_measure.c:int main()
-    - LibHR/Observables/loop_tools.c:void measure_loops()
-      - Disconnected/compute_loops.c:int main()
-      - TestProgram/Disconnected/check_disc_0.c:int main()
-      - TestProgram/Disconnected/check_disc_1.c:int main()
-      - TestProgram/Disconnected/check_disc_2.c:int main()
-      - TestProgram/Disconnected/check_disc_3.c:int main()
-      - TestProgram/Disconnected/check_disc_4.c:int main()
-      - TestProgram/Disconnected/check_disc_5.c:int main()
-    - LibHR/Observables/meson_measurements.c:void measure_spectrum_gfwall()
-      - Spectrum/measure_spectrum.c: int main(...)  [*]
-    - LibHR/Observables/meson_measurements.c:void measure_spectrum_gfwall_fixedbc()
-      - Spectrum/measure_spectrum.c: int main(...)  [*]
-    - LibHR/Observables/meson_measurements.c:void measure_spectrum_discon_gfwall()
-      - Spectrum/measure_spectrum.c: int main(...)  [*]
-    - RenormalizationFactors/measure_Z_mom.c:int main() 
-    - TestProgram/RIMOM/check_RIMOM.c:int main()
-
-
-[*] These functions (~measure_spectrum_*gfwall*~) are actually commented out
-    in this file.
-
+   This is a (reversed) tree of functions that depend on su2_hit,
+   which is not implemented
+   correctly for SP(2N), 
+   and as such must not be compiled for this case.
+   The reason this does not work for SP(2N) 
+   is that in order to remain in SP(2N)
+   we need to act on 2 SU(2) subgroups 
+   at the same time
+   (See, for example, the implementation of 
+   the  Cabibbo-Marinari algorithm for SU(2)).
+   
+   - LibHR/Utils/gaugefix.c:double gaugefixstep()
+     - LibHR/Utils/gaugefix.c:double gaugefix()
+       - GaugeFix/gaugefix_measure.c:int main()
+       - LibHR/Observables/loop_tools.c:void measure_loops()
+         - Disconnected/compute_loops.c:int main()
+         - TestProgram/Disconnected/check_disc_0.c:int main()
+         - TestProgram/Disconnected/check_disc_1.c:int main()
+         - TestProgram/Disconnected/check_disc_2.c:int main()
+         - TestProgram/Disconnected/check_disc_3.c:int main()
+         - TestProgram/Disconnected/check_disc_4.c:int main()
+         - TestProgram/Disconnected/check_disc_5.c:int main()
+       - LibHR/Observables/meson_measurements.c:void measure_spectrum_gfwall()
+         - Spectrum/measure_spectrum.c: int main(...)  [*]
+       - LibHR/Observables/meson_measurements.c:void measure_spectrum_gfwall_fixedbc()
+         - Spectrum/measure_spectrum.c: int main(...)  [*]
+       - LibHR/Observables/meson_measurements.c:void measure_spectrum_discon_gfwall()
+         - Spectrum/measure_spectrum.c: int main(...)  [*]
+       - RenormalizationFactors/measure_Z_mom.c:int main() 
+       - TestProgram/RIMOM/check_RIMOM.c:int main()
+   
+   
+   [*] These functions (~measure_spectrum_*gfwall*~) are actually commented out
+       in this file.
+   
 ** ~covariant_project_to_suNg~: DONE
-This function is actually necessary because we need the APE smearing.
-It is used here:
-
-- LibHR/Utils/spatial_transformations.c:int spatial_APE_smear_wrkspace
-  - LibHR/Observables/glueballs.c:void measure_1pt_glueballs()
-    - LibHR/Update/updated_hb_multilevel.c:void update_hb_multilevel_gb_measure()
-      - PureGauge/suN_multilevel.c:int main()
-  - TestProgram/Utils/check_utils_4.c:int main()
-
-It is believed that the current algorithm 
-for the covariant projection
-works also in the SP(2N) case.
-A trivial but somewhat tedious proof
-can be made using the block structure 
-of the SP(N)
-
+   This function is actually necessary because we need the APE smearing.
+   It is used here:
+   
+   - LibHR/Utils/spatial_transformations.c:int spatial_APE_smear_wrkspace
+     - LibHR/Observables/glueballs.c:void measure_1pt_glueballs()
+       - LibHR/Update/updated_hb_multilevel.c:void update_hb_multilevel_gb_measure()
+         - PureGauge/suN_multilevel.c:int main()
+     - TestProgram/Utils/check_utils_4.c:int main()
+   
+   It is believed that the current algorithm 
+   for the covariant projection
+   works also in the SP(2N) case.
+   A trivial but somewhat tedious proof
+   can be made using the block structure 
+   of the SP(N)
+   
 
 * Merge Notes - File by file.
 
-The following has been produced 
-looking at the output of 
-#+BEGIN_SRC bash
-git diff -w COMMIT_BEFORE_FORK LATEST_SPN_COMMIT
-#+END_SRC 
-  where
-#+BEGIN_SRC bash
-COMMI_BEFORE_FORK = 6b232fe0146751d9d19e2e9d8f2b06003e9b2fc5 
-LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
-#+END_SRC 
-  Further comments were also added later.
+  The following has been produced 
+  looking at the output of 
+  #+BEGIN_SRC bash
+  git diff -w COMMIT_BEFORE_FORK LATEST_SPN_COMMIT
+  #+END_SRC 
+    where
+  #+BEGIN_SRC bash
+  COMMI_BEFORE_FORK = 6b232fe0146751d9d19e2e9d8f2b06003e9b2fc5 
+  LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
+  #+END_SRC 
+    Further comments were also added later.
 
 ** Converter +30 -0 # DONE 
 *** archive_eolexi.c +16 -0 # DONE
-   Changes to archive only the upper half of the matrix (compressed format). Added ~ifdef~ 
-   to change range of the for loop.
-   Note: implemented change in a slightly different way, #defin-ing _NGLIMIT 
-         and #undef-ining it.
+    Changes to archive only the upper half of the matrix (compressed format). Added ~ifdef~ 
+    to change range of the for loop.
+    Note: implemented change in a slightly different way, #defin-ing _NGLIMIT 
+          and #undef-ining it.
 *** converter.c +14 -0 # DONE
-   - trigger compilation error if using quaternions with ~GAUGE_SPN~
-   - added formats "fullSPN" and "compSPN" (compressed)
-     (see /LibHR +920 -103/IO/spn_archive.c +406 -0)
-
+    - trigger compilation error if using quaternions with ~GAUGE_SPN~
+    - added formats "fullSPN" and "compSPN" (compressed)
+      (see /LibHR +920 -103/IO/spn_archive.c +406 -0)
+ 
 ** GaugeFix/gaugefix.c # NOT DONE
-  for loop only up to NG/2 in the SPN case
-  NOTE1: This has been moved to LibHR/Utils.
-         Also: in the computation of v1 on line 207, the transpose of u2 is 
-         used (the conjugation is done inside the _complex_add_star_assign 
-         macro). During this, nonexisting elements of u2 are accessed. 
-         Fixed this resorting to the full type.
-  NOTE2: Even after the fix in NOTE1, the su2_hit function was causing 
-         stack corruption, likely because v1 and v2 should be full 
-         matrices as well. 
-         After further inspection, it seems that the su2_hit function may 
-         not be correct for SP(N), as the list of SU(2) subgroups for 
-         SU(N) and for SP(N) is not the same.  
-         This requires further thinking and fixes
-  NOTE3: There are a number of functions that use su2_hit. 
-         A DAG of functions that depend on su2_hit needs not to be compiled
-         when using GAUGE_SPN.
-         See ~su2_hit~ in `State of the implementation of some functions for SPN`.
+   for loop only up to NG/2 in the SPN case
+   NOTE1: This has been moved to LibHR/Utils.
+          Also: in the computation of v1 on line 207, the transpose of u2 is 
+          used (the conjugation is done inside the _complex_add_star_assign 
+          macro). During this, nonexisting elements of u2 are accessed. 
+          Fixed this resorting to the full type.
+   NOTE2: Even after the fix in NOTE1, the su2_hit function was causing 
+          stack corruption, likely because v1 and v2 should be full 
+          matrices as well. 
+          After further inspection, it seems that the su2_hit function may 
+          not be correct for SP(N), as the list of SU(2) subgroups for 
+          SU(N) and for SP(N) is not the same.  
+          This requires further thinking and fixes
+   NOTE3: There are a number of functions that use su2_hit. 
+          A DAG of functions that depend on su2_hit needs not to be compiled
+          when using GAUGE_SPN.
+          See ~su2_hit~ in `State of the implementation of some functions for SPN`.
          
 
 ** Include +101 -5 # DONE (except update_ghmc_stripped() )
-***  TMPL/suN_repr_func.h.tmpl +0 -0 # DONE
-   added ~algebra_project_FMAT~ macro (see autosun)
+*** TMPL/suN_repr_func.h.tmpl +0 -0 # DONE
+     added ~algebra_project_FMAT~ macro (see autosun)
 *** communications.h +5 -0 # DONE
    **For the Clover term**
    In the case of SPN in the fundamental representation, use ~suNffull_field~ 
@@ -235,12 +239,12 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
       way arguments are passed to them.
 **** random_momenta.c +1 -3 # DONE
     Redefinition of the number of generators as
-#+BEGIN_SRC c
-const int ngen = sizeof(suNg_algebra_vector) / sizeof(double);
-#+END_SRC
+    #+BEGIN_SRC c
+    const int ngen = sizeof(suNg_algebra_vector) / sizeof(double);
+    #+END_SRC
 **** representation.c +6 -1 # DONE
     For SPN, the function _group_represent2 is just a thin wrapper around the macro
-    _group_represent.
+    ~_group_represent.
 **** update_mt.c +72 -0 # DONE 
     new function ~update_ghmc_stripped~ for debug purposes.
     NOTE: new function not implemented in merge.
@@ -274,72 +278,72 @@ const int ngen = sizeof(suNg_algebra_vector) / sizeof(double);
     NOTE: rewrite of project_to_suNg_flt for the SPN case IS MISSING #DONE
 
 ** Make +1929 -63
-*** MkRules +7 -0 # DONE
-Guard against use of SP2
+*** MkRules +7 -0 # ONE
+    Guard against use of SP2
 
 *** Utils +1908 -48 # FIRST PASS DONE
 **** autosun +538 -30
 ***** adjoint.h +14 -1
-- in init(): case for spn added. dimension of the algebra.
-- group_represent(): case for spn added, uses spmatrix
+      - in init(): case for spn added. dimension of the algebra.
+      - group_represent(): case for spn added, uses spmatrix
 ***** antisymmetric.h +41 -0
-- the dimension of the representation for SPN is N * (N-1)/2-1, one of 
-  the generators must be removed from the usual construction (the omega-like
-  one?)
-- group_represent(): case for spn added, uses spmatrix
+      - the dimension of the representation for SPN is N * (N-1)/2-1, one of 
+        the generators must be removed from the usual construction (the omega-like
+        one?)
+      - group_represent(): case for spn added, uses spmatrix
 ***** fundamental.h +12 -1
-- in group_represent, added case for SPN, with compressed version
+      - in group_represent, added case for SPN, with compressed version
 ***** list.h +9 -0
-Added header guards and a bunch of includes.
+      Added header guards and a bunch of includes.
 ***** matrix.h +81 -0
-- Added header guards and a bunch of includes.
-- Added string representation for compressed assignment
-- Definition of spmatrix
+      - Added header guards and a bunch of includes.
+      - Added string representation for compressed assignment
+      - Definition of spmatrix
 ***** polynomial.h +6 -0
-Added header guards and a bunch of includes.
+      Added header guards and a bunch of includes.
 ***** representation.h +24 -0
-Added header guards and a bunch of includes.
+      Added header guards and a bunch of includes.
 ***** sparse.h +9 -0
-Added header guards and a bunch of includes.
+      Added header guards and a bunch of includes.
 ***** sun.h +323 -27
-- Added header guards and a bunch of includes.
-- from ~ifdef~ to ~switch()~ for group type.
-- written luscher exponentiation for SPN 
-- Other trivial changes.
+      - Added header guards and a bunch of includes.
+      - from ~ifdef~ to ~switch()~ for group type.
+      - written luscher exponentiation for SPN 
+      - Other trivial changes.
 ***** symmetric.h +10 -1
-- group_represent(): case for spn added, uses spmatrix
+      - group_represent(): case for spn added, uses spmatrix
 ***** write_suN_headers.pl +1366 -14  
-Written the code for generating spn-compressed macros.
-[partially automatically, mostly manually converted]
+      Written the code for generating spn-compressed macros.
+      [partially automatically, mostly manually converted]
 
 ** RenormalizationFactors/measure_Z_mom.c +2 -0 +2 -0  # DONE
   just logging in main() for SPN
 
 ** Spectrum +6 -0 # DONE
 *** measure_formfactor.c +2 -0 # DONE 
-   just logging in main() for SPN
+    just logging in main() for SPN
 *** measure_spectrum.c +2 -0 # WILL NOT BE DONE
-   just logging in main() for SPN
-   NOTES: The part of the code where the change was made does not exist any
-          more
+    just logging in main() for SPN
+    NOTES: The part of the code where the change was made does not exist any
+           more
 *** mk_mesons_with_z2semwall_new.c +2 -0 # DONE
-   just logging in main() for SPN
+    just logging in main() for SPN
 
 ** TestProgram +2423 -80 
-  A number of test programs were broken. Some of them were fixed, and some
-  have been added (see, e.g., SPNtoSUNRegression) with some convenience scripts.
+   A number of test programs were broken. Some of them were fixed, and some
+   have been added (see, e.g., SPNtoSUNRegression) with some convenience scripts.
 
 ** WilsonFlow +20 -4 # DONE
 *** WF_measure.c +2 -0 # WILL NOT BE DONE
-   just logging in main() for SPN
-   NOTES: The part of the code where the change was made does not exist any
-          more
+    just logging in main() for SPN
+    NOTES: The part of the code where the change was made does not exist any
+           more
 *** WF_measure_adaptative.c +2 -0 # WILL NOT BE DONE
-   just logging in main() for SPN
-   NOTES: The file does not exist any more 
+    just logging in main() for SPN
+    NOTES: The file does not exist any more 
 *** wilsonflow.c +16 -4 # DONE
-   Changes in matrix size NG * NG -> NG * NG / 2 and algebra dimension 
-   (NG * NG - 1) -> (NG * (NG + 1) / 2) for the SPN case
-   NOTE: Defined _MATRIX_DIM and _ALGEBRA_DIM macros (with #define and #undef)
-   NOTE: this was in conflict with master because of indentation. Trivial fix.
+    Changes in matrix size NG * NG -> NG * NG / 2 and algebra dimension 
+    (NG * NG - 1) -> (NG * (NG + 1) / 2) for the SPN case
+    NOTE: Defined _MATRIX_DIM and _ALGEBRA_DIM macros (with #define and #undef)
+    NOTE: this was in conflict with master because of indentation. Trivial fix.
 
