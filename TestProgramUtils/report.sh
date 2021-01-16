@@ -7,9 +7,10 @@ get_options(){
 
 check_ok(){
     local FILENAME=$1
-    if grep -i fail $FILENAME
+    if grep -i fail $FILENAME &> /dev/null
     then
         echo FAIL
+        grep -i fail $FILENAME
     else
         echo OK
     fi
@@ -17,10 +18,10 @@ check_ok(){
 
 analyse_file(){
     local FILENAME=$1
-    echo $(get_options $FILENAME ) $(check_ok $FILENAME)
+    printf "%s %s\n" "$(get_options $FILENAME )" "$(check_ok $FILENAME)"
 }
 
-for $FILENAME in out*.txt
+for FILENAME in out*.txt
 do
     analyse_file $FILENAME
 done 
