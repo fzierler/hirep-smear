@@ -5,6 +5,8 @@ git diff -w COMMIT__BEFORE__FORK LATEST_SPN_COMMIT
 where
 COMMI_BEFORE_FORK = 6b232fe0146751d9d19e2e9d8f2b06003e9b2fc5 
 LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
+Further comments were also added later.
+
 
 * Converter +30 -0 # DONE 
  * archive_eolexi.c +16 -0 # DONE
@@ -34,7 +36,7 @@ LATEST_SPN_COMMIT = b34b469b6e0bd7d7925e57a5f792c18069993fa9
   NOTE3: There are a number of functions that use su2_hit. 
          A DAG of functions that depend on su2_hit needs not to be compiled
          when using GAUGE_SPN.
-         See 'su2_hit_issue.txt'.
+         See `su2_hit` in `State of the implementation of some functions for SPN`.
          
 
 * Include +101 -5 # DONE (except update_ghmc_stripped() )
