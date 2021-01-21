@@ -1,0 +1,64 @@
+GLB_T = 18
+GLB_X = 16
+GLB_Y = 16
+GLB_Z = 16
+NP_T = 2
+NP_X = 1
+NP_Y = 1
+NP_Z = 1
+
+N_REP = 1
+
+//Logger levels (default = -1)
+log:default = -1
+log:inverter = -1
+log:forcestat = 0
+
+
+rlx_level = 1
+rlx_seed = 83745
+rlx_start = new
+rlx_state = rand_state
+
+
+//needed only if compiled with FERMION_THETA
+theta_T = 0.0
+theta_X = 0.0
+theta_Y = 0.0
+theta_Z = 0.0
+
+//needed only if compiled with BASIC or ROTATED_SF 
+sf:ct = 0.945700
+
+//if set to true imposes SF background
+sf:background = true
+
+
+so:configlist = listconf.txt
+
+so:Polyakov:make = true
+
+so:WilsonLoop:make = false
+HYP:weight0 = 0.70
+HYP:weight1 = 0.60
+HYP:weight2 = 0.30
+
+WL[0]:delta.x = 1
+WL[0]:delta.y = 0
+WL[0]:delta.z = 0
+WL[0]:nsteps = 100
+
+WL[1]:delta.x = 1
+WL[1]:delta.y = 1
+WL[1]:delta.z = 0
+WL[1]:nsteps = 100
+
+WL[2]:delta.x = 1
+WL[2]:delta.y = 1
+WL[2]:delta.z = 1
+WL[2]:nsteps = 100
+
+WL[3]:delta.x = 2
+WL[3]:delta.y = 1
+WL[3]:delta.z = 0
+WL[3]:nsteps = 100

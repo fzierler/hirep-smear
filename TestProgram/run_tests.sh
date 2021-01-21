@@ -1,9 +1,18 @@
 #!/bin/bash -e
+while getopts 'h' c
+do
+  case $c in
+    h) ../Make/Utils/write_mkflags.pl -h
+    ;;
+  esac
+done
 
 # if we are running inside a github action, change workdir
 [ ! -z "$GITHUB_WORKSPACE" ] && cd $GITHUB_WORKSPACE/TestProgram
 
-../Make/Utils/write_mkflags.pl -f ../Make/MkFlags $@ || exit 1
+[ ! -d "$1" ] && echo First argument must be a subdirectory of TestProgram && exit 1
+
+../Make/Utils/write_mkflags.pl -f ../Make/MkFlags ${@: 2} || exit 1
 
 if [[ " $@ " =~ ' --gauge[[:space:]]SPN ' ]]
 then
@@ -14,8 +23,10 @@ fi
 echo Cleaning...
 ( cd .. && make cleanall )
 
+cd ./${1}
+
 echo Building...
-make -j1 tests
+make -j1 
 
 echo Run Tests...
-make runalltests
+make runtests

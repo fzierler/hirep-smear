@@ -1,10 +1,9 @@
 /******************************************************************************
  *
  *
- * File check_scattering_rhopipi.c
- * Checks of the rho to pi pi calculations (free case) with point source?
- *
- * Author: Tadeusz Janowski
+ * File check_scattering_length.c
+ * Checks of the pi pi scattering length calculations 
+ * Author: Vincent Drach & Fernando Romero Lopez
  *
  ******************************************************************************/
 
@@ -38,7 +37,7 @@
 #include "clover_tools.h"
 #include "setup.h"
 #include "cinfo.c"
-
+#include "clover_tools.h"
 
 
 #define PI 3.1415926535
@@ -67,34 +66,50 @@ typedef struct _input_scatt {
     double csw;
 	double precision;
 	int nhits;
-	char bc[16], p[256];
+	int tsrc;
+	char outdir[256], bc[16], p[256],configlist[256];
 
 	/* for the reading function */
-	input_record_t read[7];
+	input_record_t read[12];
 
 } input_scatt;
 
 #define init_input_scatt(varname) \
 { \
 	.read={\
-		{"Fermion mass", "mes:mass = %s", STRING_T, (varname).mstring},\
+		{"Fermion masses", "mes:mass = %s", STRING_T, (varname).mstring},\
 		{"csw", "mes:csw = %lf", DOUBLE_T, &(varname).csw},\
 		{"inverter precision", "mes:precision = %lf", DOUBLE_T, &(varname).precision},\
-		{"number of inversions per cnfg", "I1:nhits = %d", INT_T, &(varname).nhits},\
-		{"Boundary conditions:", "I1:bc = %s", STRING_T, &(varname).bc},\
-		{"Momenta:", "I1:p = %s", STRING_T, &(varname).p},\
+		{"number of inversions per cnfg", "sigma_triangle:nhits = %d", INT_T, &(varname).nhits},\
+		{"Source time:", "mes:tsrc = %d", INT_T, &(varname).tsrc},\
+		{"Output directory:", "mes:outdir = %s", STRING_T, &(varname).outdir},\
+		{"Configuration list:", "mes:configlist = %s", STRING_T, &(varname).configlist},\
+		{"Boundary conditions:", "mes:bc = %s", STRING_T, &(varname).bc},\
 		{NULL, NULL, INT_T, NULL}\
 	}\
 }
 
 
+char cnfg_filename[256]="";
+char list_filename[256]="";
+char prop_filename[256]="";
+char source_filename[256]="";
 char input_filename[256] = "input_file";
+char output_filename[256] = "meson_scattering.out";
+int Nsource;
+double M;
+
+enum { UNKNOWN_CNFG, DYNAMICAL_CNFG, QUENCHED_CNFG };
+
+
+
+
 
 input_scatt mes_var = init_input_scatt(mes_var);
 
 typedef struct {
 	char string[256];
-  char configlist[256];
+    char configlist[256];
 	int t, x, y, z;
 	int nc, nf;
 	double b, m;
@@ -330,6 +345,57 @@ double complex Triangle(fourvec p, double m, int L, int LT, int t)
     return res;
 }
 
+
+
+/**
+ * @brief Calculates analytic expression for the triangle graph with identity at the sink
+ * @param p Momentum at the sink
+ * @param m Quark mass
+ * @param L spatial size of the box
+ * @param LT time extent of the box
+ * @param t time slice
+ */
+double complex Triangle_id(fourvec p, double m, int L, int LT, int t)
+{
+    fourvec mom[3];
+    int q1, q2, q3, q14, q24, q34, i,j;
+    double complex res;
+    res = 0.;
+    double numerator, denominator;
+    double af1[3];
+    double af2[3][3];
+
+    for(q1=0; q1<L; ++q1)  for(q2=0; q2<L; ++q2) for(q3=0; q3<L; ++q3) for (q14=0; q14<LT; ++q14) for (q24=0; q24<LT; ++q24) for (q34=0; q34<LT; ++q34){
+        mom[0] = FV(q,q14);
+        mom[1] = FV(q,q24);
+        mom[2] = (fourvec) {{q1,q2,q3,((double) q34)*L/LT}};
+        iadd(&mom[2],& p);
+        imul(&mom[2], 2.0* PI / L);
+
+        denominator=1.0;
+        for(i=0;i<3;++i)
+        {
+            af1[i] = f1(mom[i],m);
+            for(j=0;j<3;++j)
+            {
+                af2[i][j] = f2(mom[i],mom[j]);
+            }
+            denominator *= (SQR(af1[i]) + af2[i][i]);
+        }
+
+
+	numerator = (af1[0]*af1[1]*af1[2]) - af1[0]*( af2[1][2] ) + af1[1]*( af2[0][2] ) + af1[2]*( af2[0][1] );
+
+        res += cexp(I*(t * (q24 - q34) * 2.0 * PI/LT ))*numerator / denominator;
+    }
+
+    res = 4*res/L/L/L/LT/LT/LT;
+    return res;
+}
+
+
+
+
 /**
  * @brief Calculates analytic expression for the rectangle pipi->pipi contraction.
  * @param px Momentum at the sink connected to the source
@@ -340,7 +406,7 @@ double complex Triangle(fourvec p, double m, int L, int LT, int t)
  * @param LT time extent of the box
  * @param t time slice
  */
-double complex R(fourvec px, fourvec py, fourvec pz, double m, int L, int LT, int t)
+double complex R_(fourvec px, fourvec py, fourvec pz, double m, int L, int LT, int t)
 {
     fourvec mom[4];
     int q11, q12, q13, q14, q24, q34, q44, i,j;
@@ -413,24 +479,31 @@ int compare_2pt(meson_observable *mo, double complex *corr, int px, int py, int 
         double num_im = mo->corr_im[corr_ind(px,py,pz,pmax,t,1,0)];
         double ana_im = cimag(corr[t]);
         if(fabs(num_re - ana_re) > tol || fabs(num_im - ana_im)>tol){
-            lprintf("TEST",0,"Mismatch, t=%d, numeric = %e + I*(%e), analytic = %e + I*(%e)\n",t,num_re,num_im,ana_re,ana_im);
+            lprintf("TEST",0,"Mismatch, t=%d, numeric = %e + I*(%e), analytic = %e + I*(%e)",t,num_re,num_im,ana_re,ana_im);
             retval = 1;
         }
         else
         {
-            lprintf("TEST",0,"Match, t=%d, numeric = %e + I*(%e), analytic = %e + I*(%e)\n",t,num_re,num_im,ana_re,ana_im);
+            lprintf("TEST",0,"Match, t=%d, numeric = %e + I*(%e), analytic = %e + I*(%e)",t,num_re,num_im,ana_re,ana_im);
         }
         
     }
     return retval;
 }
 
+
+
 int main(int argc,char *argv[])
 {
   int return_value=0;
-  int tau=0;
+  int ncorr=3;
   double m[256];
+  meson_observable **mo_arr;  
   
+  fourvec zero_p = (fourvec){{0,0,0,0}};
+  
+  double threshold = 0.03;
+
   error(!(GLB_X==GLB_Y && GLB_X==GLB_Z),1,"main", "This test works only for GLB_X=GLB_Y=GLB_Z");
 
   setup_process(&argc,&argv);
@@ -442,166 +515,83 @@ int main(int argc,char *argv[])
   read_input(rlx_var.read,get_input_filename());
 
   int numsources = mes_var.nhits;
-
+   
   #if defined(WITH_CLOVER) ||  defined(WITH_EXPCLOVER)
   set_csw(&mes_var.csw);
   #endif
-
-  m[0] = atof(mes_var.mstring); 
-  init_propagator_eo(1,m,mes_var.precision);
+	
+   m[0] = atof(mes_var.mstring); 
+   init_propagator_eo(1,m,mes_var.precision);
   
-  int Nmom;
-  int **plist = getmomlist(mes_var.p,&Nmom);
+   lprintf("MAIN",0,"Boundary conditions: %s\n",mes_var.bc);
+   lprintf("MAIN",0,"mass is : %e\n",m[0]);
+   lprintf("MAIN",0,"Number of hits : %d \n",numsources);
+  
 
-  lprintf("MAIN",0,"Boundary conditions: %s\n",mes_var.bc);
-  lprintf("MAIN",0,"The momenta are: %s\n",mes_var.p);
-  lprintf("MAIN",0,"mass is : %e\n",m[0]);
-  lprintf("MAIN",0,"Number of sources: %d\n",numsources);
-  lprintf("MAIN",0,"Number of momenta: %d\n",Nmom);
-  lprintf("MAIN",0,"The momenta are:\n");
-  for(int i=0; i<Nmom; i++){
-    lprintf("MAIN",0,"p%d = (%d, %d, %d)\n", i+1, plist[i][0], plist[i][1], plist[i][2]);
-  }
-
-
-    struct timeval start, end, etime;
-    gettimeofday(&start,0);
+   struct timeval start, end, etime;
+   gettimeofday(&start,0);
  
-    unit_gauge(u_gauge);
-    represent_gauge_field();
-    #ifdef REPR_FUNDAMENTAL 
-    apply_BCs_on_represented_gauge_field(); //This is a trick: the BCs are not applied in the case the REPR is fundamental because represent_gauge field assumes that the right BCs are already applied on the fundamental field!
-    #endif
+   unit_gauge(u_gauge);
+   represent_gauge_field();
+   gettimeofday(&start,0);
+   //char path[100]="./output/";
+   double complex Tstoch[GLB_T],Ttheo[GLB_T];
 
-    struct mo_0 *mo_p0[numsources]; 
-    struct mo_p *mo_p[Nmom][numsources];
-    for(int i=0; i<numsources; i++){
-        mo_p0[i] = (struct mo_0*) malloc(sizeof(struct mo_0));
-        for(int j=0; j<Nmom; j++){
-            mo_p[j][i] = (struct mo_p*) malloc(sizeof(struct mo_p));
-        }
-        lprintf("MAIN",0,"Initiating mo, source = %d\n",i);
-        init_mo_0(mo_p0[i]);
-        for (int j=0;j<Nmom;j++) init_mo_p(mo_p[j][i],plist[j][0],plist[j][1],plist[j][2]);
-    }
+   for (int t=0;t < GLB_T ; t++)    Tstoch[t] = 0.0;
 
-    for (int src=0;src<numsources;++src)
-    {
-	    struct src_common src0;
-	    struct src_p *src_pn = (struct src_p*) malloc(Nmom*sizeof(struct src_p));
-	    struct prop_common prop0;
-	    struct prop_p *p_p = (struct prop_p*) malloc(Nmom*sizeof(struct prop_p));
+    mo_arr= (meson_observable**)malloc(sizeof(meson_observable*)*ncorr);
+    for(int i=0; i<ncorr; i++) mo_arr[i] =  (meson_observable*) malloc(sizeof(meson_observable));
 
-	    init_src_common_point(&src0,tau);
-	    make_prop_common(&prop0, &src0, 4, tau,mes_var.bc);
-	    gen_mo_0(mo_p0[src], &prop0, &src0, tau);
+    init_mo(mo_arr[0],"sigmaconn",GLB_T);
+    init_mo(mo_arr[1],"sigmadisc",GLB_T);
+    init_mo(mo_arr[2],"T",GLB_T);
+   
+   for (int n=0;n<numsources;n++)
+    {   
+        if (n%100==0) lprintf("MAIN",0,"nhits: %d / %d \n/",n,numsources);
+        measure_pion_scattering_I0_TS( m,1 ,mes_var.precision,NULL,"test",1,mo_arr);
         
+        for (int t=0;t < GLB_T ; t++) 
+            {
+                Tstoch[t] += (mo_arr[2]->corr_re[corr_ind(0,0,0,0,t,1,0)]+I*mo_arr[2]->corr_im[corr_ind(0,0,0,0,t,1,0)])/(numsources*GLB_X*GLB_Z*GLB_Y); 
+            }
+        for (int i=0;i<ncorr;i++) reset_mo(mo_arr[i]);
+        
+    }   
+ 
+    for (int t=0;t < GLB_T ; t++)  
+    {
+      Ttheo[t] =  NF*Triangle_id( zero_p, m[0],GLB_X,GLB_T,t ); // R_(zero_p,zero_p,zero_p,m[0],GLB_X,GLB_T,t);
+    }
+  
+  
+    for (int i=0;i<GLB_T;++i)    lprintf("MAIN",0,"T analytical T %e + 1I %e  numerical %e + 1I %e\n" ,creal(Ttheo[i]),cimag(Ttheo[i]),creal(Tstoch[i]), cimag(Tstoch[i]));
+    for (int i=0;i<GLB_T;++i)    lprintf("MAIN",0,"diff analytical T %e + 1I %e, and relative %e  \n" ,creal(Ttheo[i]) - creal(Tstoch[i]),cimag(Ttheo[i])- cimag(Tstoch[i]), (creal(Ttheo[i]) - creal(Tstoch[i]))/( creal(Ttheo[i])  ) );
 
-        for(int i=0; i<Nmom; i++){
-            lprintf("GRRR",0,"src %d %d \n",src,i);
-            init_src_p(src_pn + i, &src0, plist[i][0], plist[i][1], plist[i][2]);
-            make_prop_p(p_p + i, src_pn + i, &src0, 4, tau, mes_var.bc);
-            gen_mo_p(mo_p[i][src], &prop0, p_p + i, &src0, tau);
-            lprintf("test",0,"mom %d src %d %e \n",i,src,mo_p[i][src]->pi->corr_re[corr_ind(0,0,0,0,0,1,0)]);
-        }
 
-	    free_src_common(&src0);
-	    free_prop_common(&prop0);
-        for(int i=0; i<Nmom; i++){
-            free_src_p(src_pn + i);
-            free_prop_p(p_p + i);
-        }
+    for (int i=0;i<GLB_T;i++){
+
+      lprintf("MAIN",0,"T check %e\n",  (creal(Ttheo[i]) - creal(Tstoch[i])) /creal(Ttheo[i])    ) ;
+
+
+      if(  fabs( (creal(Ttheo[i]) - creal(Tstoch[i]))/creal(Ttheo[i]) ) > threshold  ){
+	return_value += 1;
+      }
     }
 
-    lprintf("TEST",0,"Finished lattice calculation, proceeding with analytic calculation\n");
-    fourvec p = {{0.0,0.0,0.0,0.0}};
-#define TOL 1e-2
-    int err;
-    fourvec ptmp, mptmp;
-#define CHECK(NAME,FUN, MO, PX,PY,PZ)\
-    double complex NAME[GLB_T];\
-    lprintf("TEST",0,"Comparing %s..........\n",#NAME);\
-    ptmp = (fourvec){{PX,PY,PZ,0}};\
-    for (int i=0;i<GLB_T;++i){\
-        NAME[i] = FUN(ptmp,m[0],GLB_X,GLB_T,i);\
-    }\
-    err = compare_2pt(MO, NAME, PX,PY,PZ,2,TOL);  \
-    if(err){\
-        return_value +=1;\
-        lprintf("TEST",0,"FAILED!!!\n");\
-    } else{\
-        lprintf("TEST",0,"OK\n");\
-    }
-
-    CHECK(pi_0, twopoint, mo_p0[0]->pi,0,0,0)
-    CHECK(rho_g3_0, twopoint_rho, mo_p0[0]->rho[2][2],0,0,0)
-
-    int px,py,pz;
-    for(int mom=0; mom<Nmom; mom++){
-        px = mo_p[mom][0]->p[0];
-        py = mo_p[mom][0]->p[1];
-        pz = mo_p[mom][0]->p[2];
-
-        lprintf("TEST",0,"Running momentum (%d,%d,%d)\n",px,py,pz);
-        CHECK(pi_p, twopoint, mo_p[mom][0]->pi,px,py,pz)
-        CHECK(rho_g3_p, twopoint_rho, mo_p[mom][0]->rho[2][2],px,py,pz)
-        CHECK(rho_g1g2_p, twopoint_rho12, mo_p[mom][0]->rho[0][1],px,py,pz)
-        CHECK(t1_g3_p, Triangle, mo_p[mom][0]->t1[2],px,py,pz)
-
-        double complex r1[GLB_T];
-        lprintf("TEST",0,"Comparing r1 and r2..........\n");
-        ptmp = (fourvec){{px,py,pz,0}};
-        mptmp = (fourvec){{-px,-py,-pz,0}};
-        for (int i=0;i<GLB_T;++i){
-            r1[i] = R(p,p,ptmp,m[0],GLB_X,GLB_T,i);
-        }
-        err = compare_2pt(mo_p[mom][0]->r1, r1, px,py,pz,2,TOL);;  
-        if(err){
-            return_value+=1;
-            lprintf("TEST",0,"FAILED!!!\n");
-        } else{
-            lprintf("TEST",0,"OK\n");
-        }
-
-        double complex r3[GLB_T];
-        lprintf("TEST",0,"Comparing r3 and r4..........\n");
-        for (int i=0;i<GLB_T;++i){
-            r3[i] = R(mptmp,p,ptmp,m[0],GLB_X,GLB_T,i);
-        }
-        err = compare_2pt(mo_p[mom][0]->r3, r3, px,py,pz,2,TOL);;  
-        if(err){
-            return_value+=1;
-            lprintf("TEST",0,"FAILED!!!\n");
-        } else{
-            lprintf("TEST",0,"OK\n");
-        }
-    }
-
-    if(return_value == 0){
-        lprintf("TEST",0,"All tests passed successfully!\n");
-    } else {
-        lprintf("TEST",0,"Some tests have failed!\n");
-    }
-    
 
     gettimeofday(&end,0);
     timeval_subtract(&etime,&end,&start);
     lprintf("MAIN",0,"Configuration : analysed in [%ld sec %ld usec]\n",etime.tv_sec,etime.tv_usec);
+    
+  
+  global_sum_int(&return_value,1);
+  lprintf("MAIN", 0, "return_value= %d\n ",  return_value);
 
-    lprintf("DEBUG",0,"ALL done, deallocating\n");
-    // Free mos
-    for(int src=0;src<numsources;src++){
-	    free_mo_0(mo_p0[src]);
-        for(int i=0; i<Nmom;i++){
-            free_mo_p(mo_p[i][src]);
-        }
-    }
-   
-    freep(plist,Nmom);   
-    free_propagator_eo();
-    global_sum_int(&return_value,1);
-    lprintf("MAIN", 0, "return_value= %d\n ",  return_value);
-    finalize_process();
+  lprintf("DEBUG",0,"ALL done, deallocating\n");
+  for (int i=0;i<ncorr;i++) free_mo(mo_arr[i]);
 
-    return return_value;
+  finalize_process();
+
+  return return_value;
 }
