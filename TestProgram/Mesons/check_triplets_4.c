@@ -14,7 +14,6 @@
 
 #include "clover_tools.h"
 #include "communications.h"
-#include "debug.h"
 #include "dirac.h"
 #include "error.h"
 #include "geometry.h"
@@ -246,8 +245,6 @@ double complex get_g0(double complex Gamma[4][4]) {
 }
 
 int main(int argc, char *argv[]) {
-
-  gdb_hook();
 
   int i, t, sign;
   double **ex_triplets;

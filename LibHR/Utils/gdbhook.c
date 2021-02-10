@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// To be able to run GDB on MPI jobs, as desribed in
+// https://www.open-mpi.org/faq/?category=debugging#serial-debuggers
 void gdb_hook() {
 
   char *debugging_status = getenv("GDBMPI");
