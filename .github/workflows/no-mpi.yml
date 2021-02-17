@@ -1,4 +1,4 @@
-name: mpi
+name: no-mpi
 
 on:
   push:
@@ -17,8 +17,26 @@ jobs:
         nc: [2, 3]
         repr: [FUND, ADJ]
         ecsw: [-expclover,-no-expclover]
-        dir: [Algebra,DiracOperator,Geometry,Inverters,Mesons,PureGauge,RIMOM,Sources,StoredConfs,Utils,Disconnected,GaugeFix,Propagator,Random,Scattering,SpinorField,Update,WilsonLoops]
-    
+        dir: 
+        - Algebra
+        - DiracOperator
+        - Geometry
+        - Inverters
+        - Mesons
+        - PureGauge
+        - RIMOM
+        - Sources
+        - StoredConfs
+        - Utils
+        - Disconnected
+        - GaugeFix
+        - Propagator
+        - Random
+        - Scattering
+        - SpinorField
+        - Update
+        - WilsonLoops
+
     steps:
     - uses: actions/checkout@v1
       with:
@@ -27,7 +45,7 @@ jobs:
     - uses: ./.github/actions/runtests
       with:
         dir: ${{matrix.dir}}
-        mpi: -mpi
+        mpi: -no-mpi
         nc: ${{ matrix.nc }}
         repr: ${{ matrix.repr }}
         ecsw: ${{ matrix.ecsw }}

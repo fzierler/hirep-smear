@@ -1,8 +1,9 @@
-name: no-mpi-spn
+name: mpi-spn
 
 on:
   push:
     branches:
+      - master
       - spn-swansea-merge
 
 jobs:
@@ -14,10 +15,29 @@ jobs:
       fail-fast: false
       matrix:
         gaugegroup : [SPN]
-        nc: [4,6]
+        nc: [4, 6]
         repr: [FUND, 2A ]
         ecsw: [-no-clover]
-
+        dir:
+        - Algebra
+        - DiracOperator
+        - Geometry
+        - Inverters
+        - Mesons
+        - PureGauge
+        - RIMOM
+        - Sources
+        - StoredConfs
+        - Utils
+        - Disconnected
+        - GaugeFix
+        - Propagator
+        - Random
+        - Scattering
+        - SpinorField
+        - Update
+        - WilsonLoops
+   
     steps:
     - uses: actions/checkout@v1
       with:
@@ -25,10 +45,9 @@ jobs:
 
     - uses: ./.github/actions/runtests
       with:
-
-        mpi: -no-mpi
+        dir: ${{matrix.dir}}
+        mpi: -mpi
         nc: ${{ matrix.nc }}
         repr: ${{ matrix.repr }}
-        ecsw: ${{ matrix.expcsw }}
+        ecsw: ${{ matrix.ecsw }}
         gaugegroup: ${{ matrix.gaugegroup }}
-

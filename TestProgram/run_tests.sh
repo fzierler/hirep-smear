@@ -14,12 +14,6 @@ done
 
 ../Make/Utils/write_mkflags.pl -f ../Make/MkFlags ${@: 2} || exit 1
 
-if [[ " $@ " =~ ' --gauge[[:space:]]SPN ' ]]
-then
-    echo Run SpN regression tests...
-    make -C SPNtoSUNRegression runtests
-fi
-
 echo Cleaning...
 ( cd .. && make cleanall )
 
