@@ -1,4 +1,4 @@
-#include "debug.h"
+#include "gdbhook.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
