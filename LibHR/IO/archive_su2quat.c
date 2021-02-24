@@ -39,19 +39,8 @@
  */
 
 #ifdef GAUGE_SPN
-
-static void translate_su2_quat(double *q, suNg *m) {
-    q[0] =  creal((*m).c[0]);
-    q[1] =  cimag((*m).c[1]);
-    q[2] = -creal((*m).c[1]);
-    q[3] =  cimag((*m).c[0]);
-}
-static void translate_quat_su2(suNg *m, double *q) {
-    (*m).c[0] =  q[0] + I * q[3];
-    (*m).c[1] = -q[2] + I * q[1];
-}
-
-#else
+#error "Use GAUGE_SUN instead of GAUGE_SPN for N=2."
+#endif
 
 //#define _FAST_CONVERSION
 static void translate_su2_quat(double *q, suNg *m)
@@ -75,7 +64,6 @@ static void translate_quat_su2(suNg *m, double *q)
   (*m).c[2] = q[2] + I * q[1];
   (*m).c[3] = q[0] - I * q[3];
 }
-#endif
 
 void write_gauge_field_su2q(char filename[])
 {
