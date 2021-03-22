@@ -62,13 +62,13 @@ format_type format[nformats] = {
     {.name = "ascii", .read = read_gauge_field_ascii, .write = NULL},
     {.name = "milc", .read = read_gauge_field_milc, .write = NULL},
     {.name = "milcn3r", .read = read_gauge_field_milc_no3row, .write = NULL},
-    {.name = "mpieo", .read = read_gauge_field, .write = write_gauge_field},
+    {.name = "mpieo", .read = read_gauge_field, .write = write_gauge_field_matrix},
     {.name = "eolexi:be", .read = read_gauge_field_eolexi_BE, .write = write_gauge_field_eolexi_BE},
     {.name = "mpieo:be", .read = read_gauge_field_mpieo_BE, .write = write_gauge_field_mpieo_BE},
     {.name = "eolexi:le", .read = read_gauge_field_eolexi_LE, .write = write_gauge_field_eolexi_LE},
     {.name = "mpieo:le", .read = read_gauge_field_mpieo_LE, .write = write_gauge_field_mpieo_LE},
     {.name = "fortran", .read = read_gauge_field_fortran, .write = NULL},
-#ifdef WITH_QUATERNIONS
+#ifndef WITH_QUATERNIONS
     {.name = "su2q", .read = read_gauge_field_su2q, .write = write_gauge_field_su2q},
 #endif
 #ifdef GAUGE_SPN
@@ -565,7 +565,7 @@ int main(int argc, char *argv[])
   }
 
   /* setup process communications */
-  setup_process(&argc, &argv);
+  // setup_process(&argc, &argv);
 
   setup_gauge_fields();
 
