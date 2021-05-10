@@ -1,3 +1,9 @@
+/*
+Routine to geometrically shift the fields (both spinor and/or gauge) 
+The routine is MPI friendly and allows for any shift size.
+If any input is left null the routine acts only the other field.
+*/
+
 //#include <stdio.h>
 #include "logger.h"
 #include "global.h"
@@ -36,11 +42,15 @@ void shift_fields(int *shift, spinor_field *sin, suNg_field *uin, spinor_field *
   if (sin != NULL)
   {
     if (sin->type == &glattice)
+    {
       _TWO_SPINORS_MATCHING(sin, sout);
+    }
     else
     {
       if (total_shift % 2 == 0)
+      {
         _TWO_SPINORS_MATCHING(sin, sout);
+      }
       else
         error((sin)->type == (sout)->type, 1, "shift_fields [shift_fields.c]", "Odd shift implies that spinor type must not match!");
     }
@@ -114,7 +124,6 @@ void shift_fields(int *shift, spinor_field *sin, suNg_field *uin, spinor_field *
     {
       dd = 3;
     }
-
 
     for (x0 = 0; x0 < T_EXT; x0++)
       for (x1 = 0; x1 < X_EXT; x1++)

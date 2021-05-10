@@ -13,7 +13,6 @@
 #define MAIN_PROGRAM
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include "io.h"
@@ -37,7 +36,7 @@
 #include "spectrum.h"
 #include "clover_tools.h"
 #include "communications.h"
-#include "clover_tools.h"
+#include "data_storage.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288419716939937510
@@ -49,7 +48,9 @@ static double g1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  /* g1 
 static double g2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  /* g2 = tr gamma_2 \bar{Gamma} gamma_2 Gamma / 4 */
 static double g3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  /* g3 = tr gamma_3 \bar{Gamma} gamma_3 Gamma / 4 */
 static double gb[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
 char *mes_channel_names[16] = {"g5", "id", "g0", "g1", "g2", "g3", "g0g1", "g0g2", "g0g3", "g0g5", "g5g1", "g5g2", "g5g3", "g0g5g1", "g0g5g2", "g0g5g3"};
+
 
 #define mult_mat(r, A, B)                      \
   {                                            \
@@ -102,18 +103,6 @@ static void adj_mat(double complex At[4][4], double complex A[4][4])
   }
 }
 
-/*VD: This is kept to to some debugging.
-  static void print_mat(double complex mat[4][4], const char name[]) {
-    int i,j;
-    lprintf("MAIN",0,"%s = \n", name);
-    for(i=0; i<4; i++) {
-        lprintf("MAIN",0,"[ ");
-          for(j=0; j<4; j++) {
-            lprintf("MAIN",0,"(%.2f,%.2f) ",creal(mat[i][j]),cimag(mat[i][j]));
-          }
-          lprintf("MAIN",0,"]\n");
-        }
-      }*/
 /* Mesons parameters */
 typedef struct _input_mesons
 {
@@ -149,57 +138,17 @@ double complex get_gid(double complex Gamma[4][4])
   double complex Gammabar[4][4];
   int sign;
   double complex r;
-  double complex g0[4][4];
-  g0_debug(g0, &sign);
+  double complex lg0[4][4];
+  g0_debug(lg0, &sign);
 
   adj_mat(tmp, Gamma);
-  mult_mat(tmp2, g0, tmp);
-  mult_mat(Gammabar, tmp2, g0);
+  mult_mat(tmp2, lg0, tmp);
+  mult_mat(Gammabar, tmp2, lg0);
   mult_mat(tmp, Gammabar, Gamma);
   trace_mat(r, tmp);
   return r / 4.0;
 }
-char char_t[100];
-FILE *fp;
-char path[1035];
 
-/* Ugly: read the correlator from the output files ! This is because the function that compute the props, make the contractions and write the output zeros the correlators after writting them.
-The purpose of this entire test is to check the function without modifying it */
-static double read_output(int t, int i, int re_im_flag)
-{
-  char char_t[100];
-  FILE *fp;
-  char path[1035];
-  char command[500];
-  double out;
-
-  sprintf(char_t, "%d", t + 1);
-  strcpy(command, "grep \"TRIPLET ");
-  strcat(command, mes_channel_names[i]);
-  if (re_im_flag == 0) // get the real part.
-  {
-    strcat(command, "=\" out_0 | awk -F'=' '{print $3}' | awk '{for (i=1;i<=NF;i++) print $i}' | awk 'NR==");
-  }
-  if (re_im_flag == 1)
-  {
-    strcat(command, "_im=\" out_0 | awk -F'=' '{print $3}' | awk  '{for (i=1;i<=NF;i++) print $i}' | awk 'NR==");
-  }
-  strcat(command, char_t);
-  strcat(command, "'");
-
-  //printf("%d %d %s \n", i,t ,command);
-  fp = popen(command, "r");
-  while (fgets(path, sizeof(path) - 1, fp) != NULL)
-  {
-    //printf("%s", path);
-    sscanf(path, "%lf", &out);
-  }
-
-  /* close */
-  pclose(fp);
-
-  return out;
-}
 
 /* = tr gamma_mu \bar{Gamma} gamma_mu Gamma / 4 \bar{Gamma} = gamma_0 Gamma^\dagger gamma_0 */
 double complex get_gmu(double complex Gamma[4][4], int mu)
@@ -208,9 +157,9 @@ double complex get_gmu(double complex Gamma[4][4], int mu)
   double complex tmp[4][4], tmp2[4][4], tmp3[4][4];
   double complex Gammabar[4][4];
   double complex r;
-  double complex g0[4][4], gmu[4][4];
+  double complex lg0[4][4], gmu[4][4];
 
-  g0_debug(g0, &sign);
+  g0_debug(lg0, &sign);
   if (mu == 1)
     g1_debug(gmu, &sign);
   if (mu == 2)
@@ -221,15 +170,14 @@ double complex get_gmu(double complex Gamma[4][4], int mu)
     g0_debug(gmu, &sign);
   adj_mat(tmp, Gamma);
 
-  mult_mat(tmp2, g0, tmp);
-  mult_mat(Gammabar, tmp2, g0);
+  mult_mat(tmp2, lg0, tmp);
+  mult_mat(Gammabar, tmp2, lg0);
 
   mult_mat(tmp, gmu, Gammabar);
   mult_mat(tmp2, gmu, Gamma);
   mult_mat(tmp3, tmp, tmp2);
 
   trace_mat(r, tmp3);
-  //  printf("get_g1 %d %f %f \n",i,creal(r)/4.,cimag(r)/4.);
   return r / 4.0;
 }
 
@@ -240,9 +188,9 @@ double complex get_g0(double complex Gamma[4][4])
   set_zero_mat(tmp);
   mult_mat(tmp, Gamma, Gamma);
   trace_mat(r, tmp);
-  //printf("get_g0 %f %f \n",creal(r)/4.,cimag(r)/4.);
   return r / 4.0;
 }
+
 int main(int argc, char *argv[])
 {
   int i, t, sign;
@@ -250,6 +198,7 @@ int main(int argc, char *argv[])
   char pame[256];
   int return_value = 0;
   double tol=1.e-7;
+  data_storage_array* out_corr=NULL;
 
   double complex g[16][4][4];
   g5_debug(g[0], &sign);
@@ -268,9 +217,8 @@ int main(int argc, char *argv[])
   mult_mat(g[13], g[2], g[10]); //  g0g5g1
   mult_mat(g[14], g[2], g[11]); //  g0g5g2
   mult_mat(g[15], g[2], g[12]); //  g0g5g3
-
-  char *mes_channel_names[16] = {"g5", "id", "g0", "g1", "g2", "g3", "g0g1", "g0g2", "g0g3", "g0g5", "g5g1", "g5g2", "g5g3", "g0g5g1", "g0g5g2", "g0g5g3"};
-
+ 
+  
   for (i = 0; i < 16; i++)
   {
     gid[i] = get_gid(g[i]);
@@ -312,9 +260,7 @@ int main(int argc, char *argv[])
 
   error(!(GLB_X == GLB_Y && GLB_X == GLB_Z), 1, "main", "This test works only for GLB_X=GLB_Y=GLB_Z");
 
-  //int tau, int nm, double* m, int n_mom,int conf_num, double precision)
-  measure_spectrum_pt(0, 1, &mass, 1, 0, 1e-28);
-
+  measure_spectrum_pt(0, 1, &mass, 1, 0, 1e-28,STORE, &out_corr);
   lprintf("MAIN", 0, "Checking results\n");
 
   double complex corr_triplets[16][GLB_T];
@@ -323,7 +269,9 @@ int main(int argc, char *argv[])
   {
     for (t = 0; t < GLB_T; t++)
     {
-      corr_triplets[i][t] = read_output(t, i, 0) + I * read_output(t, i, 1);
+      int idx_re[5] = {0, 0, i,t, 0};
+      int idx_im[5] = {0, 0, i,t, 1};
+      corr_triplets[i][t] = (*data_storage_element(out_corr, 0, idx_re) + I * *data_storage_element(out_corr, 0, idx_im)); 
     }
   }
 

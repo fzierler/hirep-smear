@@ -8,34 +8,34 @@
 
 #define MAIN_PROGRAM
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include "io.h"
-#include "random.h"
+#include "clover_tools.h"
+#include "communications.h"
+#include "data_storage.h"
+#include "dirac.h"
+#include "disconnected.h"
 #include "error.h"
+#include "gamma_spinor.h"
 #include "geometry.h"
-#include "memory.h"
-#include "statistics.h"
-#include "update.h"
 #include "global.h"
+#include "inverters.h"
+#include "io.h"
+#include "linear_algebra.h"
+#include "logger.h"
+#include "memory.h"
 #include "observables.h"
+#include "random.h"
+#include "representation.h"
+#include "setup.h"
+#include "spin_matrix.h"
+#include "statistics.h"
 #include "suN.h"
 #include "suN_types.h"
-#include "dirac.h"
-#include "linear_algebra.h"
-#include "inverters.h"
-#include "representation.h"
+#include "update.h"
 #include "utils.h"
-#include "logger.h"
-#include "communications.h"
-#include "gamma_spinor.h"
-#include "spin_matrix.h"
-#include "disconnected.h"
-#include "clover_tools.h"
-#include "setup.h"
-
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PI 3.141592653589793238462643383279502884197
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 {
 	int i;
 	FILE *list;
-	int nm;
+
 	double m[256];
 	char list_filename[256] = "";
 	char cnfg_filename[256] = "";
@@ -128,15 +128,13 @@ int main(int argc, char *argv[])
 	set_csw(&disc_var.csw);
 #endif
 
-
 	init_BCs(NULL);
 
-	nm = 1;
 	m[0] = atof(disc_var.mstring); //
 
 	lprintf("MAIN", 0, "Inverter precision = %e\n", disc_var.precision);
 	lprintf("MAIN", 0, "Mass[%d] = %f\n", 0, m[0]);
-	lprintf("MAIN", 0, "nhits = %d\n", 0, disc_var.nhits);		
+	lprintf("MAIN", 0, "nhits = %d\n", 0, disc_var.nhits);
 	i = 0;
 	while (++i)
 	{
@@ -144,7 +142,7 @@ int main(int argc, char *argv[])
 		if (list != NULL)
 			if (fscanf(list, "%s", cnfg_filename) == 0 || feof(list))
 				break;
-		
+
 		lprintf("MAIN", 0, "Configuration from %s\n", cnfg_filename);
 		/* NESSUN CHECK SULLA CONSISTENZA CON I PARAMETRI DEFINITI !!! */
 		read_gauge_field(cnfg_filename);
@@ -158,7 +156,7 @@ int main(int argc, char *argv[])
         #ifdef GAUGE_SPN //FIXFORSPN
         #error "measure_loops must be adapted for SPN"
         #endif
-		measure_loops(nm, m, disc_var.nhits, i, disc_var.precision, disc_var.source_type, disc_var.n_mom, NULL);
+		measure_loops(m, disc_var.nhits, i, disc_var.precision, disc_var.source_type, disc_var.n_mom, DONTSTORE, NULL);
 
 		if (list == NULL)
 			break;

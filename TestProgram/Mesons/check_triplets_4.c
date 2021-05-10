@@ -1,4 +1,5 @@
 
+// clang-format off
 /******************************************************************************
  *
  *
@@ -11,10 +12,14 @@
  ******************************************************************************/
 
 #define MAIN_PROGRAM
-
-#include "clover_tools.h"
-#include "communications.h"
-#include "dirac.h"
+#define _BSD_SOURCE
+//#include "dirac.h"
+//#include <stdio.h>
+#include "io.h"
+#include "random.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "error.h"
 #include "geometry.h"
 #include "global.h"
@@ -28,15 +33,15 @@
 #include "representation.h"
 #include "setup.h"
 #include "spectrum.h"
-#include "statistics.h"
-#include "suN.h"
-#include "suN_types.h"
-#include "update.h"
-#include "utils.h"
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//#include "statistics.h"
+//#include "suN.h"
+//#include "suN_types.h"
+//#include "update.h"
+//#include "utils.h"
+//#include <stdio.h>
+#include "clover_tools.h"
+#include "communications.h"
+#include "data_storage.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288419716939937510
@@ -60,25 +65,30 @@ static double g3[16] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0}; /* g3 = tr gamma_3 \bar{Gamma} gamma_3 Gamma / 4 */
 static double gb[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-char *mes_channel_names[16] = {
-    "g5",   "id",   "g0",   "g1",   "g2",   "g3",     "g0g1",   "g0g2",
-    "g0g3", "g0g5", "g5g1", "g5g2", "g5g3", "g0g5g1", "g0g5g2", "g0g5g3"};
 
-#define mult_mat(r, A, B)                                                      \
-  {                                                                            \
-    int _i, _j, _k;                                                            \
-    double complex wm[4][4];                                                   \
-    for (_i = 0; _i < 4; _i++)                                                 \
-      for (_j = 0; _j < 4; _j++) {                                             \
-        _complex_0(wm[_i][_j]);                                                \
-        for (_k = 0; _k < 4; _k++) {                                           \
-          wm[_i][_j] += A[_i][_k] * B[_k][_j];                                 \
-        }                                                                      \
-      }                                                                        \
-    for (_i = 0; _i < 4; _i++)                                                 \
-      for (_j = 0; _j < 4; _j++) {                                             \
-        r[_i][_j] = wm[_i][_j];                                                \
-      }                                                                        \
+char *mes_channel_names[16] = {"g5", "id", "g0", "g1", "g2", "g3", "g0g1", "g0g2", "g0g3", "g0g5", "g5g1", "g5g2", "g5g3", "g0g5g1", "g0g5g2", "g0g5g3"};
+
+static double mass;
+void free_correlators(double **triplets);
+
+#define mult_mat(r, A, B)                      \
+  {                                            \
+    int _i, _j, _k;                            \
+    double complex wm[4][4];                   \
+    for (_i = 0; _i < 4; _i++)                 \
+      for (_j = 0; _j < 4; _j++)               \
+      {                                        \
+        _complex_0(wm[_i][_j]);                \
+        for (_k = 0; _k < 4; _k++)             \
+        {                                      \
+          wm[_i][_j] += A[_i][_k] * B[_k][_j]; \
+        }                                      \
+      }                                        \
+    for (_i = 0; _i < 4; _i++)                 \
+      for (_j = 0; _j < 4; _j++)               \
+      {                                        \
+        r[_i][_j] = wm[_i][_j];                \
+      }                                        \
   }
 
 #define set_zero_mat(A)                                                        \
@@ -107,18 +117,6 @@ static void adj_mat(double complex At[4][4], double complex A[4][4]) {
   }
 }
 
-/*VD: This is kept to to some debugging.
-  static void print_mat(double complex mat[4][4], const char name[]) {
-    int i,j;
-    lprintf("MAIN",0,"%s = \n", name);
-    for(i=0; i<4; i++) {
-        lprintf("MAIN",0,"[ ");
-          for(j=0; j<4; j++) {
-            lprintf("MAIN",0,"(%.2f,%.2f) ",creal(mat[i][j]),cimag(mat[i][j]));
-          }
-          lprintf("MAIN",0,"]\n");
-        }
-      }*/
 /* Mesons parameters */
 typedef struct _input_mesons {
   char mstring[256];
@@ -130,19 +128,16 @@ typedef struct _input_mesons {
 
 } input_mesons;
 
-#define init_input_mesons(varname)                                             \
-  {                                                                            \
-    .read = {                                                                  \
-      {"fermion mass", "mes:mass = %s", STRING_T, (varname).mstring},          \
-      {"csw coefficient", "mes:csw = %lg", DOUBLE_T, &(varname).csw},          \
-      {"number of noisy sources per cnfg for 2pt fn", "mes:nhits_2pt = %d",    \
-       INT_T, &(varname).nhits_2pt},                                           \
-      {NULL, NULL, INT_T, NULL}                                                \
-    }                                                                          \
+#define init_input_mesons(varname)                                                                        \
+  {                                                                                                       \
+    .read = {                                                                                             \
+      {"fermion mass", "mes:mass = %s", STRING_T, (varname).mstring},                                     \
+      {"csw coefficient", "mes:csw = %lg", DOUBLE_T, &(varname).csw},                                     \
+      {"number of noisy sources per cnfg for 2pt fn", "mes:nhits_2pt = %d", INT_T, &(varname).nhits_2pt}, \
+      {NULL, NULL, INT_T, NULL}                                                                           \
+    }                                                                                                     \
   }
 
-static double mass;
-void free_correlators(double **triplets);
 
 input_glb glb_ip = init_input_glb(glb_ip);
 input_mesons mes_ip = init_input_mesons(mes_ip);
@@ -153,57 +148,16 @@ double complex get_gid(double complex Gamma[4][4]) {
   double complex Gammabar[4][4];
   int sign;
   double complex r;
-  double complex g0[4][4];
-  g0_debug(g0, &sign);
+  double complex lg0[4][4];
+  g0_debug(lg0, &sign);
 
   adj_mat(tmp, Gamma);
-  mult_mat(tmp2, g0, tmp);
-  mult_mat(Gammabar, tmp2, g0);
+  mult_mat(tmp2, lg0, tmp);
+  mult_mat(Gammabar, tmp2, lg0);
   mult_mat(tmp, Gammabar, Gamma);
   trace_mat(r, tmp);
   return r / 4.0;
 }
-char char_t[100];
-FILE *fp;
-char path[1035];
-
-/* Ugly: read the correlator from the output files ! This is because the
-function that compute the props, make the contractions and write the output
-zeros the correlators after writting them.
-The purpose of this entire test is to check the function without modifying it */
-static double read_output(int t, int i, int re_im_flag) {
-  char char_t[100];
-  FILE *fp;
-  char path[1035];
-  char command[500];
-  double out;
-
-  sprintf(char_t, "%d", t + 1);
-  strcpy(command, "grep \"TRIPLET ");
-  strcat(command, mes_channel_names[i]);
-  if (re_im_flag == 0) // get the real part.
-  {
-    strcat(command, "=\" out_0 | awk -F'=' '{print $3}' | awk '{for "
-                    "(i=1;i<=NF;i++) print $i}' | awk 'NR==");
-  }
-  if (re_im_flag == 1) {
-    strcat(command, "_im=\" out_0 | awk -F'=' '{print $3}' | awk  '{for "
-                    "(i=1;i<=NF;i++) print $i}' | awk 'NR==");
-  }
-  strcat(command, char_t);
-  strcat(command, "'");
-
-  fp = popen(command, "r");
-  while (fgets(path, sizeof(path) - 1, fp) != NULL) {
-    sscanf(path, "%lf", &out);
-  }
-
-  /* close */
-  pclose(fp);
-
-  return out;
-}
-
 /* = tr gamma_mu \bar{Gamma} gamma_mu Gamma / 4 \bar{Gamma} = gamma_0
  * Gamma^\dagger gamma_0 */
 double complex get_gmu(double complex Gamma[4][4], int mu) {
@@ -211,9 +165,9 @@ double complex get_gmu(double complex Gamma[4][4], int mu) {
   double complex tmp[4][4], tmp2[4][4], tmp3[4][4];
   double complex Gammabar[4][4];
   double complex r;
-  double complex g0[4][4], gmu[4][4];
+  double complex lg0[4][4], gmu[4][4];
 
-  g0_debug(g0, &sign);
+  g0_debug(lg0, &sign);
   if (mu == 1)
     g1_debug(gmu, &sign);
   if (mu == 2)
@@ -224,8 +178,8 @@ double complex get_gmu(double complex Gamma[4][4], int mu) {
     g0_debug(gmu, &sign);
   adj_mat(tmp, Gamma);
 
-  mult_mat(tmp2, g0, tmp);
-  mult_mat(Gammabar, tmp2, g0);
+  mult_mat(tmp2, lg0, tmp);
+  mult_mat(Gammabar, tmp2, lg0);
 
   mult_mat(tmp, gmu, Gammabar);
   mult_mat(tmp2, gmu, Gamma);
@@ -252,28 +206,26 @@ int main(int argc, char *argv[]) {
   int return_value = 0;
   double tol = 1.e-4;
   double complex g[16][4][4];
+  data_storage_array *out_corr = NULL;
   g5_debug(g[0], &sign);
   id_debug(g[1], &sign);
   g0_debug(g[2], &sign);
   g1_debug(g[3], &sign);
   g2_debug(g[4], &sign);
   g3_debug(g[5], &sign);
-  mult_mat(g[6], g[2], g[3]) // g0g1
-      g0g2_debug(g[7], &sign);
+  mult_mat(g[6], g[2], g[3]); //g0g1
+  g0g2_debug(g[7], &sign);
   g0g3_debug(g[8], &sign);
-  mult_mat(g[9], g[2], g[0]) // g0g5
-      g5g1_debug(g[10], &sign);
+  mult_mat(g[9], g[2], g[0]); //g0g5
+  g5g1_debug(g[10], &sign);
   g5g2_debug(g[11], &sign);
   g5g3_debug(g[12], &sign);
   mult_mat(g[13], g[2], g[10]); //  g0g5g1
   mult_mat(g[14], g[2], g[11]); //  g0g5g2
   mult_mat(g[15], g[2], g[12]); //  g0g5g3
 
-  char *mes_channel_names[16] = {
-      "g5",   "id",   "g0",   "g1",   "g2",   "g3",     "g0g1",   "g0g2",
-      "g0g3", "g0g5", "g5g1", "g5g2", "g5g3", "g0g5g1", "g0g5g2", "g0g5g3"};
-
-  for (i = 0; i < 16; i++) {
+  for (i = 0; i < 16; i++)
+  {
     gid[i] = get_gid(g[i]);
     g0[i] = get_gmu(g[i], 0);
     g1[i] = get_gmu(g[i], 1);
@@ -303,12 +255,7 @@ int main(int argc, char *argv[]) {
   unit_u(u_gauge);
   represent_gauge_field();
 #ifdef REPR_FUNDAMENTAL
-  apply_BCs_on_represented_gauge_field(); // This is a trick: the BCs are not
-                                          // applied in the case the REPR is
-                                          // fundamental because represent_gauge
-                                          // field assumes that the right BCs
-                                          // are already applied on the
-                                          // fundamental field!
+  apply_BCs_on_represented_gauge_field(); //This is a trick: the BCs are not applied in the case the REPR is fundamental because represent_gauge field assumes that the right BCs are already applied on the fundamental field!
 #endif
   ex_triplets = (double **)malloc(sizeof(double *) * 16);
   for (i = 0; i < 16; i++)
@@ -319,24 +266,27 @@ int main(int argc, char *argv[]) {
   lprintf("MAIN", 0, "Zerocoord{%d,%d,%d,%d}\n", zerocoord[0], zerocoord[1],
           zerocoord[2], zerocoord[3]);
 
-  error(!(GLB_X == GLB_Y && GLB_X == GLB_Z), 1, "main",
-        "This test works only for GLB_X=GLB_Y=GLB_Z");
-  measure_spectrum_semwall(1, &mass, mes_ip.nhits_2pt, 0, 1e-28);
+  error(!(GLB_X == GLB_Y && GLB_X == GLB_Z), 1, "main", "This test works only for GLB_X=GLB_Y=GLB_Z");
+  measure_spectrum_semwall(1, &mass, mes_ip.nhits_2pt, 0, 1e-28, STORE, &out_corr);
 
   double complex corr_triplets[16][GLB_T];
 
-  for (i = 0; i < 16; i++) {
-    for (t = 0; t < GLB_T; t++) {
-      corr_triplets[i][t] = read_output(t, i, 0) + I * read_output(t, i, 1);
+  for (i = 0; i < 16; i++)
+  {
+    for (t = 0; t < GLB_T; t++)
+    {
+      int idx_re[4] = {0, i, t, 0};
+      int idx_im[4] = {0, i, t, 1};
+      corr_triplets[i][t] = (*data_storage_element(out_corr, 0, idx_re) + I * *data_storage_element(out_corr, 0, idx_im));
     }
   }
 
-  //  /* CALCOLO ESPLICITO */
+  //  /* EXPLICIT CALCULATION */
   free_correlators(ex_triplets);
 
-  lprintf("TEST", 0,
-          "\nANALITICO\tPOINT-TO-ALL\tERROR (must be less than %e)\n", tol);
-  for (i = 0; i < 16; i++) {
+  lprintf("TEST", 0, "\nANALITIC\tPOINT-TO-ALL\tERROR (must be less than %e)\n", tol);
+  for (i = 0; i < 16; i++)
+  {
     lprintf("TEST", 0, "TRIPLET CORRELATOR %s\n", mes_channel_names[i]);
     for (t = 0; t < GLB_T; t++) {
       lprintf("TEST", 0, "%e\t%e\t%e\n", ex_triplets[i][t],
@@ -452,3 +402,4 @@ void free_correlators(double **triplets) {
 
   lprintf("FREE", 0, "Exact free correlators computed.\n");
 }
+// clang-format on

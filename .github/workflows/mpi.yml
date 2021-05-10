@@ -22,6 +22,7 @@ jobs:
         - DiracOperator
         - Geometry
         - Inverters
+        - Integrators
         - Mesons
         - PureGauge
         - RIMOM
@@ -36,7 +37,10 @@ jobs:
         - SpinorField
         - Update
         - WilsonLoops
-    
+        exclude:
+          - nc: 3
+            repr: ADJ
+
     steps:
     - uses: actions/checkout@v1
       with:

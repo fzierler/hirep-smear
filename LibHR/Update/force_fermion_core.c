@@ -4,22 +4,22 @@
 * All rights reserved.                                                      *
 \***************************************************************************/
 
-#include <stdio.h>
-#include <string.h>
-#include "global.h"
-#include "update.h"
-#include "suN.h"
-#include "utils.h"
+#include "clover_exp.h"
+#include "clover_tools.h"
+#include "communications.h"
 #include "dirac.h"
+#include "global.h"
 #include "inverters.h"
+#include "linear_algebra.h"
+#include "logger.h"
+#include "memory.h"
 #include "rational_functions.h"
 #include "representation.h"
-#include "logger.h"
-#include "linear_algebra.h"
-#include "memory.h"
-#include "communications.h"
-#include "clover_tools.h"
-#include "clover_exp.h"
+#include "suN.h"
+#include "update.h"
+#include "utils.h"
+#include <stdio.h>
+#include <string.h>
 
 #define _print_avect(a) printf("(%3.5e,%3.5e,%3.5e,%3.5e,%3.5e,%3.5e,%3.5e,%3.5e)\n", (a).c1, (a).c2, (a).c3, (a).c4, (a).c5, (a).c6, (a).c7, (a).c8)
 
@@ -310,10 +310,10 @@ static void force_clover_core(double dt)
 		_SITE_FOR(&glattice, xp, ix)
 		{
 #if defined(GAUGE_SPN) && defined(REPR_FUNDAMENTAL)
-			suNffull *Z[6], W[9];
+			suNffull *Zl[6], W[9];
 			suNffull s1, s2, s3, fmat;
 #else
-			suNf *Z[6], W[9];
+			suNf *Zl[6], W[9];
 			suNf s1, s2, s3, fmat;
 #endif
 			suNg_algebra_vector f;
@@ -345,12 +345,12 @@ static void force_clover_core(double dt)
 					}
 
 					// Force matrices
-					Z[0] = _6FIELD_AT(cl_force, ix, num);
-					Z[1] = _6FIELD_AT(cl_force, o1, num);
-					Z[2] = _6FIELD_AT(cl_force, o3, num);
-					Z[3] = _6FIELD_AT(cl_force, o4, num);
-					Z[4] = _6FIELD_AT(cl_force, o5, num);
-					Z[5] = _6FIELD_AT(cl_force, o2, num);
+					Zl[0] = _6FIELD_AT(cl_force, ix, num);
+					Zl[1] = _6FIELD_AT(cl_force, o1, num);
+					Zl[2] = _6FIELD_AT(cl_force, o3, num);
+					Zl[3] = _6FIELD_AT(cl_force, o4, num);
+					Zl[4] = _6FIELD_AT(cl_force, o5, num);
+					Zl[5] = _6FIELD_AT(cl_force, o2, num);
 
 					// Construct links
 					{
@@ -389,18 +389,18 @@ static void force_clover_core(double dt)
 #define _ADDASSIGNMACRO _suNf_add_assign
 #define _SUBASSIGNMACRO _suNf_sub_assign
 #endif
-					_MULMACRO(fmat, W[8], *Z[0]);
-					_MULMACRO(s1, *Z[1], W[8]);
+					_MULMACRO(fmat, W[8], *Zl[0]);
+					_MULMACRO(s1, *Zl[1], W[8]);
 					_ADDASSIGNMACRO(fmat, s1);
-					_MULMACRO(s1, W[0], *Z[2]);
+					_MULMACRO(s1, W[0], *Zl[2]);
 					_MULMACRO(s2, s1, W[1]);
-					_MULMACRO(s3, *Z[3], W[6]);
+					_MULMACRO(s3, *Zl[3], W[6]);
 					_ADDASSIGNMACRO(s2, s3);
 					_MULMACRO(s1, W[5], s2);
 					_SUBASSIGNMACRO(fmat, s1);
-					_MULMACRO(s1, W[2], *Z[4]);
+					_MULMACRO(s1, W[2], *Zl[4]);
 					_MULMACRO(s2, s1, W[3]);
-					_MULMACRO(s3, W[7], *Z[5]);
+					_MULMACRO(s3, W[7], *Zl[5]);
 					_ADDASSIGNMACRO(s2, s3);
 					_MULMACRO(s1, s2, W[4]);
 					_ADDASSIGNMACRO(fmat, s1);
@@ -415,7 +415,7 @@ static void force_clover_core(double dt)
 					_algebra_project(f, s1);
 					_algebra_vector_mul_add_assign_g(*_4FIELD_AT(force_sum, ix, mu), sign * coeff, f);
 				} // nu
-			}	 // mu
+			}	  // mu
 		}		  // sites
 	}			  // pieces
 }
@@ -555,7 +555,7 @@ static void A_times_spinor(suNf_spinor *out, _SUNFC *Aplus, _SUNFC *Aminus, suNf
 //EXP CSW FORCE TERM
 void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 {
-	double invexpmass =  get_dirac_mass();
+	double invexpmass = get_dirac_mass();
 
 	evaluate_sw_order(&invexpmass);
 
@@ -726,7 +726,7 @@ void force_clover_fermion(spinor_field *Xs, spinor_field *Ys, double residue)
 #endif
 void force_clover_fermion_taylor(spinor_field *Xs, spinor_field *Ys, double residue)
 {
-	double invexpmass =  get_dirac_mass();
+	double invexpmass = get_dirac_mass();
 
 	evaluate_sw_order(&invexpmass);
 
@@ -1022,7 +1022,7 @@ void force_fermion_core(spinor_field *Xs, spinor_field *Ys, int auto_fill_odd, d
 			_algebra_project_FMAT(f, s1);
 			_algebra_vector_mul_add_assign_g(*_4FIELD_AT(force_sum, ix, 3), coeff, f);
 		} // sites
-	}	 // pieces
+	}	  // pieces
 
 	// Reset spinor geometry
 	Xs->type = Xtmp.type;

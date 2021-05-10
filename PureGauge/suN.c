@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     if (i)
     {
         lprintf("MAIN", 0, "100\nThermalized %d Trajectories: [%ld sec %ld usec]\n", flow.therm, etime.tv_sec, etime.tv_usec);
-        save_conf(&flow, MAX(int, 0, flow.start - 1));
+        save_conf(&flow, GENERIC_MAX(0, flow.start - 1));
     }
     /* updates and measure  */
     i = flow.start - 1;
@@ -99,8 +99,12 @@ int main(int argc, char *argv[])
 
         if (strcmp(flow.wf->make, "true") == 0)
         {
+            static suNg_field *Vwf = NULL;
+            if (Vwf == NULL)
+                Vwf = alloc_gfield(&glattice);
             gettimeofday(&start, 0);
-            WF_update_and_measure(flow.wf->ittype, u_gauge, &(flow.wf->tmax), &(flow.wf->eps), &(flow.wf->delta), flow.wf->nmeas, DONTSTORE);
+            suNg_field_copy(Vwf,u_gauge);
+            WF_update_and_measure(flow.wf->ittype, Vwf, &(flow.wf->tmax), &(flow.wf->eps), &(flow.wf->delta), flow.wf->nmeas, DONTSTORE);
             gettimeofday(&end, 0);
             timeval_subtract(&etime, &end, &start);
             lprintf("MAIN", 0, "WF Measure #%d: generated in [%ld sec %ld usec]\n", i, etime.tv_sec, etime.tv_usec);

@@ -25,7 +25,7 @@ GetOptions(
   'quat|q!'   => \(my $quat = 0),
   'ndebug!'   => \(my $ndebug = 1),
   'dfloat!'   => \(my $dfloat = 0),
-  'checkspinor!'   => \(my $scheck = 0),
+  'checkspinor!'   => \(my $scheck = 1),
   'mpitiming!'   => \(my $mpit = 0),
   'ioflush!'   => \(my $iof = 1),
   'unrollrepr!'   => \(my $unrollr = 0),
@@ -35,7 +35,7 @@ GetOptions(
   'force!'   => \(my $force = 0),
   'cc=s'   => \(my $cc = "gcc"),
   'mpicc=s'   => \(my $mpicc = "mpicc"),
-  'cflags=s'   => \(my $cflags = "-Wall -std=c99 -O3"),
+  'cflags=s'   => \(my $cflags = "-Wall -Wshadow -Wfatal-errors -Werror -std=c99 -O3"),
   'ldflags=s'   => \(my $ldflags = ""),
   'include=s'   => \(my $include = ""),
   'ccache!'   => \(my $ccache = 0),
@@ -248,7 +248,7 @@ write_mkflags - write flags file for compilation of HiRep
   --[no-]mpi          [true]      Use MPI
   --cc                [gcc]       Compiler
   --mpicc             [mpicc]     MPI Compiler
-  --cflags            [-O3]       Compilation options
+  --cflags            [-Wall -Wshadow -std=c99 -O3]       Compilation options
   --include           []          Extra include headers
   --ldflags           []          Linking options
   --[no-]ndebug       [true]      Set ndebug flag
@@ -268,7 +268,7 @@ write_mkflags - write flags file for compilation of HiRep
   --[no-]dfloat       [false]     Use single precision acceleration
   --[no-]unrollrepr   [false]     Unroll group representation functions
 
-  --[no-]checkspinor  [false]     Check spinor field type
+  --[no-]checkspinor  [true]      Check spinor field type
   --[no-]mpitiming    [false]     Enable timing of MPI calls
   --[no-]ioflush      [true]      Flush IO after each operations on logs
   --[no-]timing       [false]     Enable timing
