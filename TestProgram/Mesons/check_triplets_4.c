@@ -12,7 +12,8 @@
  ******************************************************************************/
 
 #define MAIN_PROGRAM
-#define _BSD_SOURCE
+// _BSD_SOURCE deprecated, using _DEFAULT_SOURCE instead.
+#define _DEFAULT_SOURCE
 //#include "dirac.h"
 //#include <stdio.h>
 #include "io.h"
@@ -33,11 +34,11 @@
 #include "representation.h"
 #include "setup.h"
 #include "spectrum.h"
+#include "utils.h"
 //#include "statistics.h"
 //#include "suN.h"
 //#include "suN_types.h"
 //#include "update.h"
-//#include "utils.h"
 //#include <stdio.h>
 #include "clover_tools.h"
 #include "communications.h"

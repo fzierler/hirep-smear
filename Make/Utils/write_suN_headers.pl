@@ -3312,7 +3312,7 @@ sub write_suNr_FMAT {
         }
     } else {
         print "   do { \\\n";
-        print "      int _i,_j,_n=0;\\\n";
+        print "      int _i,_n=0;\\\n";
         print "      for (_i=0; _i<$N; ++_i){\\\n";
         if ($N<(2*$unroll+1)) {
             my $n=0;
