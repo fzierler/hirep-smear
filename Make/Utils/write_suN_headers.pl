@@ -3322,6 +3322,7 @@ sub write_suNr_FMAT {
                 print "         ++_n; \\\n";
             }
         } else {
+            print "         int _j;\\\n";
             print "         for (_j=0; _j<$vd; ){\\\n";
             for(my $i=0;$i<$unroll;$i++){
                 print "            _complex_mul_star_assign_re((u).$cname\[_n\],(s).${cname}\[0\].$cname\[_i\],(s).${cname}\[2\].$cname\[_j\]); \\\n";
