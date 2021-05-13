@@ -1459,7 +1459,7 @@ sub write_algebra_vector_sqnorm {
         }
     } else { #partial unroll
         print "   do { \\\n";
-        print "      int _i,_n=0;\\\n";
+        print "      int _i=0;\\\n";
         print "      (k)=0.;\\\n";
         print "      for (_i=0; _i<$avd; ){\\\n";
         print "         (k)+=";
@@ -1498,7 +1498,7 @@ sub write_algebra_vector_prod {  #
         }  #
     } else { #partial unroll                                            #
         print "   do { \\\n";  #
-        print "      int _i,_n=0;\\\n";  #
+        print "      int _i=0;\\\n";  #
         print "      (k)=0.;\\\n";  #
         print "      for (_i=0; _i<$avd; ){\\\n";  #
         print "         (k)+=";  #
@@ -4497,7 +4497,7 @@ sub write_spN_inverse_multiply {
     } else { #partial unroll
         print "   do { \\\n";
         # first N/2 lines
-        print "      int _i,_j,_k=0;for (_i=0; _i<",$N/2,"; ++_i){\\\n";
+        print "      int _i,_k=0;for (_i=0; _i<",$N/2,"; ++_i){\\\n";
         print "         _k=_i;_complex_mul_star((r).$cname\[_i\],(s).$cname\[0\],(u).$cname\[_k\]);\\\n";
         # first half
         if($N/2-1< 2*$unroll) {
@@ -4506,6 +4506,7 @@ sub write_spN_inverse_multiply {
                 print "         _k+=$N; _complex_mul_star_passign((r).$cname\[_i\],(s).$cname\[$j\],(u).$cname\[_k\]);\\\n";
             }
         } else {
+            print "         int _j;\\\n";
             print "         for (_j=1; _j<",$mdh1+1,"; ){ \\\n";
             # unrolling row until $unroll ($md times)
             for(my $i=0;$i<$unroll;$i++){
@@ -4528,6 +4529,7 @@ sub write_spN_inverse_multiply {
                 }
             }
         } else {
+            print "         int _j;\\\n";
             print "         for (_j=",$N/2,"; _j<",$N/2+$mdh2,"; ){ \\\n";
             # unrolling row until $unroll ($md times)
             for(my $i=0;$i<$unroll;$i++){
