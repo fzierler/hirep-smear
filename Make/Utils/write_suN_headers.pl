@@ -4391,7 +4391,7 @@ sub write_spN_multiply {
     } else { #partial unroll
         print "   do { \\\n";
         # first N/2 lines
-        print "      int _i,_j,_k=0;for (_i=0; _i<",$N/2,"; ++_i){\\\n"; #AAA
+        print "      int _i,_k=0;for (_i=0; _i<",$N/2,"; ++_i){\\\n"; #AAA
         # first sum in the row
         print "         _complex_mul((r).$cname\[_i\],(u).$cname\[_k\],(s).$cname\[0\]); ++_k;\\\n";
         if($N<(2*$unroll+1)) {
@@ -4400,6 +4400,7 @@ sub write_spN_multiply {
                 print "         _complex_mul_assign((r).$cname\[_i\],(u).$cname\[_k\],(s).$cname\[$j\]); ++_k;\\\n";
             }
         } else {
+            print "         int _j; \\\n";
             print "         for ( _j=1; _j<",$md+1,"; ){ \\\n";
             # unrolling row until $unroll ($md times)
             for(my $i=0;$i<$unroll;$i++){
@@ -4568,10 +4569,11 @@ sub write_spN_inverse_multiply {
         print "             _k=_i-",$N/2,";\\\n";
         if($N/2<2*$unroll) {
             for(my $j=$N/2;$j<$N;$j++){
-                print "         _complex_mul_passign((r).$cname\[_i\],(s).$cname\[$j\],(u).$cname\[_k\]); _j=1;";
+                print "         _complex_mul_passign((r).$cname\[_i\],(s).$cname\[$j\],(u).$cname\[_k\]);";
                 if($j != $N-1 ){print "_k+=$N;\\\n";} else {print "\\\n";}
             }
         } else {
+            print "             int _j;\\\n";
             print "             for (_j=",$N/2,"; _j<",$N/2+$mdh2,"; ){ \\\n";
             for(my $i=0;$i<$unroll;$i++){
                 print "                 _complex_mul_passign((r).$cname\[_i\],(s).$cname\[_j\],(u).$cname\[_k\]); ++_j; _k+=$N;\\\n";

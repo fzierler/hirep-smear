@@ -40,11 +40,14 @@ static void init_g(){
 		unit_gauge(g);
 	}
 }
+
+#ifndef GAUGE_SPN // Perfectly fine for SPN, but not used at the moment.
 static void free_g(){
 	if(init){
 		free_gfield(g);
 	}
 }
+#endif
 
 static void gUgmu(suNg_field *gauge){
      suNg w1, w2;
@@ -151,9 +154,7 @@ double gaugefix_action(int fix_dir, suNg_field *gauge ){
     return action;
 }
 
-#ifndef GAUGE_SPN // FIXFORSPN
-// FIXFORSPN the SU(2) subgroups of SP(N) are a subset of the subgroups of 
-//           SU(N).
+#ifndef GAUGE_SPN 
 void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge, int c )
 {
     suNg *u1, *u2, v1, v2;
@@ -275,7 +276,7 @@ void su2_hit(int fix_dir, int parity, double overrelax, suNg_field *fixed_gauge,
 } 
 #endif
 
-#ifndef GAUGE_SPN // FIXFORSPN
+#ifndef GAUGE_SPN 
 double gaugefixstep(int fix_dir,double overrelax, suNg_field *fixed_gauge )
 {
     int c, parity;
@@ -291,7 +292,7 @@ double gaugefixstep(int fix_dir,double overrelax, suNg_field *fixed_gauge )
 } 
 #endif
 
-#ifndef GAUGE_SPN // FIXFORSPN
+#ifndef GAUGE_SPN
 double gaugefix(int fix_dir,double overrelax,int max_it,
         double fix_tol, suNg_field *fixed_gauge )
 {
