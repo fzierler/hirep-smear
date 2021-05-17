@@ -62,11 +62,11 @@ void print_suNg(suNg *m){
 int main(int argc, char *argv[])
 {
   int i = 3, j = 0, evaluations = 1;
-  suNg test, exptest, exptest1, exptest2;
+  suNg test, exptest, exptest2;
   double complex tr;
 
-  setup_process(&argc, &argv);
-  setup_gauge_fields();
+  //setup_process(&argc, &argv);
+  //setup_gauge_fields();
 
   random_suNg(&test);
 
@@ -80,11 +80,16 @@ int main(int argc, char *argv[])
   for (i = 0; i*(NG+1) < _MATSIZE; i++)
     test.c[i * (NG + 1)] = 0.5 * (test.c[i * (NG + 1)] + conj(test.c[i * (NG + 1)])) * I;
 #undef _MATSIZE
-  _suNg_trace(tr, test);
 
-// Compressed, real compressed-SPN matrices are already traceless.
-//  See https://arxiv.org/pdf/1712.04220.pdf, Eq A.4
+
+
+// SPN matrices are already traceless
+// when the right group constraints are enforced.
+// (which is the case when they are stored in compressed form)
+// See https://arxiv.org/pdf/1712.04220.pdf, Eq A.4
 #ifndef GAUGE_SPN
+  // Make matrix traceless
+  _suNg_trace(tr, test);
   test.c[NG * NG - 1] = test.c[NG * NG - 1] - tr;
 #endif
 
@@ -124,7 +129,6 @@ int main(int argc, char *argv[])
   for (i = 0; i < evaluations; i++)
     suNg_Exp(&exptest2, &test);
 
-  exptest = exptest1;
   _suNg_sub_assign(exptest, exptest2);
 
   double norm = 0.;
@@ -150,7 +154,7 @@ int main(int argc, char *argv[])
   lprintf("MAIN", 0, "(should be around 1*10^(-15) or so)\n");
   if (norm / (NG) > 1.e-14){
     lprintf("MAIN",0,"Exptest1:\n");
-    print_suNg(&exptest1);
+    print_suNg(&exptest);
 
     lprintf("MAIN",0,"Exptest2:\n");
     print_suNg(&exptest2);
@@ -159,7 +163,7 @@ int main(int argc, char *argv[])
     check++;
   }
 
-  finalize_process();
+  //finalize_process();
   return check;
 }
 
