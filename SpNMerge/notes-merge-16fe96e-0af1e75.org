@@ -1,0 +1,581 @@
+* Issues
+- [[TestProgram/Inverters/check_inverters_2]]
+  It's an executable file that should not be tracked while it is (on master)
+- [[TestProgram/DiracOperator/speed_test_diracoperator_flt.c]]
+  ~MPI_PID~ still used
+- [[TestProgram/Propagator/check_propagator.c]]
+  the structure of the code was heavily modified,
+  and might require attention
+* master (0af1e75) to 16fe96e [150/150]
+** DONE .github/workflows/mpi.yml
+- excluded nc3 ADJ
+- Added "Inverters test"
+** DONE .github/workflows/no-mpi.yml
+- Added "Inverters test"
+- excluded nc3 ADJ
+** DONE .gitignore
+Nothing significant
+** DONE Disconnected/compute_loops.c
+- New "data_storage.h" include?
+- removed 'nm' variable, adjusted call to "measure_loop" accordingly.
+** DONE HMC/hmc.c
+- New "data_storage.h" include?
+- removed call to end_mc()
+** DONE HMC/hmc_forces.c
+- rlxd_init call does not use + MPI_PID for the seed.
+** DONE HMC/hmc_utils.c
+- removed definition of "end_mc()"
+** DONE HMC/hmc_utils.h
+- removed declaration of "end_mc()"
+** DONE Include/dirac.h
+- added declaration of Dphi_fused_
+** DONE Include/disconnected.h
+- New "data_storage.h" include?
+- measure_bilinear* functions use "storage_switch" and "data_storage_array"
+  instead of "int" and "double complex ***"
+- changed declaration of measure_loops (removed nm, added storage_switch, new types used)
+** DONE Include/geometry.h
+- geometry_descriptor has "fuse_*" masks and counters/size
+- FUSE_* macros using _OMP_
+** DONE Include/global.h
+- new "path blocking size" variables?
+** DONE Include/glueballs.h
+- changed declaration of measure_1pt_glueballs (nblocking now splitted in start and end)
+** DONE Include/memory.h
+- ALIGN changed to 8
+** DONE Include/observables.h
+- ~contract_baryons~ uses storage_switch and ~***data_storage_array~.
+** DONE Include/propagator.h
+- "privatized" variables via naming convention (e.g., a-> _a)
+  throughout the code (300 lines of diff)
+** DONE Include/ranlux.h
+no changes (only formatting?)
+** DONE Include/spectrum.h
+- including "data_storage.h"
+- all functions declaration now use a ~storage_switch~ and a ~data_storage_array~
+** DONE Include/spin_matrix.h
+seemingly no changes - only formatting?
+** DONE Include/spinor_field.h
+Seemingly only formatting (possibly a window line ending problem.)
+** DONE Include/update.h
+- in ~update_hb_multilevel_gb_measure~ now blocking has been split
+  into ~nblockingstart~ and ~nblockingend~
+** DONE Include/utils.h
+- ~WF_exp~ and ~WF_Exp_Taylor~ renamed to ~suNg_Exp~ and ~su_Ng_Exp_Taylor~
+** DONE LibHR/Geometry/communications.c
+- fixed typo in log message
+** DONE LibHR/Geometry/geometry_init.c
+- added log message
+** DONE LibHR/Geometry/geometry_mpi_eo.c
+- new function ~eval_fusemask~
+- ~walk_on_lattice~ now not static
+- loop on sites on ~walk_on_lattice~ now nested inside 4 loops on blocks?
+** DONE LibHR/Geometry/process_init.c
+- Requiring now MPI_THREAD_FUNNELED
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE LibHR/Geometry/test_geometry_mpi.c
+- commented out code was removed.
+** DONE LibHR/IO/archive.c
+- ~p~ renamed to ~pl~
+- plaquette value mismatch and ranlxd size mismatch not considered errors anymore?
+** DONE LibHR/IO/archive_su2quat.c
+- ~p~ renamed to ~pl~
+** DONE LibHR/IO/logger.c
+- bigger buf
+** DONE LibHR/IO/read_action.c
+- increased "content" size, checking read files now.
+** DONE LibHR/Inverters/cg_mshift_flt.c
+- nothing (only formatting?)
+** DONE LibHR/Memory/amalloc.c
+- cast to char* added
+- cast to struct addr_t* added
+** DONE LibHR/Memory/field_alloc.c
+- nothing (only formatting?)
+** DONE LibHR/Observables/baryon_measurements.c
+- added ~data_storage.h~ include
+- definition of ~measure_baryons~ now usees ~storage_switch~ and ~data_storage_array**~.
+- ~contract_baryons~ call now usees ~storage_switch~ and ~data_storage_array**~ (swc and ret)
+** DONE LibHR/Observables/calc_prop.c
+- variables renames (init -> local_init, tmp -> loc_tmp)
+** DONE LibHR/Observables/g5QMR_trunc.c
+- nothing (only formatting?)
+** DONE LibHR/Observables/glueballs.c
+- ~measure_1pt_glueballs~ now uses ~nblockingstart~ and ~nblockingend~
+  instead of only ~nblocking~.
+- some changed logic likely related to the "split" (not investigating)
+** DONE LibHR/Observables/loop_tools.c
+- added ~data_storage.h~ include
+- ~measure_bilinear_loops_4spinorfield~ now does not use nm
+  and ~k~ has been renamed to ~src_id~, also uses ~storage_switch~ and
+  ~data_storage_array**~.
+- external loop on ~nm~ removed (this changes indentation)
+- ~measure_loops~ now does not use nm
+  also uses ~storage_switch~ and ~data_storage_array**~, changed logic around
+  ~source_type~, some other non semantic changes, and some changes related to
+  the ~storage_switch~ and ~data_storage_array~ changes to callees.
+- similar changes to ~measure_bilinear_loops_spinorfield~.
+** DONE LibHR/Observables/measure_baryons.c
+- ~contract_baryons~ now uses the ~storage_switch~ and ~data_storage_array~
+  in the prototype, but actually not in the body.
+** DONE LibHR/Observables/measure_scattering.c
+- change of parameter namd in function ~tspit~ (~int ipt~ to ~int ipt_in~)
+** DONE LibHR/Observables/measure_scattering_tools.c
+- in ~measure_pion_scattering_I0~ removed nested loop on src - was it a bug?
+** DONE LibHR/Observables/meson_measurements.c
+- ~measure_spectrum_pt~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_p~ to zero, now;
+   - new section of code to deal with data storage allocation
+   - new section of code to put data in the ~data_storage_array~ argument.
+- ~measure_spectrum_pt_ext~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_p~ to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_pt_fixedbc~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_diquark_semwall_background~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_d~'s and ~prop_u~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_semwall~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero
+   - new section of code to deal with data storage allocation
+   - new section of code to put data in the ~data_storage_array~ argument.
+- ~measure_spectrum_semwall_ext~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_p~ to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_semwall_fixedbc~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~ to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_gfwall~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_gfwall_fixedbc~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_discon_semwall~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_discon_gfwall~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_spectrum_discon_volume~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_formfactor_pt~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_i~'s and ~prop_seq~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+- ~measure_formfactor_fixed~:
+   - has ~storage_switch~ and ~data_storage_array~ as arguments.
+   - sets ~prop_i~'s and ~prop_seq~'s to zero, now
+   - NO USE OF NEW ARGUMENTS
+** DONE LibHR/Observables/meson_measurements_ff.c
+- including ~data_storage.h~
+- 4 functions have now ~storage_switch~ and ~data_storage_array~ as arguments,
+  but do not use them:
+  - ~measure_spectrum_ff_pt~
+  - ~measure_spectrum_ff_semwall~
+  - ~measure_spectrum_semwall_ff_ext~
+  - ~measure_spectrum_discon_ff_semwall~
+** DONE LibHR/Observables/sources.c
+- changes in logic for site selection in 3 source-generating functions.
+  (possibly bugfix?)
+** DONE LibHR/Observables/z2semwall.c
+- in ~z2semwall_qprop_QMR_eo~, changed ~psi~ to ~psi_out~ and ~eta~ to ~eta_in~.
+** DONE LibHR/Observables/z2semwall_new.c
+- in ~z2semwall_qprop_QMR_eo~, changed ~psi~ to ~psi_out~ and ~eta~ to ~eta_in~.
+** DONE LibHR/Random/ranlxd.c
+- ~include "global.h"~ added
+- ~static void error~ now ~static void local_error~
+- now ~+ MPI_PID~ added in seed initialisation inside ~rlxd_init~.
+- new definitions of a bunch of function in the openmp case (~#ifdef~ guarded.)
+** DONE LibHR/Random/ranlxs.c
+My assumption is that this is like ~ranlxd.c~ but for single precision.  If so,
+it seems to have the same changes as ~ranlxd.c~.
+** DONE LibHR/Update/D_ff.c
+- bunch of pointers moved from ~extern~ to ~static~
+- added ~static~ functions to free and allocate said pointers
+** DONE LibHR/Update/Dphi.c
+- variables and pointers are now static
+- fixed bug in ~free_mem~
+- ~init_Dirac()~ now static, takes care of ~init_dirac~ flag.
+- in ~Dphi_~ rewritten even/odd checks
+- new function ~Dphi_fused_~
+- changed comment about ~Cphi~ using ~exp clover~ instead of ~clover~
+** DONE LibHR/Update/Dphi_flt.c
+("statification" was already made)
+- fixed bug in ~free_mem~
+** DONE LibHR/Update/cabmar.c
+- added commented out code
+** DONE LibHR/Update/force0.c
+- using ~*par->momenta~ instead of ~par->momenta~ in ~_TWO_SPINOR_MATCHING~
+** DONE LibHR/Update/force_fermion_core.c
+- ~Z~ -> ~Zl~
+- moved declaration of temp variables inside ~_SITE_FOR~ loop.
+** DONE LibHR/Update/integrators.c
+- ~O4MN_multistep~ integrator implementation changed to use Takaishia/DeForcrand tuning
+** DONE LibHR/Update/mon_hasen_tm_alt.c
+- nothing (only formatting?)
+** DONE LibHR/Update/monomials.c
+- argument ~action~ in ~free_mon_list~ renamed to ~actionin~
+** DONE LibHR/Update/mre.c
+- argument ~D~ in ~mre_guess~ renamed to ~DD~
+** DONE LibHR/Update/random_su2.c
+- changes for omp multithreading so that each thread can call random_su2 independently.
+  (e.g., every variable is now a vector and every thread has his own lane)
+** DONE LibHR/Update/staples.c
+- staple, tr1, tr2, *p[1,2,3], nu, i, ixpmy, ixpnu, ixmnu, ixmumnu not static anymore
+** DONE LibHR/Update/updated_hb_multilevel.c
+- ~update_hb_multilevel_gb_measure~ now uses ~nblockingstart~ and ~nblockingend~
+   instead of ~nblocking~ only.  It is a recursive function that at each level
+  calls ~measure_1pt_glueballs~ .
+** DONE LibHR/Utils/TMPL/suN_exp.c.tmpl
+- ~ExpX~ renamed ~ExpX_legacy~ (and not used)
+- ~ExpX2~ renamed ~ExpX_legacy2~ (and not used)
+- comments in Italian translated to English and improved
+** DONE LibHR/Utils/clover_exp.c
+- renamed ~X~ to ~Xin~ in ~clover_exp_taylor~.
+** DONE LibHR/Utils/inv_hermNg.c
+- renamed ~i~ to ~i1~ in a loop.
+** DONE LibHR/Utils/shift_fields.c
+- only some brace changed.
+** DONE LibHR/Utils/suN_exp_group.c
+- ~WF_Exp_NG[2-6]~ functions renamed to ~suNG_Exp_NG[2-6]~.
+- ~WF_Exp_Taylor~ renamed to ~suNg_Exp_Taylor~.
+- ~WF_Exp~ renamed to ~suNg_Exp~.
+  In all changed functions:
+  - additional ~omp pragma single~ added
+  - renamed ~X~ to ~Xin~.
+- Added ~ExpX~ function
+** DONE LibHR/Utils/wilsonflow.c
+In general: not working on ~u_gauge~ anymore (bugfix?)
+- ~u_gauge_backup~ renamed to ~Vtmp~?
+- ~ifdef~ regarding ~BC_T_OPEN~ wrapping function call
+- removed alloc & init of ~wf_plaq_weight~ from ~WF_set_bare_anisotropy~.
+- ~wf_plaq_weight~ not symmetrized anymore? (line 70)
+- removed commented out code
+- use of renamed ~suNg_Exp~ function
+- in ~max_distance~, ~Wprime~ renamed to ~Vprimel~
+- in ~WilsonFlow3_adaptive~, NOT backing up GLOBAL ~u_gauge~, instead copy ~V~ to ~Vtmp~
+  (~V~ is an argument). (bugfix?)
+- ~ifdef~'s on ~PLAQ_WEIGHTS~ disappeared
+- difference by a factor of 6 in some places
+- some debug printouts added.
+** DONE Make/MkFlags
+Irrelevant changes
+** DONE Make/Utils/Math_glueballs/OpProjection.m
+some changes, but this is not code.
+** DONE Make/Utils/write_mkflags.pl
+- changes in default options
+** DONE Makefile
+- added ~Run~ to ~EXCLUDEDIR~
+** DONE ModeNumber/mk_eigvals.c
+- adjusted call to ~rlxd_init~ (removed ~+ MPI_PID~)
+** DONE ModeNumber/mk_modenumber.c
+- adjusted call to ~rlxd_init~ (removed ~+ MPI_PID~)
+** DONE PureGauge/Makefile
+- more EXES
+** DONE PureGauge/input_file
+- changed values
+** DONE PureGauge/input_file_ml
+- changed values
+** DONE PureGauge/input_file_ml_measure
+new or deleted file
+** DONE PureGauge/suN.c
+- use of ~GENERIC_MAX~ instead of ~MAX~
+- new variable ~Vwf~ and its allocation
+- copy of ~u_gauge~ to ~Vwf~ instead of using ~u_gauge~ directly
+  in ~WF_Update_and_measure~ (bugfix?)
+- removed call to ~end_mc()~
+** DONE PureGauge/suN_multilevel.c
+- use of ~GENERIC_MAX~ instead of ~MAX~
+- adjustment for split of ~nblocks~ into ~nblockstart~ and ~nblockend~
+- new variable ~Vwf~ and its allocation
+- copy of ~u_gauge~ to ~Vwf~ instead of using ~u_gauge~ directly
+  in ~WF_Update_and_measure~ (bugfix?)
+- removed call to ~end_mc()~
+** DONE PureGauge/suN_multilevel_measure.c
+new or deleted file
+** DONE PureGauge/suN_utils.c
+- new condition around printout
+- removed definition of ~end_mc()~
+** DONE PureGauge/suN_utils.h
+- removed declaration of ~end_mc()~
+** DONE PureGauge/suN_utils_multilevel.c
+- created new function ~parse_mc_corellator_def~ that took over most code out of ~init_mc_ml~.
+- tweaks on ~error~ conditions.
+- function ~init_mc_ml~ now does only the last part of what it was doing before
+- tweaked log messages
+- some apparently line swap without effect
+- removed definition of ~end_mc_ml()~
+** DONE PureGauge/suN_utils_multilevel.h
+- "split" variable ~nblk~ into ~nblkstart~ and ~nblkend~
+- increased size of ~read~ to 12 from 11
+- added logic to read ~nblk(start|end)~ instead of ~nblk~
+- new struct ~_pg_flow_ml_measure~
+- declaration of ~init_mc_ml_measure~
+- removed declaration of ~end_mc_ml()~
+** DONE Reweight/reweight.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Scattering/scatter.c
+- no changes (formatting only?)
+** DONE Spectrum/measure_formfactor.c
+- including now ~clover_tools.h~
+- ~rlxd_init~ now called without ~+ PID~
+- calls to function ~measure_formfactor_pt~ and ~measure_formfactor_fixed~
+  use ~DONTSTORE~ and ~NULL~ as arguments
+** DONE Spectrum/measure_spectrum.c
+- including ~data_storage.h~
+- calls to following functions now use ~DONTSTORE~ and ~NULL~ as arguments:
+  - ~measure_diquark_semwall_background~
+  - ~measure_spectrum_semwall~
+  - ~measure_spectrum_pt~
+  - ~measure_baryons~
+  - ~measure_spectrum_gfwall~ (commented out)
+  - ~measure_spectrum_semwall_ext~
+  - ~measure_spectrum_pt_ext~
+  - ~measure_spectrum_semwall_fixedbc~
+  - ~measure_spectrum_pt_fixedbc~
+  - ~measure_spectrum_gfwall_fixedbc~ (commented out)
+  - ~measure_spectrum_discon_semwall~
+  - ~measure_spectrum_discon_gfwall~ (commented out)
+  - ~measure_spectrum_discon_volume~
+  - ~measure_spectrum_ff_semwall~
+  - ~measure_spectrum_ff_pt~
+  - ~measure_spectrum_semwall_ff_ext~
+  - ~measure_spectrum_discon_ff_semwall~
+** DONE Spectrum/mk_mesons.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/mk_mesons_with_z2semwall.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/mk_mesons_with_z2semwall_new.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/random_cnfg.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/random_spinor.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/trunc_mesons.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE StaticPotential/tune_HYP_smearing.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE TestProgram/Deflate/check_deflate.c
+- removed block of commented out code.
+** DONE TestProgram/DiracOperator/speed_test_diracoperator.c
+- removed variables which were possibly unused
+- increased ~n_times~
+- allocating 3 spinors instead of 4
+- removing assignment to ~s3~, now non existing
+- removed log message (partially in italian)
+- ~#pragma omp parallel~ -> ~_OMP_PRAGMA(_omp_parallel num_threads(1))~
+- ~#pragma omp parallel default(shared)~ -> ~_OMP_PRAGMA(_omp_parallel)~
+- using ~DPhi_fused_~ now instead of ~DPhi_~
+- again: ~#pragma omp parallel default(shared)~ -> ~_OMP_PRAGMA(_omp_parallel)~
+- again: using ~DPhi_fused_~ now instead of ~DPhi_~
+- removed ~#pragma omp parallel default(shared) {~ (*)
+- removed two barriers
+- removed '}' (see * above)
+** DONE TestProgram/DiracOperator/speed_test_diracoperator_flt.c
+- including now ~setup.h~
+- ~rlxd_init~ still called with ~+ PID~ FIXME?
+** DONE TestProgram/Disconnected/Makefile
+- ~check_disc_1~ in ~TESTS~ now and not in ~FAIL~
+** DONE TestProgram/Disconnected/check_disc_0.c
+- including now ~data_storage.h~
+- ~out_corr~ now ~data_storage_array*~ instead of ~double complex ***~
+- ~abs_tol~ now ~3e-1~ instead of ~2e-1~
+- removed loops to allocate ~out_corr~
+- ~i~ -> ~l~ in loop to allocate ~ex_loops~
+- new comment
+- ~i~ -> ~l~ in loop to allocate ~mean_loops~
+- changes in call to ~measure_loops~
+- new comment
+- loop on ~nhits~ wraps loop in ~n_mom_tot~
+- using accessor funcition ~data_storage_element()~ to ~out_corr~ instead of direct access
+** DONE TestProgram/Disconnected/check_disc_1.c
+- including now ~data_storage.h~
+- removed function ~read_and_average_output_disc~
+- created function ~compare_disc~
+- new tolerances defined
+- new array ~double complex *mean_loops~
+- ~out_corr~ now ~data_storage_array*~ instead of ~double complex ***~
+- changes in message
+- no explicit allocation of ~out_corr~ (likely done now in ~measure_loops~)
+- using accessor funcition ~data_storage_element()~ to ~out_corr~ instead of direct access
+- new allocation of ~mean_loops~, 4 nested loops to compute its value
+- Allocation of ~ex_loops~
+- removed messaging around ~compare_disc~ checks and error counting
+- time measurement
+- fix bug in ~free_loops~ when the global lattice sizes are not all equal to ~GLB_X~
+** DONE TestProgram/Disconnected/check_disc_1.in
+- no actual differences?
+** DONE TestProgram/Disconnected/check_disc_2.c
+- including now ~data_storage.h~
+- removed ~n_mom_tot~ variable
+- ~out_corr~ now ~data_storage_array*~ instead of ~double complex ***~
+- new tolerances defined (MUCH bigger)
+- no explicit allocation of ~out_corr~ (likely done now in ~measure_loops~)
+- new (level-0?) loop on ~mes_ip.nhits~
+- using accessor funcition ~data_storage_element()~ to ~out_corr~ instead of direct access
+** DONE TestProgram/Disconnected/check_disc_2.in
+- ~nhits2~ doubled (200, was 100)
+** DONE TestProgram/Disconnected/check_disc_3.c
+- including now ~data_storage.h~
+- removed ~n_mom_tot~ variable
+- ~out_corr~ now ~data_storage_array*~ instead of ~double complex ***~
+- no explicit allocation of ~out_corr~ (likely done now in ~measure_loops~)
+- new (level-0?) loop on ~mes_ip.nhits~
+- using accessor funcition ~data_storage_element()~ to ~out_corr~ instead of direct access
+** DONE TestProgram/Disconnected/check_disc_4.c
+- including now ~data_storage.h~
+- removed ~n_mom_tot~ variable
+- ~out_corr~ now ~data_storage_array*~ instead of ~double complex ***~
+- no explicit allocation of ~out_corr~ (likely done now in ~measure_loops~)
+- new external lopps on ~mes_ip.nhits~, ~eo~, ~NF~
+- using accessor funcition ~data_storage_element()~ to ~out_corr~ instead of direct access
+** DONE TestProgram/Disconnected/check_disc_5.c
+- very similar changes to [[TestProgram/Disconnected/check_disc_4.c]]
+** DONE TestProgram/GaugeFix/check_gaugefix.c
+- removed allocation of ~u_gauge~
+** DONE TestProgram/Geometry/check_lattice.sh
+- more log settings in ~test_input~
+- ~export~ ing OMP_NUM_THREADS=1
+- more precise mpirun call
+- more verbose output
+** DONE TestProgram/Integrators/Makefile
+file not in both branches - Integrator tests were not there
+** DONE TestProgram/Integrators/check_integrator_1.c
+file not in both branches - Integrator tests were not there
+** DONE TestProgram/Integrators/check_integrator_1.h
+file not in both branches - Integrator tests were not there
+** DONE TestProgram/Integrators/check_integrator_1.in
+file not in both branches - Integrator tests were not there
+** DONE TestProgram/Integrators/check_integrator_utils_1.c
+file not in both branches - Integrator tests were not there
+** DONE TestProgram/Inverters/check_inverters_2
+file not in both branches: it is an executable
+** DONE TestProgram/Inverters/check_inverters_3.c
+- message is now in English
+** DONE TestProgram/Inverters/check_inverters_5.c
+- no apparent change (formatting?)
+** DONE TestProgram/Mesons/check_spinmatrix.c
+- renamed ~out~ to ~_out~
+** DONE TestProgram/Mesons/check_triplets_1.c
+- renamed ~A~ and ~B~ to ~AA~ and ~BB~
+** DONE TestProgram/Mesons/check_triplets_3.c
+- including now ~data_storage.h~
+- not including ~stdio.h~
+- removed block of commented-out code
+- ~g0~ renamed ~lg0~
+  - removed ~read_output~ function used to read the correlator from the output file
+- ~g0~ renamed ~lg0~ (in other context?)
+- removed commented-out ~printf~'s
+- creating ~out_corr~ variable as ~data_storage_array*~
+- removed ~mes_channel_names~
+- calling ~measure_spectrum_pt~ with new arguments, writing data into ~out_corr~
+- using accessor function for ~out_corr~ to get data instead of using (now defunct) ~read_output~
+** DONE TestProgram/Mesons/check_triplets_4.c
+- ~#define~-ing ~_BSD_SOURCE~ (why?)
+- including ~data_storage.h~
+- not including ~stdio.h~
+- removed ~print_mat~ debug function
+- renamed ~g0~ to ~lg0~
+- removed ~read_output~ function used to read the correlator from the output file
+- renamed ~g0~ to ~lg0~ (again, other context?)
+- creating ~out_corr~ variable as ~data_storage_array*~
+- some formatting differences?
+- removed ~mes_channel_names~
+- calling ~measure_spectrum_semwall~ with new arguments, writing data into ~out_corr~
+- using accessor function for ~out_corr~ to get data instead of using (now defunct) ~read_output~
+** DONE TestProgram/Propagator/check_propagator.c
+- removed ~NOCOMPILE= WITH_MPI~
+- removed ~source_type_t~ enum
+- removed ~init_input_mesons~ macro
+- quite heavy rewrite that needs more attention
+** DONE TestProgram/PureGauge/check_puregauge_3.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/Random/Makefile
+- no changes
+** DONE TestProgram/Random/testlx.c
+- defining ~MAIN_PROGRAM~ flag
+- including ~global.h~, ~hr_omp.h~, ~logger.h~
+- ~main~ now takes arguments
+- some "fake" mpi initialisation
+- new ~_OMP_PRAGMA(_omp_parallel)~ block, most code moved into this block
+- new ~local_return_value~ (thread-local)
+- ~local_return_value~ is summed to ~return_value~ using ~_OMP_PRAGMA(atomic)~
+** DONE TestProgram/RotatedSF/check_rotatedsf_1.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_10.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_2.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_3.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_4.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_5.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_6.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_7.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_8.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_9.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/Scattering/check_scattering_length_I0.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/Scattering/check_scattering_length_I0.in
+- changed ~IO:nits~ to 200 from 100
+** DONE TestProgram/Scattering/check_scattering_rhopipi.c
+- no changes (formatting only?)
+** DONE TestProgram/Sources/Makefile
+- "sf" expanded to "spinor_field" in 2 file names
+** DONE TestProgram/Sources/check_stoch_sources_1sf.c
+NOTE: file was renamed expanding ~sf~ to ~spinor_field~
+- removed "head" declaration of ~i~, redeclared in each loop
+** DONE TestProgram/Sources/check_stoch_sources_1sf.in
+NOTE: file was renamed expanding ~sf~ to ~spinor_field~
+- manually checked the two files, differently named: no changes
+** DONE TestProgram/Sources/check_stoch_sources_4_spinor_field.c
+NOTE: file was renamed expanding ~sf~ to ~spinor_field~
+- formatting
+- argument renamed from ~i~ to ~l~ in
+  - ~DeltaKronecker~,
+  - ~average~
+  - ~sd~
+** DONE TestProgram/Sources/check_stoch_sources_4sf.c
+NOTE: file was renamed expanding ~sf~ to ~spinor_field~
+(see above)
+** DONE TestProgram/Sources/check_stoch_sources_4sf.in
+NOTE: file was renamed expanding ~sf~ to ~spinor_field~
+- manually checked the two files, differently named: no changes
+** DONE TestProgram/SpinorField/check_spinorfield_1.c
+- argument of ~rotate_ptr~ renamde to ~vl~ from ~v~
+** DONE TestProgram/Update/check_update_1.c
+- removed call to ~end_mc()~
+** DONE TestProgram/Update/check_update_2.c
+- renamed ~X~ and ~Y~ to ~Xl~ and ~Yl~
+- removed calls to following functions and preprocessor directives
+  in this order:
+  - ~#endif~
+  - ~end_mc()~
+  - ~free_gfield()~
+  - ~#ifndef~
+  - ~free_gfield_f()~
+** DONE TestProgram/Utils/check_exp_WF.c
+- renamed calls to ~WF_Exp_Taylor()~ and ~WF_Exp()~
+  with the substitution ~WF~ -> ~suNg~
+** DONE TestProgram/run_tests.sh
+- added check for existence of file ~.test_failed~

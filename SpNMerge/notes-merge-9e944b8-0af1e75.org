@@ -1,0 +1,227 @@
+* Issues
+- [[TestProgram/Inverters/check_inverters_2]]
+  It's an executable file that should not be tracked while it is (on master)
+- [[TestProgram/DiracOperator/speed_test_diracoperator_flt.c]]
+  ~MPI_PID~ still used
+- [[TestProgram/Propagator/check_propagator.c]]
+  the structure of the code was heavily modified,
+  and might require attention
+* master (0af1e75) to 9e944b8 [74/74]
+** DONE HMC/hmc.c
+- removed call to end_mc()
+** DONE HMC/hmc_forces.c
+- rlxd_init call does not use + MPI_PID for the seed.
+** DONE HMC/hmc_utils.c
+- removed definition of "end_mc()"
+** DONE HMC/hmc_utils.h
+- removed declaration of "end_mc()"
+** DONE Include/dirac.h
+- added declaration of Dphi_fused_
+** DONE Include/geometry.h
+- geometry_descriptor has "fuse_*" masks and counters/size
+- FUSE_* macros using _OMP_
+** DONE Include/global.h
+- new "path blocking size" variables?
+** DONE Include/glueballs.h
+- changed declaration of measure_1pt_glueballs (nblocking now splitted in start and end)
+** DONE Include/memory.h
+- ALIGN changed to 8
+** DONE Include/ranlux.h
+no changes (only formatting?)
+** DONE Include/update.h
+- in ~update_hb_multilevel_gb_measure~ now blocking has been split
+  into ~nblockingstart~ and ~nblockingend~
+** DONE LibHR/Geometry/communications.c
+- fixed typo in log message
+** DONE LibHR/Geometry/geometry_init.c
+- added log message
+** DONE LibHR/Geometry/geometry_mpi_eo.c
+- new function ~eval_fusemask~
+- ~walk_on_lattice~ now not static
+- loop on sites on ~walk_on_lattice~ now nested inside 4 loops on blocks?
+** DONE LibHR/Geometry/process_init.c
+- Requiring now MPI_THREAD_FUNNELED
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE LibHR/Geometry/test_geometry_mpi.c
+- commented out code was removed.
+** DONE LibHR/IO/read_action.c
+- increased "content" size, checking read files now.
+** DONE LibHR/Memory/amalloc.c
+- cast to char* added
+- cast to struct addr_t* added
+** DONE LibHR/Observables/glueballs.c
+- ~measure_1pt_glueballs~ now uses ~nblockingstart~ and ~nblockingend~
+  instead of only ~nblocking~.
+- some changed logic likely related to the "split" (not investigating)
+** DONE LibHR/Random/ranlxd.c
+- ~include "global.h"~ added
+- ~static void error~ now ~static void local_error~
+- now ~+ MPI_PID~ added in seed initialisation inside ~rlxd_init~.
+- new definitions of a bunch of function in the openmp case (~#ifdef~ guarded.)
+** DONE LibHR/Random/ranlxs.c
+My assumption is that this is like ~ranlxd.c~ but for single precision.  If so,
+it seems to have the same changes as ~ranlxd.c~.
+** DONE LibHR/Update/D_ff.c
+- bunch of pointers moved from ~extern~ to ~static~
+- added ~static~ functions to free and allocate said pointers
+** DONE LibHR/Update/Dphi.c
+- variables and pointers are now static
+- fixed bug in ~free_mem~
+- ~init_Dirac()~ now static, takes care of ~init_dirac~ flag.
+- new function ~Dphi_fused_~
+- changed comment about ~Cphi~ using ~exp clover~ instead of ~clover~
+** DONE LibHR/Update/Dphi_flt.c
+("statification" was already made)
+- fixed bug in ~free_mem~
+** DONE LibHR/Update/force_fermion_core.c
+- moved declaration of temp variables inside ~_SITE_FOR~ loop.
+** DONE LibHR/Update/random_su2.c
+- changes for omp multithreading so that each thread can call random_su2 independently.
+  (e.g., every variable is now a vector and every thread has his own lane)
+** DONE LibHR/Update/staples.c
+- staple, tr1, tr2, *p[1,2,3], nu, i, ixpmy, ixpnu, ixmnu, ixmumnu not static anymore
+** DONE LibHR/Update/updated_hb_multilevel.c
+- ~update_hb_multilevel_gb_measure~ now uses ~nblockingstart~ and ~nblockingend~
+   instead of ~nblocking~ only.  It is a recursive function that at each level
+  calls ~measure_1pt_glueballs~ .
+** DONE LibHR/Utils/suN_exp_group.c
+- additional ~_OMP_BARRIER~ and ~_OMP_PRAGMA(single)~ added in 4 functions
+** DONE LibHR/Utils/wilsonflow.c
+In general: not working on ~u_gauge~ anymore (bugfix?)
+- ~u_gauge_backup~ renamed to ~Vtmp~?
+- ~ifdef~ regarding ~BC_T_OPEN~ wrapping function call
+- removed alloc & init of ~wf_plaq_weight~ from ~WF_set_bare_anisotropy~.
+- ~wf_plaq_weight~ not symmetrized anymore? (line 70)
+- removed commented out code
+- use of renamed ~suNg_Exp~ function
+- in ~max_distance~, ~Wprime~ renamed to ~Vprimel~
+- in ~WilsonFlow3_adaptive~, NOT backing up GLOBAL ~u_gauge~, instead copy ~V~ to ~Vtmp~
+  (~V~ is an argument). (bugfix?)
+- ~ifdef~'s on ~PLAQ_WEIGHTS~ disappeared
+- difference by a factor of 6 in some places
+- some debug printouts added.
+** DONE Make/MkFlags
+Irrelevant changes
+** DONE Make/Utils/Math_glueballs/OpProjection.m
+some changes, but this is not code.
+** DONE Makefile
+- added ~Run~ to ~EXCLUDEDIR~
+** DONE ModeNumber/mk_eigvals.c
+- adjusted call to ~rlxd_init~ (removed ~+ MPI_PID~)
+** DONE ModeNumber/mk_modenumber.c
+- adjusted call to ~rlxd_init~ (removed ~+ MPI_PID~)
+** DONE PureGauge/input_file_ml_measure
+- ~nblk~ value of 2 is now split into ~nblkstart~ = 0 and ~nblkend~ = 3
+** DONE PureGauge/suN.c
+- removed call to ~end_mc()~
+** DONE PureGauge/suN_multilevel.c
+- adjustment for split of ~nblocks~ into ~nblockstart~ and ~nblockend~
+- removed call to ~end_mc()~
+** DONE PureGauge/suN_multilevel_measure.c
+- adjustment in error condition and messages
+- adjustment for split of ~nblocks~ into ~nblockstart~ and ~nblockend~
+- again, adjustment for split of ~nblocks~ into ~nblockstart~ and ~nblockend~
+- removed call to ~end_mc()~
+** DONE PureGauge/suN_utils.c
+- removed definition of ~end_mc()~
+** DONE PureGauge/suN_utils.h
+- removed declaration of ~end_mc()~
+** DONE PureGauge/suN_utils_multilevel.c
+- tweaked log messages
+- some apparently line swap without effect
+** DONE PureGauge/suN_utils_multilevel.h
+- "split" variable ~nblk~ into ~nblkstart~ and ~nblkend~
+- increased size of ~read~ to 12 from 11
+- added logic to read ~nblk(start|end)~ instead of ~nblk~
+- removed declaration of ~end_mc_ml()~
+** DONE Reweight/reweight.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/measure_formfactor.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/mk_mesons.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/mk_mesons_with_z2semwall.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/mk_mesons_with_z2semwall_new.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/random_cnfg.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/random_spinor.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE Spectrum/trunc_mesons.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE StaticPotential/tune_HYP_smearing.c
+- ~rlxd_init~ now called without ~+ PID~
+** DONE TestProgram/Deflate/check_deflate.c
+- removed block of commented out code.
+** DONE TestProgram/DiracOperator/speed_test_diracoperator.c
+- removed variables which were possibly unused
+- increased ~n_times~
+- allocating 3 spinors instead of 4
+- removing assignment to ~s3~, now non existing
+- removed log message (partially in italian)
+- ~#pragma omp parallel~ -> ~_OMP_PRAGMA(_omp_parallel num_threads(1))~
+- ~#pragma omp parallel default(shared)~ -> ~_OMP_PRAGMA(_omp_parallel)~
+- using ~DPhi_fused_~ now instead of ~DPhi_~
+- again: ~#pragma omp parallel default(shared)~ -> ~_OMP_PRAGMA(_omp_parallel)~
+- again: using ~DPhi_fused_~ now instead of ~DPhi_~
+- removed ~#pragma omp parallel default(shared) {~ (*)
+- removed two barriers
+- removed '}' (see * above)
+** DONE TestProgram/DiracOperator/speed_test_diracoperator_flt.c
+- including now ~setup.h~
+- ~rlxd_init~ still called with ~+ PID~ FIXME?
+** DONE TestProgram/Geometry/check_lattice.sh
+- more log settings in ~test_input~
+- ~export~ ing OMP_NUM_THREADS=1
+- more precise mpirun call
+- more verbose output
+** DONE TestProgram/Integrators/check_integrator_1.c
+- removed call to ~end_mc()~
+** DONE TestProgram/Integrators/check_integrator_1.h
+- removed declaration of ~end_mc()~
+** DONE TestProgram/Integrators/check_integrator_utils_1.c
+- removed definition of ~end_mc()~,
+  some of its code plugged into function above.
+** DONE TestProgram/PureGauge/check_puregauge_3.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/Random/Makefile
+- no changes
+** DONE TestProgram/Random/testlx.c
+- defining ~MAIN_PROGRAM~ flag
+- including ~global.h~, ~hr_omp.h~, ~logger.h~
+- ~main~ now takes arguments
+- some "fake" mpi initialisation
+- new ~_OMP_PRAGMA(_omp_parallel)~ block, most code moved into this block
+- new ~local_return_value~ (thread-local)
+- ~local_return_value~ is summed to ~return_value~ using ~_OMP_PRAGMA(atomic)~
+** DONE TestProgram/RotatedSF/check_rotatedsf_1.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_10.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_2.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_3.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_4.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_5.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_6.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_7.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_8.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/RotatedSF/check_rotatedsf_9.c
+- ~rlxd_init~ now does not use +MPI_PID for seeding
+** DONE TestProgram/Update/check_update_1.c
+- removed call to ~end_mc()~
+** DONE TestProgram/Update/check_update_2.c
+- removed calls to following functions and preprocessor directives
+  in this order:
+  - ~end_mc()~
+  - ~free_gfield()~
+  - ~#ifndef~
+  - ~free_gfield_f()~
+  - ~#endif~

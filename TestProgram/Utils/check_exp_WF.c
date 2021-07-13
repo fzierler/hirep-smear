@@ -83,10 +83,11 @@ int main(int argc, char *argv[])
 
 
 
-// SPN matrices are already traceless
+// SPN matrices with purely imaginary diagonal 
+// are already traceless
 // when the right group constraints are enforced.
 // (which is the case when they are stored in compressed form)
-// See https://arxiv.org/pdf/1712.04220.pdf, Eq A.4
+// See https://arxiv.org/pdf/1712.04220.pdf, Eq A.3
 #ifndef GAUGE_SPN
   // Make matrix traceless
   _suNg_trace(tr, test);
