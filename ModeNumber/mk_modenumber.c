@@ -96,7 +96,7 @@ int main(int argc,char *argv[]) {
 
   read_input(glb_var.read, get_input_filename());
   read_input(nu_var.read, get_input_filename());
-  read_input(rlx_var.read,input_filename);
+  read_input(rlx_var.read, get_input_filename());
 
   strcpy(list_filename, nu_var.configlist);
 
