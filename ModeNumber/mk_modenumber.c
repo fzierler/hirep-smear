@@ -49,7 +49,7 @@ typedef struct _input_nu {
 #define init_input_nu(varname) \
 { \
   .read={\
-    {"configuration list", "nu:configlist = %s", STRING_T, &(varname).configlist},\
+    {"configuration list", "configlist = %s", STRING_T, &(varname).configlist},\
     {"squared error for inverter", "nu:inverr2 = %lf", DOUBLE_T, &(varname).inverr2},\
     {"Chebyshev approximation file", "nu:approx = %s", STRING_T, (varname).approx},\
     {"number of stochastic spinors", "nu:nhits = %d", INT_T, &(varname).nhits},\
