@@ -64,14 +64,14 @@ typedef struct _input_eigval {
 #define init_input_eigval(varname) \
 { \
   .read={\
-    {"configuration list", "configlist = %s", STRING_T, &(varname).configlist}, \
+    {"configuration list", "meas:configlist = %s", STRING_T, &(varname).configlist}, \
     {"search space dimension", "eva:nevt = %d", INT_T, &(varname).nevt},\
     {"number of accurate eigenvalues", "eva:nev = %d", INT_T, &(varname).nev},\
     {"max degree of polynomial", "eva:kmax = %d", INT_T, &(varname).kmax},\
     {"max number of subiterations", "eva:maxiter = %d", INT_T, &(varname).maxiter},\
     {"absolute precision", "eva:omega1 = %lf", DOUBLE_T, &(varname).omega1},\
     {"relative precision", "eva:omega2 = %lf", DOUBLE_T, &(varname).omega2},\
-    {"quark quenched mass", "eva:mass = %lf", DOUBLE_T, &(varname).mass}, \
+    {"quark quenched mass", "meas:mass = %lf", DOUBLE_T, &(varname).mass}, \
     {NULL, NULL, INT_T, NULL}\
   }\
 }

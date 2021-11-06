@@ -13,13 +13,13 @@ rlx_seed = 12345
 rlx_start = new
 rlx_state = rand_state
 
-configlist = list
+meas:configlist = list
+meas:mass = -1.045
 
 nu:inverr2 = 1.e-14
 nu:approx = modenumber.approx
 nu:nhits = 1
 nu:list = 10
-nu:mass = -1.045
 
 eva:nev = 1
 eva:nevt = 5

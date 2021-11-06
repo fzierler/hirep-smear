@@ -49,11 +49,11 @@ typedef struct _input_nu {
 #define init_input_nu(varname) \
 { \
   .read={\
-    {"configuration list", "configlist = %s", STRING_T, &(varname).configlist},\
+    {"configuration list", "meas:configlist = %s", STRING_T, &(varname).configlist},\
     {"squared error for inverter", "nu:inverr2 = %lf", DOUBLE_T, &(varname).inverr2},\
     {"Chebyshev approximation file", "nu:approx = %s", STRING_T, (varname).approx},\
     {"number of stochastic spinors", "nu:nhits = %d", INT_T, &(varname).nhits},\
-    {"quark mass (overridden by file name)", "nu:mass = %lf", DOUBLE_T, &(varname).mass},\
+    {"quark quenched mass", "meas:mass = %lf", DOUBLE_T, &(varname).mass},\
     {"list of eigenvalues", "nu:list = %s", STRING_T, (varname).list},\
     {NULL, NULL, INT_T, NULL}\
   }\
