@@ -190,7 +190,7 @@ MyRangeString[min_, max_] := Module[{string = ""},
 (*This function defines the unique string for 2tr operators  pratically defined by: 
 pxout, pyout, pzout, irrepidxout, irrepevout, charge, path1, px1, py1, pz1, irrepidx1, charge1, path2, px2, py2, pz2, irrepidx2, charge2*)
 Set2trstring[pxout_, pyout_, pzout_, irrepidxout_, irrepevout_, charge_, path1_, px1_, py1_, pz1_, irrepidx1_, charge1_, path2_, px2_, py2_, pz2_, irrepidx2_, charge2_] := 
-  Module[{psx1, psy1, psz1, psx2, psy2, psz2, psxout, psyout, pszout, irnameout, irname1, irname2, stringout, string1, string2, s1, s2, string},
+  Module[{psx1, psy1, psz1, psx2, psy2, psz2, psxout, psyout, pszout, irnameout, irname1, irname2, stringout, string1, string2, s1, s2, string,step},
    {psx1, psy1, psz1} = Sort[{px1, py1, pz1} // Abs];
    {psx2, psy2, psz2} = Sort[{px2, py2, pz2} // Abs];
    {psxout, psyout, pszout} = Sort[{pxout, pyout, pzout} // Abs];
@@ -249,7 +249,7 @@ Set2trOpidx[string_, pxout_, pyout_, pzout_, irrepidxout_, irrepevout_, charge_]
 ]
 
 (*This is the interface function that defines the insertion of two trace operators into Opindex and OpList (here is it to be understood that we insert operators that are already momenutm defined)*)
-Add2trOpCorrelators[path1_,px1_, py1_, pz1_, irrepidx1_,charge1_, path2_,px2_, py2_, pz2_, irrepidx2_, charge2_,pxout_, pyout_, pzout_, irrepidxout_, irrepevout_]:= Module[{aa,res,success=0,CG,irname1,irname2,irnameout,cg,lridx1,lridx2,lchg1,lchg2,lpath1,lpath2,lres,cg1,i,cc,lpx1,lpy1,lpz1,lpx2,lpy2,lpz2,lev1,lev2,charge=charge1*charge2,tmp,res1,res2,oo,psx1, psy1, psz1, psx2, psy2, psz2},
+Add2trOpCorrelators[path1_,px1_, py1_, pz1_, irrepidx1_,charge1_, path2_,px2_, py2_, pz2_, irrepidx2_, charge2_,pxout_, pyout_, pzout_, irrepidxout_, irrepevout_]:= Module[{aa,res,success=0,CG,irname1,irname2,irnameout,cg,lridx1,lridx2,lchg1,lchg2,lpath1,lpath2,lres,cg1,i,cc,lpx1,lpy1,lpz1,lpx2,lpy2,lpz2,lev1,lev2,charge=charge1*charge2,tmp,res1,res2,oo,psx1, psy1, psz1, psx2, psy2, psz2,str},
   If[Not[ListQ[bTOrthog[px1, py1, pz1]]] || Not[ListQ[bTOrthog[px2, py2, pz2]]] || Not[ListQ[bTOrthog[pxout, pyout, pzout]]],    Print["Missing Coefficient table for the given impulse"];Abort[];];
   If[Length[bTOrthog[px1, py1, pz1]] < irrepidx1 || irrepidx1 < 1 , Print["Number of irreps is not compatible with the requested irrep index"];Abort[];];
   If[Length[bTOrthog[px2, py2, pz2]] < irrepidx2 || irrepidx2 < 1 , Print["Number of irreps is not compatible with the requested irrep index"];Abort[];];
@@ -481,7 +481,7 @@ OpGenerate[px_, py_, pz_, irrepidx_, irrepev_, charge_, path_] := Module[{res,re
 (*This function takes all the P[..] elements in a and writes them in terms of the fundamental paths with their shifts, 
  it generates also the class of related operators through PathUniqueIdentifier*)
 
-OpSimplify[a_] := Module[{ris = a, Ptemp, tmpris, i, normalization, sqrt},
+OpSimplify[ain_] := Module[{ris = ain, Ptemp, tmpris, i, normalization, sqrt},
   ris = Select[Variables[ris], MatchQ[#1, P[__]] &];
   Do[
     tmpris=ris[[i]] //. P[a1__] :> Plus[a1];
@@ -491,7 +491,7 @@ OpSimplify[a_] := Module[{ris = a, Ptemp, tmpris, i, normalization, sqrt},
     If[Complement[tmpris, {ax, ay, az, -ax, -ay, -az}] != {},
     Print["Error [OpSimplify]: Inserted a path that cannot be ciclic Transformed (quite likelly is written with the wrong unit vectors)"];Abort[];];
   , {i, 1, Length[ris]}];
-  ris = a //. P -> Ptemp;
+  ris = ain //. P -> Ptemp;
   ris = ris //. Ptemp[b___] :> PathUniqueIdentifier[P[b]][[1]];
   ris = Expand[ris];
 ris];
@@ -504,10 +504,11 @@ The new paths are identified by an index and the total number of new paths is in
 It must be a single path as input.
 
 It can be run multiple times*)
-PathUniqueIdentifier[a_] := PathUniqueIdentifier[a] = Module[{ris = a,res, Ptemp, tmpris, lper,listris,r3},
+PathUniqueIdentifier[ain_] := PathUniqueIdentifier[ain] = Module[{ris = ain,res, Ptemp, tmpris, lper,listris,r3},
   If[Not[NumberQ[pathindex]],pathindex=0];
   If[Not[MatchQ[ris,P[__]]],Print["Requested a PathUniqueIdentifier of a non Path quantity"];Abort[]];
   If[Not[Map[IsIn, ris //. P :> List] //. List -> And],Print["Requested a PathUniqueIdentifier of non a-steps Path "];Abort[]];
+  If[Not[SameQ[(ris //. P :> Plus),0]] ,Print["Requested PathUniqueIdentifier of a non closed Path "];Abort[]];
   ris = ris //. P -> Ptemp ;
   Ptemp /: Ptemp[-(a1_), a2___] := Ptemp[a2, -a1] /; IsInPositive[a1];
   Ptemp /: Ptemp[a1_, -(a2_), a3___, b1_, b2_, a4___] :=  Ptemp[b1, b2, a4, a1, -a2, a3] /; IsInPositive[a1] && IsInPositive[a2] && IsInPositive[b1] && IsInPositive[b2];
@@ -535,15 +536,15 @@ PathUniqueIdentifier[a_] := PathUniqueIdentifier[a] = Module[{ris = a,res, Ptemp
   PathList[pathindex]=ris //. P1[A__][B__] -> P[A];
   pathindex=pathindex+1;
   ris = ris //. P1 -> P;
-PathUniqueIdentifier[a]]
+PathUniqueIdentifier[ain]]
 
 (*Short function just to give raise to the unique index of a path*)
-PathUniqueIndex[a_]:= PathUniqueIdentifier[a][[2]];
+PathUniqueIndex[ain_]:= PathUniqueIdentifier[ain][[2]];
 
 (*Interface function to create the c strings of the numerical values of the coefficientsand functions in GenerateCchecks*)
 << SymbolicC`;
-MyCForm[a_] := Module[{res, res1},
-   res = ToCCodeString[CExpression[a]];
+MyCForm[ain_] := Module[{res, res1},
+   res = ToCCodeString[CExpression[ain]];
    res];
 
 (*
@@ -575,9 +576,9 @@ GenerateCchecks[]:=Module[{Op,OpTmp,ar,irrepdim,EvaluatedQ, RActiveOp,RMatrixOp,
               OpTmp=Transpose[{Table[Op[Px,Py,Pz,irrepindex,charge,Opindex[Px,Py,Pz,irrepindex,charge][[id,irev]]],{irev,1,irrepdim}]}];
               RMatrixOp=Table[N[irrepSetOrthog[Px,Py,Pz][[irrepindex]][[i]]] . OpTmp,{i,1,Ord[Px,Py,Pz]}];
               Off[Part::partd];
-              OpTmp=ExpandAll[OpTmp//.Op[a__]:>rotfun[MapOptoCindex[a]]];
+              OpTmp=ExpandAll[OpTmp//.Op[la__]:>rotfun[MapOptoCindex[la]]];
               Print["The operators: ",OpTmp];
-              RMatrixOp=ExpandAll[RMatrixOp//.Op[a__]:>unrotfun[MapOptoCindex[a]]];
+              RMatrixOp=ExpandAll[RMatrixOp//.Op[la__]:>unrotfun[MapOptoCindex[la]]];
               Print["And their rotations: ",RMatrixOp];
               On[Part::partd];
               Do[
@@ -669,7 +670,7 @@ OpGroupStringPaths[px_, py_, pz_, iridx_, charge_] :=
           If[Head[lpath]==Plus,
             lpath=lpath[[1]];
           ];
-          lpath = lpath //.  a1_. a_[A__][b__] :> {A} ;
+          lpath = lpath //.  a1_. la_[A__][b__] :> {A} ;
           Do[
             step=lpath[[i]]//.{ax -> x , ay -> y , az-> z};
             string = string <> ToString[step];
@@ -704,8 +705,8 @@ OpGroupStringPaths[px_, py_, pz_, iridx_, charge_] :=
   WriteString[ar,"static double complex *mom_def_Cm_tr_paths=NULL;\n"];
   WriteString[ar,"static double complex *path_storage=NULL;\n"];
 
-  WriteString[ar, "int ** direct_spatial_rotations(){\nint i;\nint ** res=malloc(sizeof(int *)*48);\nint *res1=malloc(sizeof(int *)*48*4);\nfor (i=0;i<48;i++)\nres[i]=res1+4*i;\n"];
-  WriteString[ar,"\n"];
+  WriteString[ar, "int ** direct_spatial_rotations(){\nint i;\nint ** res=malloc(sizeof(int *)*48);\n int *res1=malloc(sizeof(int *)*48*4);\n for (i=0;i<48;i++)\n res[i]=res1+4*i;\n "];
+  WriteString[ar,"\n "];
   Do[
   (*write the definition of the rotations and inverse rotations for the C checks in the C file*)
     res={0,ax,ay,az} //. permutationTable[[i]];
@@ -714,13 +715,13 @@ OpGroupStringPaths[px_, py_, pz_, iridx_, charge_] :=
   ,{i,1,48}];
   WriteString[ar,"return res;\n}\n"];
 
-  WriteString[ar, "int ** inverse_spatial_rotations(){\nint i;\nint ** res=malloc(sizeof(int *)*48);\nint *res1=malloc(sizeof(int *)*48*4);\nfor (i=0;i<48;i++)\nres[i]=res1+4*i;\n"];
+  WriteString[ar, "int ** inverse_spatial_rotations(){\nint i;\nint ** res=malloc(sizeof(int *)*48);\n int *res1=malloc(sizeof(int *)*48*4);\n for (i=0;i<48;i++)\n res[i]=res1+4*i;\n "];
   Do[
     res={0,ax,ay,az} //. inversepermutationTable[[i]];
     res=res //. {bx->1,by->2,bz->3};
-    WriteString[ar, "res1[",(i-1)*4,"]=",res[[1]],";\nres1[",(i-1)*4+1,"]=",res[[2]],";\nres1[",(i-1)*4+2,"]=",res[[3]],";\nres1[",(i-1)*4+3,"]=",res[[4]],";\n"];
+    WriteString[ar, "res1[",(i-1)*4,"]=",res[[1]],";\n res1[",(i-1)*4+1,"]=",res[[2]],";\n res1[",(i-1)*4+2,"]=",res[[3]],";\n res1[",(i-1)*4+3,"]=",res[[4]],";\n "];
   ,{i,1,48}];
-  WriteString[ar,"return res;\n}\n"];
+  WriteString[ar,"return res;\n}\n "];
   Close[ar];
 
 
@@ -1130,7 +1131,7 @@ Do[
     ];
   ];
 
-  sign[a_]:=Module[{res},If[a>0,res="+",res="-"];res];
+  sign[ain_]:=Module[{res},If[ain>0,res="+",res="-"];res];
   
 
     (*Function to write the coefficients in C*)
@@ -1156,7 +1157,7 @@ int **direct_spatial_rotations();
 int **inverse_spatial_rotations();
 void request_spatial_paths_evaluation();
 void eval_all_glueball_ops(int t, double complex *numerical_op);
-void measure_1pt_glueballs(int nblocking, double *smear_val, double complex *gb_storage);
+void measure_1pt_glueballs(int nblockingstart, int nblockingend, double *smear_val, double complex *gb_storage);
 void report_op_group_setup();
 
 typedef struct

@@ -565,9 +565,12 @@ void complete_sf_sendrecv(spinor_field *sf) {
       lprintf("MPI", 0, "ERROR: %s\n", mesg);
       for (k = 0; k < nreq; ++k) {
         if (status[k].MPI_ERROR != MPI_SUCCESS) {
-          MPI_Error_string(status[k].MPI_ERROR, mesg, &mesglen);
-          lprintf("MPI", 0, "Req [%d] Source [%d] Tag [%] ERROR: %s\n", k,
-                  status[k].MPI_SOURCE, status[k].MPI_TAG, mesg);
+          MPI_Error_string(status[k].MPI_ERROR,mesg,&mesglen);
+          lprintf("MPI",0,"Req [%d] Source [%d] Tag [%d] ERROR: %s\n",
+              k, 
+              status[k].MPI_SOURCE, 
+              status[k].MPI_TAG, 
+              mesg);
         }
       }
       error(1, 1, "complete_gf_sendrecv " __FILE__,

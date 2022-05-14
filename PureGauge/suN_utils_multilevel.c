@@ -286,7 +286,7 @@ int init_mc_ml(pg_flow_ml *gf, char *ifile)
 
     parse_ml_corellator_def();
 
-    lprintf("INIT ML", 0, "Blocking iteration on the observables=%d\n", pg_var_ml.nblk);
+    lprintf("INIT ML", 0, "Blocking iteration on the observables (start/end)=(%d/%d)\n", pg_var_ml.nblkstart, pg_var_ml.nblkend);
     lprintf("INIT ML", 0, "Ape smearing par=%lf\n", pg_var_ml.APEsmear);
 
     read_input(gf->read, ifile);
@@ -376,8 +376,8 @@ int init_mc_ml_measure(pg_flow_ml_measure *gf, char *ifile)
     pg_var_ml.ml_nskip = malloc(sizeof(int) * pg_var_ml.ml_levels);
 
     parse_ml_corellator_def();
- 
-    lprintf("INIT ML", 0, "Blocking iteration on the observables=%d\n", pg_var_ml.nblk);
+
+    lprintf("INIT ML", 0, "Blocking iteration on the observables (start/end)=(%d/%d)\n", pg_var_ml.nblkstart, pg_var_ml.nblkend);
     lprintf("INIT ML", 0, "Ape smearing par=%lf\n", pg_var_ml.APEsmear);
 
     read_input(gf->read, ifile);
@@ -430,13 +430,5 @@ int save_conf(pg_flow_ml *gf, int id)
     return 0;
 }
 
-int end_mc_ml()
-{
-    WF_free();
-
-    free_BCs();
-
-    return 0;
-}
 
 #undef repr_name

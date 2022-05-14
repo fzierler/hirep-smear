@@ -61,8 +61,10 @@ int main(int argc, char *argv[])
     if (fscanf(list, "%s", cnfg_filename) == 0 || feof(list))
       break;
 
-    error(sscanf(cnfg_filename, "%*[^a]an%*fn%d", &i) != 1, 1, "main [suN_multilevel_measure.c]",
-                                                       "Malformed configuration name (not ending by ...n<number>) \n");
+    char *str;
+    str = strrchr(cnfg_filename, 'n');
+    error(sscanf(str, "n%d", &i) != 1, 1, "main [suN_multilevel_measure.c]",
+          "Malformed configuration name (not ending by ...n<number>) \n");
 
     lprintf("MAIN", 0, "\n\nConfiguration %d from %s\n", i, cnfg_filename);
 
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
 
     gettimeofday(&start, 0);
 
-    update_hb_multilevel_gb_measure(0, &(flow.pg_v->beta), flow.pg_v->nhb, flow.pg_v->nor, flow.pg_v->ml_niteration, flow.pg_v->ml_nskip, flow.pg_v->nblk, &(flow.pg_v->APEsmear), &(flow.pg_v->corrs));
+    update_hb_multilevel_gb_measure(0, &(flow.pg_v->beta), flow.pg_v->nhb, flow.pg_v->nor, flow.pg_v->ml_niteration, flow.pg_v->ml_nskip, flow.pg_v->nblkstart, flow.pg_v->nblkend, &(flow.pg_v->APEsmear), &(flow.pg_v->corrs));
 
     gettimeofday(&end, 0);
     timeval_subtract(&etime, &end, &start);
@@ -101,9 +103,6 @@ int main(int argc, char *argv[])
       lprintf("MAIN", 0, "Polyakov Measure #%d: generated in [%ld sec %ld usec]\n", i, etime.tv_sec, etime.tv_usec);
     }
   }
-
-  /* finalize Monte Carlo */
-  end_mc_ml();
 
   /* close communications */
   finalize_process();

@@ -3,7 +3,8 @@ name: no-mpi-spn
 on:
   push:
     branches:
-      - spn-swansea-merge
+      - master
+      - spn
 
 jobs:
   build:
