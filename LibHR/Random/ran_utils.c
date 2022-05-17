@@ -8,7 +8,8 @@
 #include "communications.h"
 
 
-//Random array of +/- 1/\sqrt(2)
+// Random array of +/- 1/\sqrt(2)
+// sqrt(2) guarantees that an element of Z2xZ2 has a euclidean norm of 1
 void ranz2(double r[],int n)
 {
   double plus = sqrt(.5);

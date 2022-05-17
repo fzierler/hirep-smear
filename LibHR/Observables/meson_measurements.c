@@ -591,6 +591,8 @@ void measure_spectrum_gfwall_fixedbc(int dt, int nm, double *m, int conf_num, do
 *	Disconnected Measurements	*
 *****************************************/
 
+// FZ: this function name is incorrect. The sources are not localized on a given 
+// time slice but spread over all time slices
 void measure_spectrum_discon_semwall(int nm, double *m, int nhits, int conf_num, double precision, storage_switch swc, data_storage_array **ret)
 {
   spinor_field *source = alloc_spinor_field_f(4, &glattice);
@@ -603,17 +605,39 @@ void measure_spectrum_discon_semwall(int nm, double *m, int nhits, int conf_num,
   init_propagator_eo(nm, m, precision);
   for (k = 0; k < nhits; ++k)
   {
+    // I think this normalization w.r.t to the different hits was incorrect.
+    // Only even sites of the source are kept nonzero without an appropriate
+    // change of the normalization. Thus in this case the resulting correlator
+    // should be multiplied by a factor of two or we should explicitly measure
+    // over the other oe source which I implemented here. 
     create_noise_source_equal_eo(source);
     for (beta = 0; beta < 4; beta++)
       source[beta].type = &glat_even;
-    calc_propagator(prop, source, 4); //4 for spin dilution
+    calc_propagator(prop, source, 4); 
     for (beta = 0; beta < 4; beta++)
       source[beta].type = &glattice;
     measure_mesons(discon_correlators, prop, source, nm, 0);
+    // perform same calculation now for other eo dilution.
+    // It has to be seen if this is provides a better signal or if only using
+    // eo sources and increasing the number of hits by 2 while (i.e. 
+    // performing the same number of inversions) gives a better signal.
+    create_noise_source_equal_oe(source);
+    for (beta = 0; beta < 4; beta++)
+      source[beta].type = &glat_even;
+    calc_propagator(prop, source, 4); 
+    for (beta = 0; beta < 4; beta++)
+      source[beta].type = &glattice;
+    measure_mesons(discon_correlators, prop, source, nm, 0);
+    // Remove the added normalization introduced here. In that way the result
+    // is only normalized by a factor GLB_VOL3 = LX x LY x LZ
+    // If we use even-sites-only sources we also need to introduce another 
+    // factor of 2 in the overall normalization, i.e. change the 1 in 
+    // print_mesons => (1/2)
+    // This is NOT the factor of 2 that appears in the contractions of the 
+    // iso-singlet operators! This has to be taken into account during analysis.
     sprintf(label, "src %d DISCON_SEMWALL", k);
-    print_mesons(discon_correlators, GLB_VOL3 / 2., conf_num, nm, m, GLB_T, 1, label);
+    print_mesons(discon_correlators, 1.0 , conf_num, nm, m, GLB_T, 1, label);
   }
-  //print_mesons(discon_correlators,nhits*GLB_VOL3/2.,conf_num,nm,m,GLB_T,1,"DISCON_SEMWALL");
   free_propagator_eo();
   free_spinor_field_f(source);
   free_spinor_field_f(prop);
@@ -680,6 +704,11 @@ void measure_spectrum_discon_volume(int nm, double *m, int conf_num, double prec
 
   init_propagator_eo(nm, m, precision);
   int p;
+  // Compared to the "discon_semwall" this version probably gets the correct 
+  // normalization of the source vectors as it sums over both eo dilutions  
+  // Actually, this will produce an error if dil is > 1!
+  // We could add a check that dil is either in {0,1} or adjust the normalization
+  // here. This is then however just a different way of allowing more random hits  
   for (p = 0; p < dil; p++)
   {
     create_diluted_volume_source(source, p, dil);

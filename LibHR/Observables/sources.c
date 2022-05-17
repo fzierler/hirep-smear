@@ -330,6 +330,7 @@ void create_noise_source_equal_eo(spinor_field *source)
       for (c[2] = 0; c[2] < Y; c[2]++)
         for (c[3] = 0; c[3] < Z; c[3]++)
         {
+          // selects only even sites
           if (((zerocoord[0] + c[0] + zerocoord[1] + c[1] + zerocoord[2] + c[2] + zerocoord[3] + c[3]) & 1) == 0)
           {
             v1 = &((_FIELD_AT(&source[0], ipt(c[0], c[1], c[2], c[3])))->c[0]);
@@ -366,6 +367,7 @@ void create_noise_source_equal_oe(spinor_field *source)
       for (c[2] = 0; c[2] < Y; c[2]++)
         for (c[3] = 0; c[3] < Z; c[3]++)
         {
+          // selects only odd sites 
           if (((zerocoord[0] + c[0] + zerocoord[1] + c[1] + zerocoord[2] + c[2] + zerocoord[3] + c[3]) & 1) == 1)
           {
             v1 = &((_FIELD_AT(&source[0], ipt(c[0], c[1], c[2], c[3])))->c[0]);
