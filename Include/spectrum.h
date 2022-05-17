@@ -31,6 +31,7 @@ void measure_spectrum_gfwall_fixedbc(int dt, int nm, double* m, int conf_num, do
 void measure_formfactor_pt(int ti, int tf, int nm, double* m, int n_mom, int conf_num, double precision,storage_switch swc, data_storage_array **ret);
 void measure_formfactor_fixed(int ti, int tf, int dt, int nm, double* m, int n_mom, int conf_num, double precision,storage_switch swc, data_storage_array **ret);
 void measure_conserved_formfactor_fixed(int ti, int tf, int dt, int nm, double* m, int n_mom, int conf_num, double precision,storage_switch swc, data_storage_array **ret);
+void measure_spectrum_semwall_nondegenerate(int nm, double* m, int nhits,int conf_num, double precision);
 
 void measure_diquark_semwall_background(int nm, double* m, int nhits,int conf_num, double precision,double Q, int n,storage_switch swc, data_storage_array **ret);
 void measure_baryons(double* m,int conf_num, double precision, storage_switch swc, data_storage_array **ret);

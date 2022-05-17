@@ -33,6 +33,7 @@ mes:discon_gfwall = 0
 mes:discon_volume = 0
 mes:dilution = 4
 mes:dirichlet_dt = 2
+mes:def_semwall_nondeg = 0
 
 mes:background_field = 1
 mes:Q =  0.5

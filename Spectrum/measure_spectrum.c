@@ -64,6 +64,7 @@ typedef struct _input_mesons
   int discon_semwall;
   int discon_gfwall;
   int discon_volume;
+  int def_semwall_nondeg;
   int def_gfwall;
   int dt;
   int n_mom;
@@ -80,7 +81,7 @@ typedef struct _input_mesons
   int degree_hopping; // The degree of the hopping parameter expasion
 
   /* for the reading function */
-  input_record_t read[33];
+  input_record_t read[34];
 } input_mesons;
 
 #define init_input_mesons(varname)                                                                                \
@@ -117,6 +118,7 @@ typedef struct _input_mesons
       {"hopping expansion degree", "mes:degree_hopping = %d", INT_T, &(varname).degree_hopping},                  \
       {"hopping expansion hits", "mes:nhits_hopping = %d", INT_T, &(varname).nhits_hopping},                      \
       {"Configuration list:", "mes:configlist = %s", STRING_T, &(varname).configlist},                            \
+      {"enable nondegenerate masses", "mes:def_semwall_nondeg = %d",INT_T, &(varname).def_semwall_nondeg},	      \
       {NULL, NULL, INT_T, NULL}                                                                                   \
     }                                                                                                             \
   }
@@ -167,6 +169,7 @@ int main(int argc, char *argv[])
   int i, tau;
   FILE *list;
   int nm;
+  char tmp[256], *cptr;
   double m[256];
   /* setup process communications */
   setup_process(&argc, &argv);
@@ -196,6 +199,17 @@ int main(int argc, char *argv[])
   nm = 1;
   m[0] = atof(mes_var.mstring); //
 
+  if(mes_var.use_input_mass) {
+    strcpy(tmp,mes_var.mstring);
+    cptr = strtok(tmp, ";");
+    nm=0;
+    while(cptr != NULL) {
+      m[nm]=atof(cptr);
+      nm++;
+      cptr = strtok(NULL, ";");
+    }
+  }
+
   lprintf("MAIN", 0, "Inverter precision = %e\n", mes_var.precision);
   lprintf("MAIN", 0, "Mass[%d] = %f\n", 0, m[0]);
 
@@ -203,6 +217,9 @@ int main(int argc, char *argv[])
   if (mes_var.def_semwall)
   {
     lprintf("MAIN", 0, "Spin Explicit Method (SEM) wall sources\n");
+  }
+  if (mes_var.def_semwall_nondeg){
+    lprintf("MAIN",0,"Spin Explicit Method (SEM) wall sources. Meson with different valence masses\n");
   }
   if (mes_var.def_point)
   {
@@ -246,7 +263,7 @@ int main(int argc, char *argv[])
   if (mes_var.n_mom > 1)
   {
     lprintf("MAIN", 0, "Number of maximum monentum component %d\n", mes_var.n_mom - 1);
-    if (mes_var.def_semwall || mes_var.ext_semwall || mes_var.fixed_semwall)
+    if (mes_var.def_semwall || mes_var.def_semwall_nondeg || mes_var.ext_semwall || mes_var.fixed_semwall)
     {
       lprintf("MAIN", 0, "WARGING: wall sources measure only with zero momenta\n");
     }
@@ -313,10 +330,10 @@ int main(int argc, char *argv[])
     if (four_fermion_active == 0)
     {
 #ifdef GAUGE_SPN
-      if (mes_var.def_gfwall || 
-          mes_var.fixed_gfwall || 
+      if (mes_var.def_gfwall ||
+          mes_var.fixed_gfwall ||
           mes_var.discon_gfwall){
-          
+
           error(1, 1, "main [measure_spectrum.c]",
                 "gauge fixing needs to be implemented for SPN");
       }
@@ -325,6 +342,13 @@ int main(int argc, char *argv[])
       if (mes_var.def_semwall)
       {
         measure_spectrum_semwall(nm, m, mes_var.nhits_2pt, i, mes_var.precision,DONTSTORE, NULL);
+      }
+      if (mes_var.def_semwall_nondeg)
+      {
+        // FZ: April 2022
+        // This asumes that at least two masses are provided in the input file.
+        // The first two masses in m are used for the measurement
+        measure_spectrum_semwall_nondegenerate(1,m,mes_var.nhits_2pt,i,mes_var.precision);
       }
       if (mes_var.def_point)
       {

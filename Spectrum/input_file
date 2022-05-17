@@ -22,6 +22,7 @@ mes:nhits_disc = 0
 mes:mass = -0.45
 mes:use_input_mass = 0;
 mes:meas_mixed = 3
+mes:def_semwall_nondeg = 0
 mes:nhits_2pt = 1
 mes:momentum = 0
 mes:def_semwall = 0
