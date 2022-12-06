@@ -251,7 +251,6 @@ void measure_bilinear_loops_4spinorfield(spinor_field *prop, spinor_field *sourc
 		lprintf("TIMING", 0, "Contractions for source %d done and all timeslices [%ld sec %ld usec]\n", src_id, etime.tv_sec, etime.tv_usec);
 }
 
-#ifndef GAUGE_SPN // FIXFORSPN
 void measure_loops(double *m, int nhits, int conf_num, double precision, int source_type, int n_mom, storage_switch swc, data_storage_array **ret)
 {
 	int k, l;
@@ -330,22 +329,25 @@ void measure_loops(double *m, int nhits, int conf_num, double precision, int sou
 	}
 	if (source_type == 1)
 	{
-
-		u_gauge_old = alloc_gfield(&glattice);
-		suNg_field_copy(u_gauge_old, u_gauge);
-		spinor_field_zero_f(prop);
-		//Fix the Gauge
-		double act = gaugefix(0,	  //= 0, 1, 2, 3 for Coulomb guage else Landau
+#ifdef GAUGE_SPN // FIXFORSPN
+			error(1, 1, "measure_loops [loop_tools.c]", "Gauge fixing not implemented for Sp(N)");
+#else
+			u_gauge_old = alloc_gfield(&glattice);
+			suNg_field_copy(u_gauge_old, u_gauge);
+			spinor_field_zero_f(prop);
+			//Fix the Gauge
+			double act = gaugefix(0,	  //= 0, 1, 2, 3 for Coulomb guage else Landau
 							  1.8,	  //overrelax
 							  10000,  //maxit
 							  1e-12,  //tolerance
 							  u_gauge //gauge
-		);
-		lprintf("GFWALL", 0, "Gauge fixed action  %1.6f\n", act);
-		double p2 = calc_plaq(u_gauge);
-		lprintf("TEST", 0, "fixed_gauge plaq %1.6f\n", p2);
-		full_plaquette();
-		represent_gauge_field();
+							);
+			lprintf("GFWALL", 0, "Gauge fixed action  %1.6f\n", act);
+			double p2 = calc_plaq(u_gauge);
+			lprintf("TEST", 0, "fixed_gauge plaq %1.6f\n", p2);
+			full_plaquette();
+			represent_gauge_field();
+#endif
 	}
 
 	for (k = 0; k < nhits; k++)
@@ -363,21 +365,21 @@ void measure_loops(double *m, int nhits, int conf_num, double precision, int sou
 
 		if (source_type == 1) // experimental Gauge Fixed Wall sources
 		{
-			//error(1, 1, "measure_loops [loop_tools.c]", "Source_type ==1 (gauge fixed wall sources) is broken and untested.");
-
-			for (tau = 0; tau < GLB_T; tau++)
-				for (l = 0; l < NF; l++)
-				{
-					create_gauge_fixed_wall_source(source, tau, l);
-					calc_propagator(prop, source, 4);	 //4 for spin dilution
-					create_point_source(source, tau, l); //to get the contraction right
-					//measure_mesons(discon_correlators, prop, source, 1, 0);
-					measure_bilinear_loops_4spinorfield(prop, source, k, tau, l, -1, swc, ret);
-				}
-
-			//This gets the norm of the 2pt wrong by a factor GLB_VOL3 but the norm of the disconnected right
-			//print_mesons(discon_correlators, 1.0, conf_num, 1, m, GLB_T, 1, "DISCON_GFWALL");
-
+#ifdef GAUGE_SPN // FIXFORSPN
+				error(1, 1, "measure_loops [loop_tools.c]", "Gauge fixing not implemented for Sp(N)");
+#else
+				for (tau = 0; tau < GLB_T; tau++)
+					for (l = 0; l < NF; l++)
+					{
+						create_gauge_fixed_wall_source(source, tau, l);
+						calc_propagator(prop, source, 4);	 //4 for spin dilution
+						create_point_source(source, tau, l); //to get the contraction right
+						//measure_mesons(discon_correlators, prop, source, 1, 0);
+						measure_bilinear_loops_4spinorfield(prop, source, k, tau, l, -1, swc, ret);
+					}
+				//This gets the norm of the 2pt wrong by a factor GLB_VOL3 but the norm of the disconnected right
+				//print_mesons(discon_correlators, 1.0, conf_num, 1, m, GLB_T, 1, "DISCON_GFWALL");
+#endif
 		} /* gfwall */
 
 		if (source_type == 2)
@@ -443,7 +445,6 @@ void measure_loops(double *m, int nhits, int conf_num, double precision, int sou
 	timeval_subtract(&etime, &end, &start);
 	lprintf("TIMING", 0, "Sources generation, invert and contract for %i sources done [%ld sec %ld usec]\n", nhits, etime.tv_sec, etime.tv_usec);
 }
-#endif
 
 void measure_bilinear_loops_spinorfield(spinor_field *prop, spinor_field *source, int src_id, int n_mom, storage_switch swc, data_storage_array **ret)
 {
