@@ -18,7 +18,7 @@
 #include <stdio.h>
 
 void measure_spectrum_semwall(int nm, double* m, int nhits,int conf_num, double precision,storage_switch swc, data_storage_array **ret);
-void measure_spectrum_discon_semwall(int nm, double* m, int nhits,int conf_num, double precision,storage_switch swc, data_storage_array **ret);
+void measure_spectrum_discon_semwall(int nm, double* m, int nhits,int conf_num, double precision,storage_switch swc, data_storage_array **ret, int n_mom);
 void measure_spectrum_discon_gfwall(int nm, double* m, int conf_num, double precision,storage_switch swc, data_storage_array **ret);
 void measure_spectrum_discon_volume(int nm, double* m, int conf_num, double precision, int dil,storage_switch swc, data_storage_array **ret);
 void measure_spectrum_gfwall(int nm, double* m, int conf_num, double precision,storage_switch swc, data_storage_array **ret);

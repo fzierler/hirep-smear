@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
       }
       if (mes_var.discon_semwall)
       {
-        measure_spectrum_discon_semwall(nm, m, mes_var.nhits_disc, i, mes_var.precision,DONTSTORE, NULL);
+        measure_spectrum_discon_semwall(nm, m, mes_var.nhits_disc, i, mes_var.precision,DONTSTORE, NULL, mes_var.n_mom);
       }
       if (mes_var.discon_gfwall)
       {
