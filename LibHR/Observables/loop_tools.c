@@ -249,6 +249,18 @@ void measure_bilinear_loops_4spinorfield(spinor_field *prop, spinor_field *sourc
 		lprintf("TIMING", 0, "Contractions for source %d done and time %d [%ld sec %ld usec]\n", src_id, tau, etime.tv_sec, etime.tv_usec);
 	if (tau == -1)
 		lprintf("TIMING", 0, "Contractions for source %d done and all timeslices [%ld sec %ld usec]\n", src_id, etime.tv_sec, etime.tv_usec);
+
+	// free memory used for correlators
+	for (int i = 0; i < NGamma; i++)
+	{
+		free(corr_re[i]);
+		free(corr_im[i]);
+	}
+
+	for (int i = 0; i < NGamma; i++)
+		free(corr[i]);
+
+	free(corr);
 }
 
 void measure_loops(double *m, int nhits, int conf_num, double precision, int source_type, int n_mom, storage_switch swc, data_storage_array **ret)
