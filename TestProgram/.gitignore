@@ -1,0 +1,6 @@
+GAUGE_S?N_REPR_*_*_check_*_[0-9].out
+check_algebra_1
+check_algebra_2
+check_puregauge_1
+check_puregauge_2
+check_puregauge_3

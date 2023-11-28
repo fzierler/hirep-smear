@@ -1,0 +1,133 @@
+// Global variables
+GLB_T = 4
+GLB_X = 4
+GLB_Y = 4
+GLB_Z = 4
+NP_T = 1
+NP_X = 1
+NP_Y = 1
+NP_Z = 1
+
+// Replicas
+N_REP = 1
+
+// Random generator
+rlx_level = 1
+rlx_seed = 13813
+rlx_start = new
+rlx_state = rand_state
+
+// Logger levels
+log:default = -1
+log:inverter = -1
+log:forcestat = 0
+
+// Fermion twisting
+theta_T = 0.
+theta_X = 0.
+theta_Y = 0.
+theta_Z = 0.
+
+// HMC variables
+tlen = 1
+csw = 1.2
+rho_s = 0.15
+rho_t = 0.15
+
+// Schroedinger functional
+SF_zf = 1.
+SF_ds = 1.
+SF_ct = 1.
+SF_sign = 1
+
+// Runtime variables
+//example: run1_8x8x8x8nc2rFUNnf0b0.000000m0.000000
+run name = run1
+save freq = 10000
+meas freq = 1
+conf dir = .
+gauge start = random // run1_6x6x6x6nc2rADJnf2b6.000000m-0.000000n10
+last conf = 100
+
+// Mesons
+mes:make = false
+mes:precision = 1.e-20
+mes:nhits = 1
+mes:mass = -0
+
+// Polyakov
+poly:make = false
+
+// Eigenvalues
+eva:make = false
+eva:nevt = 5
+eva:nev = 1
+eva:kmax = 50
+eva:maxiter = 100
+eva:omega1 = 1.e-8
+eva:omega2 = 1.e-3
+eva:mass = 0
+
+// Monomials
+monomial {
+	id = 0
+	type = gauge
+	beta = 8.0
+	level = 1
+}
+
+monomial {
+	id = 1
+	type = hmc
+	mass = 1.0
+	mt_prec = 1e-16
+	force_prec = 1e-16
+	mre_past = 4
+	level = 0
+}
+
+//monomial {
+//	id = 1
+//	type = rhmc
+//	n = 1
+//	d = 2
+//	mass = -0.2
+//	mt_prec = 1e-12
+//	md_prec = 1e-12
+//	force_prec = 1e-16
+//	mre_past = 4
+//	level = 0
+//}
+
+//monomial {
+//	id = 2
+//	type = scalar
+//	mass = 0.5
+//	lambda = 0.5
+//	level = 0
+//}
+
+// Integrators
+integrator {
+	level = 0
+	type = o2mn
+	steps = 10
+}
+
+integrator {
+	level = 1
+	type = o2mn
+	steps = 5
+}
+
+//auxfield_start = cold: set pi to zero and sigma to start value
+//                 anything else: read auxiliary fields from configuration file
+//monomial {
+//        id = 0
+//        type = four_fermion
+//        gamma = 0.1
+//        auxfield_start = cold
+//        start_value = 1
+//        level = 1
+//}
+

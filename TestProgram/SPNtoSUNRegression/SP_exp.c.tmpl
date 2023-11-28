@@ -1,0 +1,53 @@
+/***************************************************************************\
+* Copyright (c) 2008, Agostino Patella                                      *   
+* All rights reserved.                                                      * 
+\***************************************************************************/
+
+#include "suN.h"
+#include <math.h>
+
+#if (NG!=$N$) 
+#error : Mismatch between NG and ExpX!
+#endif
+
+
+static inline void ExpX_taylor( double dt, suNg_algebra_vector *h, suNg *r){
+    suNg ufinal, addendum,dtiT;
+    _suNg_unit(ufinal);// u = 1
+    suNg iT;
+    _fund_algebra_represent(iT,*h);
+    _suNg_mul(dtiT,dt,iT); 
+    addendum = dtiT; // for order = 1
+    _suNg_add_assign(ufinal,addendum);// u = 1+ dt*iT
+    for(int order = 2; order != 10;++order){
+        suNg tmp;
+        // addendum[order] = 1.0/order * dtiT * addendum[order-1]
+        _suNg_times_suNg(tmp,dtiT,addendum);
+        _suNg_mul(addendum,1.0/order,tmp); 
+        _suNg_add_assign(ufinal,addendum);// u += (dt*iT)^order/order!
+    } 
+    suNg result;
+    _suNg_times_suNg(result,ufinal,*r);
+    *r = result;
+}
+
+
+
+
+/*
+*  Approssima
+*  V = exp(sum(A) iT(A)*h(A)*dt)
+*  con una matrice unitaria secondo l'algoritmo di Luscher
+*  e sostituisce
+*  V.U -> U
+*/
+void SP_ExpX(double dt, SPg_algebra_vector *h, SPg *r)
+{
+
+$GROUP::EXPX:(dt):(*h):(*u)$
+
+
+}
+
+
+

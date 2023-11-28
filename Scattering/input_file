@@ -1,0 +1,49 @@
+GLB_T = 8
+GLB_X = 8
+GLB_Y = 8
+GLB_Z = 8
+NP_T = 2
+NP_X = 1
+NP_Y = 1
+NP_Z = 1
+//NP_T = 8
+//NP_X = 8
+//NP_Y = 3
+//NP_Z = 1
+
+
+N_REP = 1
+
+log:default = -1
+log:inverter = -1
+log:forcestat = 0
+
+rlx_level = 1
+rlx_seed = 13813
+rlx_start = new
+rlx_state = rand_state
+
+mes:masses = -0.6
+mes:precision = 1e-20
+mes:nhits = 3
+mes:outdir = /work/sducp/janowski/out/pipi_test/bare/
+mes:p1 = (0,0,1)
+mes:p2 = (1,1,0)
+
+masses = 2.0
+
+n_eigenvalues = 128
+eva_nevt = 128
+eva_omega1 = 1e-16
+eva_omega2 = 1e-10
+eva_kmax = 50
+eva_imax = 500
+
+hopping_order = -1
+
+n_truncation_steps = 0
+n_sources_truncation = 1
+n_sources_correction = 1
+inverter_precision = 1e-20
+dilution = 0
+Source time:0
