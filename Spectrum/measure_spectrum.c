@@ -74,13 +74,24 @@ typedef struct _input_mesons {
 	double csw;
 	double rho_s;
 	double rho_t;
+    int source_t;
+    int source_x;
+    int source_y;
+    int source_z;
+    int smearing_ss;
+    double smear_epsilon_source;
+    int smear_N_source;
+    double smear_epsilon_sink;
+    int smear_N_sink;
+    int APE_N;
+    double APE_epsilon;
 
 	//Currently only implemented for ff
 	int nhits_hopping;  //Multiplies the number of hits in the fast part of the hopping parameter expansion
 	int degree_hopping;  // The degree of the hopping parameter expasion
 
 	/* for the reading function */
-	input_record_t read[31];
+	input_record_t read[42];
 } input_mesons;
 
 #define init_input_mesons(varname) \
@@ -116,6 +127,17 @@ typedef struct _input_mesons {
     {"smearing time", "mes:rho_t = %lg",DOUBLE_T, &(varname).rho_t},	\
     {"hopping expansion degree", "mes:degree_hopping = %d",INT_T, &(varname).degree_hopping}, \
     {"hopping expansion hits", "mes:nhits_hopping = %d",INT_T, &(varname).nhits_hopping}, \
+    {"Smearing Source z", "mes:source_t = %d",INT_T, &(varname).source_t}, \
+    {"Smearing Source x", "mes:source_x = %d",INT_T, &(varname).source_x}, \
+    {"Smearing Source y", "mes:source_y = %d",INT_T, &(varname).source_y}, \
+    {"Smearing Source z", "mes:source_z = %d",INT_T, &(varname).source_z}, \
+    {"Smearing a lot at once", "mes:smearing_ss = %d",INT_T, &(varname).smearing_ss}, \
+    {"smearing source step size", "mes:smear_epsilon_source = %lf", DOUBLE_T, &(varname).smear_epsilon_source},\
+    {"Number of smeared source steps", "mes:smear_N_source = %d",INT_T, &(varname).smear_N_source},        \
+    {"smearing sink step size", "mes:smear_epsilon_sink = %lf", DOUBLE_T, &(varname).smear_epsilon_sink},\
+    {"Number of smeared sink steps", "mes:smear_N_sink = %d",INT_T, &(varname).smear_N_sink}, \
+    {"Number of APE smearing steps", "mes:APE_N = %d",INT_T, &(varname).APE_N}, \
+    {"APE smearing step size", "mes:APE_epsilon = %lf",DOUBLE_T, &(varname).APE_epsilon}, \
     {NULL, NULL, INT_T, NULL}				\
    }							\
 }
@@ -371,8 +393,16 @@ int main(int argc,char *argv[]) {
     lprintf("MAIN",0,"Spin Explicit Method (SEM) wall sources\n");    
   }
   if (mes_var.def_point){
-    lprintf("MAIN",0,"Point sources\n");    
+    lprintf("MAIN",0,"Point sources\n");
   }
+    if (mes_var.APE_N != 0){
+        lprintf("MAIN",0,"APE smearing activate on Gaussian smearing\n");
+    }
+    
+    if (mes_var.smearing_ss){
+      lprintf("MAIN",0,"Smear source to several Ns_sink\n");
+    }
+    
  	if (mes_var.def_baryon){
     lprintf("MAIN",0,"Baryon masses\n");    
   }
@@ -410,6 +440,8 @@ int main(int argc,char *argv[]) {
  	if (mes_var.background_field){
     lprintf("MAIN",0,"Electric background field in the z direction with charge Q=%1.6f , with E =  %d x 2 pi /(Q*T*L) \n",mes_var.Q,mes_var.nEz);    
   }
+    
+    
  
   list=NULL;
   if(strcmp(list_filename,"")!=0) {
@@ -469,6 +501,10 @@ int main(int argc,char *argv[]) {
      if (mes_var.def_point){
        measure_spectrum_pt(tau,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision);
      }
+     if (mes_var.smearing_ss){
+       measure_smearing_ss(mes_var.source_t,mes_var.source_x,mes_var.source_y,mes_var.source_z,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source,mes_var.smear_epsilon_sink,mes_var.smear_N_sink, mes_var.APE_epsilon, mes_var.APE_N);
+        }
+        
      if (mes_var.def_baryon){
        measure_baryons(m,i,mes_var.precision);
      }

@@ -37,6 +37,7 @@ typedef struct {
 void init_BCs(BCs_pars_t *pars);
 void free_BCs();
 void apply_BCs_on_represented_gauge_field();
+void apply_BCs_on_represented_gauge_field_APE();
 void apply_BCs_on_fundamental_gauge_field();
 void apply_BCs_on_momentum_field(suNg_av_field *force);
 void apply_BCs_on_spinor_field(spinor_field *sp);
@@ -106,5 +107,16 @@ int HYP_best_parameters(double mtp[6859], double w[3]);
 /* Timing */
 #include <sys/time.h>
 int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y);
+
+/* APE smearing */
+void APE_smearing(double smear_val, int Nsmear);
+void assign_ud2u_APE_f(void);
+#ifdef GAUGE_SPN
+void cooling_SPN(suNg* g_out, suNg* g_in, suNg* staple, int cooling);
+void subgrb(int i1col, int i2col, suNgfull* B11, suNgfull* C11);
+void vmxsu2(int i1, int i2, suNgfull* A, complex B[4]);
+void subgrb_tau(int n1, int n2, suNgfull* B11, suNgfull* C11);
+void vmxsu2_tau(int n1, int n2, suNgfull* A, complex B[4]);
+#endif
 
 #endif
