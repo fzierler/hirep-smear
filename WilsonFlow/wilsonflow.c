@@ -91,15 +91,9 @@ static void Zeta(suNg_field *Z, const suNg_field* U, const double alpha){
       double imtr;
       _suNg_trace_im(imtr,tmp1);
       imtr = imtr/NG;
-#ifndef GAUGE_SPN
-#define _MATRIX_SIZE NG*NG
-#else
-#define _MATRIX_SIZE NG*NG/2
-#endif
-      for(int k=0;k<_MATRIX_SIZE;k+=NG+1) {
+      for(int k=0;k<NG*NG;k+=NG+1) {
         tmp1.c[k].im -= imtr;
       }
-#undef _MATRIX_SIZE
 #endif
 /*
       for(int k=0; k<NG*NG; k++) {
@@ -780,27 +774,21 @@ void WF_Esym_T(double* E, suNg_field* V) {
 */
 double WF_topo(suNg_field* V) {
   double TC=0.;
-#ifndef GAUGE_SPN
-#define _ALGEBRA_DIM (NG * NG - 1)
-#else
-#define _ALGEBRA_DIM (NG * (NG + 1) / 2)
-#endif
   
   _MASTER_FOR_SUM(&glattice,ix,TC) {
     suNg_algebra_vector F1, F2;
     WF_clover_F(&F1,V,ix,1,2);
     WF_clover_F(&F2,V,ix,0,3);
-    for(int i=0;i<_ALGEBRA_DIM;i++) TC += F1.c[i]*F2.c[i];
+    for(int i=0;i<NG*NG-1;i++) TC += F1.c[i]*F2.c[i];
     
     WF_clover_F(&F1,V,ix,1,3);
     WF_clover_F(&F2,V,ix,0,2);
-    for(int i=0;i<_ALGEBRA_DIM;i++) TC -= F1.c[i]*F2.c[i];
+    for(int i=0;i<NG*NG-1;i++) TC -= F1.c[i]*F2.c[i];
     
     WF_clover_F(&F1,V,ix,0,1);
     WF_clover_F(&F2,V,ix,2,3);
-    for(int i=0;i<_ALGEBRA_DIM;i++) TC += F1.c[i]*F2.c[i];
+    for(int i=0;i<NG*NG-1;i++) TC += F1.c[i]*F2.c[i];
   }
-#undef _ALGEBRA_DIM
   
   TC *= _FUND_NORM2/(4.*M_PI*M_PI);
 

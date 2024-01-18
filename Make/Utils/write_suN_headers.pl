@@ -212,15 +212,9 @@ END
                 write_suNr();
                 print "typedef $rdataname ${rdataname}_FMAT;\n\n";
                 print "typedef ${rdataname}_flt ${rdataname}_FMAT_flt;\n\n";
-                if ( $suff ne $fundsuff){
-                    print "typedef ${rdataname} ${rdataname}full;\n\n";
-                }
             } else {
                 print "typedef $dataname ${dataname}c;\n\n";
                 print "typedef ${dataname}_flt ${dataname}c_flt;\n\n";
-                if ( $suff ne $fundsuff) {
-                   print "typedef ${dataname} ${dataname}full;\n\n";
-                }
             }
 
         } elsif ($su2quat==0) {
@@ -229,25 +223,16 @@ END
                 write_suNr();
                 print "typedef $rdataname ${rdataname}_FMAT;\n\n";
                 print "typedef ${rdataname}_flt ${rdataname}_FMAT_flt;\n\n";
-                if ( $suff ne $fundsuff){
-                    print "typedef ${rdataname} ${rdataname}full;\n\n";
-                }
             } else {
                 print "typedef $dataname ${dataname}c;\n\n";
                 print "typedef ${dataname}_flt ${dataname}c_flt;\n\n";
                 print "typedef $dataname ${dataname}_FMAT;\n\n";
                 print "typedef ${dataname}_flt ${dataname}_FMAT_flt;\n\n";
-                if ( $suff ne $fundsuff) {
-                   print "typedef ${dataname} ${dataname}full;\n\n";
-                }
             }
 
         } else {
             write_su2($su2quat);
             my ($ldn,$lrdn)=($dataname,$rdataname);
-            if ( $suff ne $fundsuff) {
-               print "typedef ${dataname} ${dataname}full;\n\n";
-            }
             $dataname="${rdataname}c";
             $rdataname="${rdataname}_FMAT";
             write_suN();
@@ -257,7 +242,6 @@ END
                 print "typedef $dataname ${rdataname};\n\n";
                 print "typedef ${dataname}_flt ${rdataname}_flt;\n\n";
             }
-
             $dataname=$ldn;
             $rdataname=$lrdn;
 
@@ -324,6 +308,10 @@ END
             write_spN_inverse_multiply();
             if ($complex eq "R") {
                 die("SPN compressed mat-vec macros have not been written for real types.\n");
+            }else{
+                print "#define _suNfc_multiply(a,b,c) _suNf_multiply(a,b,c)\n\n";
+                print "#define _suNfc_inverse_multiply(a,b,c) _suNf_inverse_multiply(a,b,c)\n\n";
+                print "#define _suNfc_zero(a) _suNf_zero(a)\n\n";
             }
             my $olddataname = $dataname;
             $dataname = $dataname."full";
@@ -338,6 +326,10 @@ END
                 write_suNr_multiply();
                 write_suNr_inverse_multiply();
                 write_suNr_zero();
+            }else{
+                print "#define _suNfc_multiply(a,b,c) _suNf_multiply(a,b,c)\n\n";
+                print "#define _suNfc_inverse_multiply(a,b,c) _suNf_inverse_multiply(a,b,c)\n\n";
+                print "#define _suNfc_zero(a) _suNf_zero(a)\n\n";
             }
         } else {
             #write_su2_decode($su2quat);
@@ -422,10 +414,10 @@ END
             write_suN_times_suN();
             write_suN_times_suN_dagger();
             write_suN_dagger_times_suN();
-            write_suN_zero();
+#write_suN_zero();
             write_suN_unit();
             write_suN_minus();
-            write_suN_copy();
+# write_suN_copy();
             write_suN_mul();
             write_suN_mulc();
             write_suN_add_assign();
@@ -449,21 +441,9 @@ END
                 write_suNr_add_assign();
                 write_suNr_sub_assign();
                 write_suNr_mul();
-                write_suNr_copy();
                 write_suNr_trace_re();
                 write_suNr_sqnorm();
                 write_suNr_minus();
-            }
-
-            if ( $suff ne $fundsuff){
-                print "#define _suNffull_multiply(a,b,c) _suNf_multiply(a,b,c)\n\n";
-                print "#define _suNffull_mul(a,b,c) _suNf_mul(a,b,c)\n\n";
-                print "#define _suNffull_add_assign(a,b) _suNf_add_assign(a,b)\n\n";
-                print "#define _suNffull_sub_assign(a,b) _suNf_sub_assign(a,b)\n\n";
-                print "#define _suNffull_times_suNffull(a,b,c) _suNf_times_suNf(a,b,c)\n\n";
-                print "#define _suNffull_inverse_multiply(a,b,c) _suNf_inverse_multiply(a,b,c)\n\n";
-                print "#define _suNffull_zero(a) _suNf_zero(a)\n\n";
-                print "#define _suNf_expand(a,b) _suNf_copy(a,b)\n\n";
             }
 
         } else {
@@ -471,10 +451,9 @@ END
             write_su2_times_su2();
             write_su2_times_su2_dagger();
             write_su2_dagger_times_su2();
-            write_su2_zero();
+            #write_su2_zero();
             write_su2_unit();
             write_su2_minus();
-            write_suN_copy();
             write_su2_mul();
             write_su2_add_assign();
             write_su2_sub_assign();
@@ -490,17 +469,6 @@ END
             }
 
             write_su2_exp();
-
-            if ( $suff ne $fundsuff){
-                print "#define _suNffull_multiply(a,b,c) _suNf_multiply(a,b,c)\n\n";
-                print "#define _suNffull_mul(a,b,c) _suNf_mul(a,b,c)\n\n";
-                print "#define _suNffull_add_assign(a,b) _suNf_add_assign(a,b)\n\n";
-                print "#define _suNffull_sub_assign(a,b) _suNf_sub_assign(a,b)\n\n";
-                print "#define _suNffull_times_suNffull(a,b,c) _suNf_times_suNf(a,b,c)\n\n";
-                print "#define _suNffull_inverse_multiply(a,b,c) _suNf_inverse_multiply(a,b,c)\n\n";
-                print "#define _suNffull_zero(a) _suNf_zero(a)\n\n";
-                print "#define _suNf_expand(a,b) _suNf_copy(a,b)\n\n";
-            }
         }
 
         my ($ldn,$lrdn)=($dataname,$rdataname);
@@ -2409,13 +2377,6 @@ sub write_suN_copy {
     print "#define _${dataname}_copy(u,v) \\\n";
     print "   (u)=(v)\n\n";
 }
-
-sub write_suNr_copy {
-    print "/* u=v */\n";
-    print "#define _${rdataname}_copy(u,v) \\\n";
-    print "   (u)=(v)\n\n";
-}
-
 
 sub write_suN_minus {
     print "/* u=-v */\n";

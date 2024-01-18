@@ -1,8 +1,6 @@
 #!/bin/bash
 
-TMPFILENAME=cinfo.tmp.$BASHPID
-FILENAME=cinfo.c.$BASHPID
-FILENAME_TRUE=cinfo.c
+FILENAME=cinfo.c
 MKDIR=$1
 TOPDIR=$2
 PWD=`pwd`
@@ -10,77 +8,76 @@ PWD=`pwd`
 shift; shift
 MACROS=$@
 
-
 echo "// created automatically by $0 on $(date)" > ${FILENAME}
 
 
-echo -n ${MACROS} | tr '"' '@' > $TMPFILENAME
-len=$((`cat $TMPFILENAME | wc -c`+1))
+echo -n ${MACROS} | tr '"' '@' > cinfo.tmp
+len=$((`cat cinfo.tmp | wc -c`+1))
 echo -n "static char MACROS[${len}] = \"" >> ${FILENAME}
-cat $TMPFILENAME >> ${FILENAME}
+cat cinfo.tmp >> ${FILENAME}
 echo "\";" >> ${FILENAME}
 echo "" >> ${FILENAME}
-rm $TMPFILENAME
+rm cinfo.tmp
 
-awk '{printf "%s\\n",$0}' ${MKDIR}/MkFlags > $TMPFILENAME
-len=$((`cat $TMPFILENAME | wc -c`+1))
+awk '{printf "%s\\n",$0}' ${MKDIR}/MkFlags > cinfo.tmp
+len=$((`cat cinfo.tmp | wc -c`+1))
 echo -n "static char CI_mkflags[${len}] = \"" >> ${FILENAME}
-cat $TMPFILENAME >> ${FILENAME}
+cat cinfo.tmp >> ${FILENAME}
 echo "\";" >> ${FILENAME}
 echo "" >> ${FILENAME}
-rm $TMPFILENAME
+rm cinfo.tmp
 
 if [[ -a /proc/cpuinfo ]] 
 then
- awk '{printf "%s\\n",$0}' /proc/cpuinfo > $TMPFILENAME
+ awk '{printf "%s\\n",$0}' /proc/cpuinfo > cinfo.tmp
 else
- echo -n "No CPU info\n" > $TMPFILENAME
+ echo -n "No CPU info\n" > cinfo.tmp
 fi
-len=$((`cat $TMPFILENAME | wc -c`+1))
+len=$((`cat cinfo.tmp | wc -c`+1))
 echo -n "static char CI_cpuinfo[${len}] = \"" >> ${FILENAME}
-cat $TMPFILENAME >> ${FILENAME}
+cat cinfo.tmp >> ${FILENAME}
 echo "\";" >> ${FILENAME}
 echo "" >> ${FILENAME}
-rm $TMPFILENAME
+rm cinfo.tmp
 
 if [[ -a /proc/version ]] 
 then
- awk '{printf "%s\\n",$0}' /proc/version > $TMPFILENAME
+ awk '{printf "%s\\n",$0}' /proc/version > cinfo.tmp
 else
- echo -n "No VERSION info\n" > $TMPFILENAME
+ echo -n "No VERSION info\n" > cinfo.tmp
 fi
-len=`cat $TMPFILENAME | wc -c`+1
+len=`cat cinfo.tmp | wc -c`+1
 echo -n "static char CI_linux[${len}] = \"" >> ${FILENAME}
-cat $TMPFILENAME >> ${FILENAME}
+cat cinfo.tmp >> ${FILENAME}
 echo "\";" >> ${FILENAME}
 echo "" >> ${FILENAME}
-rm $TMPFILENAME
+rm cinfo.tmp
 
-gcc -v 2>&1 | awk '{printf "%s\\n",$0}' > $TMPFILENAME
-len=`cat $TMPFILENAME | wc -c`+1
+gcc -v 2>&1 | awk '{printf "%s\\n",$0}' > cinfo.tmp
+len=`cat cinfo.tmp | wc -c`+1
 echo -n "static char CI_gcc[${len}] = \"" >> ${FILENAME}
-cat $TMPFILENAME >> ${FILENAME}
+cat cinfo.tmp >> ${FILENAME}
 echo "\";" >> ${FILENAME}
 echo "" >> ${FILENAME}
-rm $TMPFILENAME
+rm cinfo.tmp
 
 #svn --version >&- ; ret=$?
 #if [ "${ret}" -eq "0" ] ; then
-#  svn info ${TOPDIR} | awk '{printf "%s\\n",$0}' > $TMPFILENAME
-#  len=`cat $TMPFILENAME | wc -c`+1
+#  svn info ${TOPDIR} | awk '{printf "%s\\n",$0}' > cinfo.tmp
+#  len=`cat cinfo.tmp | wc -c`+1
 #  echo -n "static char CI_svninfo[${len}] = \"" >> ${FILENAME}
-#  cat $TMPFILENAME >> ${FILENAME}
+#  cat cinfo.tmp >> ${FILENAME}
 #  echo "\";" >> ${FILENAME}
 #  echo "" >> ${FILENAME}
-#  rm $TMPFILENAME
+#  rm cinfo.tmp
 
-#  svn st -q ${TOPDIR} | awk '{printf "%s\\n",$0}' > $TMPFILENAME
-#  len=`cat $TMPFILENAME | wc -c`+1
+#  svn st -q ${TOPDIR} | awk '{printf "%s\\n",$0}' > cinfo.tmp
+#  len=`cat cinfo.tmp | wc -c`+1
 #  echo -n "static char CI_svnstatus[${len}] = \"" >> ${FILENAME}
-#  cat $TMPFILENAME >> ${FILENAME}
+#  cat cinfo.tmp >> ${FILENAME}
 #  echo "\";" >> ${FILENAME}
 #  echo "" >> ${FILENAME}
-#  rm $TMPFILENAME
+#  rm cinfo.tmp
 #else
   echo -n "static char CI_svninfo[1] = \"\";" >> ${FILENAME}
   echo "" >> ${FILENAME}
@@ -95,6 +92,4 @@ rm $TMPFILENAME
 echo "static int CI_svnrevision = ${REV};" >> ${FILENAME}
 echo "" >> ${FILENAME}
 
-cat ${MKDIR}/Utils/${FILENAME_TRUE}.tmpl >> ${FILENAME}
-
-mv $FILENAME $FILENAME_TRUE
+cat ${MKDIR}/Utils/${FILENAME}.tmpl >> ${FILENAME}

@@ -2,7 +2,6 @@ test_headers
 test_reps
 spn_sun_algconv.h
 suN.h
-SP.h
 SP[0-9]*.h
 SU[0-9]*.h
 spN_exp.h
