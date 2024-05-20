@@ -83,6 +83,7 @@ typedef struct _input_mesons {
     int smear_N_source;
     double smear_epsilon_sink;
     int smear_N_sink;
+  int smear_N_step;
     int APE_N;
     double APE_epsilon;
 
@@ -91,7 +92,7 @@ typedef struct _input_mesons {
 	int degree_hopping;  // The degree of the hopping parameter expasion
 
 	/* for the reading function */
-	input_record_t read[42];
+	input_record_t read[43];
 } input_mesons;
 
 #define init_input_mesons(varname) \
@@ -136,6 +137,7 @@ typedef struct _input_mesons {
     {"Number of smeared source steps", "mes:smear_N_source = %d",INT_T, &(varname).smear_N_source},        \
     {"smearing sink step size", "mes:smear_epsilon_sink = %lf", DOUBLE_T, &(varname).smear_epsilon_sink},\
     {"Number of smeared sink steps", "mes:smear_N_sink = %d",INT_T, &(varname).smear_N_sink}, \
+    {"Number of steps between smearing levels", "mes:smear_N_step = %d",INT_T, &(varname).smear_N_step}, \
     {"Number of APE smearing steps", "mes:APE_N = %d",INT_T, &(varname).APE_N}, \
     {"APE smearing step size", "mes:APE_epsilon = %lf",DOUBLE_T, &(varname).APE_epsilon}, \
     {NULL, NULL, INT_T, NULL}				\
@@ -502,9 +504,8 @@ int main(int argc,char *argv[]) {
        measure_spectrum_pt(tau,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision);
      }
      if (mes_var.smearing_source_sink){
-       measure_smearing_source_sink(mes_var.source_t,mes_var.source_x,mes_var.source_y,mes_var.source_z,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source,mes_var.smear_epsilon_sink,mes_var.smear_N_sink, mes_var.APE_epsilon, mes_var.APE_N);
+       measure_smearing_source_sink(mes_var.source_t,mes_var.source_x,mes_var.source_y,mes_var.source_z,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source,mes_var.smear_epsilon_sink,mes_var.smear_N_sink, mes_var.APE_epsilon, mes_var.APE_N, mes_var.smear_N_step);
         }
-        
      if (mes_var.def_baryon){
        measure_baryons(m,i,mes_var.precision);
      }

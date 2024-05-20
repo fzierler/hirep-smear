@@ -561,18 +561,20 @@ void measure_formfactor_fixed(int ti, int tf, int dt, int nm, double* m, int n_m
 
 /* Updates of Wuppertal smearing source in 2020*/
 
-void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source_max, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N){
+void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source_max, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N, int N_diff){
     
     char label[20];
-    spinor_field* source = alloc_spinor_field_f(4,&glattice);
-    spinor_field* prop = alloc_spinor_field_f(4*nm*NF, &glattice);
-    
-    init_propagator_eo(nm,m,precision);
-    
     if (APE_N != 0){
         APE_smearing(APE_epsilon, APE_N);
         represent_gauge_field_APE();
     }
+
+    int Nsmear_source;
+    for (Nsmear_source=0; Nsmear_source <= Nsmear_source_max; Nsmear_source += N_diff){
+
+      spinor_field* source = alloc_spinor_field_f(4,&glattice);
+      spinor_field* prop = alloc_spinor_field_f(4*nm*NF, &glattice);
+      init_propagator_eo(nm,m,precision);
 
     int k;
     for (k=0;k<NF;++k){
@@ -597,7 +599,6 @@ void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m,
     sprintf(label, "source_N%d_sink_N%d",Nsmear_source, 0);
     print_mesons(meson_correlators,1.,conf_num,nm,m,GLB_T,n_mom,label);
     
-    int N_diff = 10; // measure sink smearing every 10 steps
     for (int N = 0; N<Nsmear_sink; N += N_diff){
         for(int steps=0;steps<N_diff;steps++){
             
@@ -629,5 +630,5 @@ void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m,
     free_spinor_field_f(source);
     free_spinor_field_f(prop);
 }
-
+}
 
