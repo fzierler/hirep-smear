@@ -690,8 +690,7 @@ void smeared_propagator(spinor_field* psi, int nm , double epsilon){
                 for (int a=0;a<NF;a++) for (int b=0;b<NF;b++){
                     for (int alpha=0;alpha<4;alpha++) for (int beta=0;beta<4;beta++){
                         
-                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b].re = sp_smeared.c[b].c[alpha].c[beta].c[a].re;
-                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b].im = sp_smeared.c[b].c[alpha].c[beta].c[a].im;
+                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[b].c[alpha].c[beta].c[a];
                     
                     }
                 }
@@ -775,8 +774,7 @@ void smeared_propagator_with_APE(spinor_field* psi, int nm , double epsilon){
                 for (int a=0;a<NF;a++) for (int b=0;b<NF;b++){
                     for (int alpha=0;alpha<4;alpha++) for (int beta=0;beta<4;beta++){
                         
-                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b].re = sp_smeared.c[b].c[alpha].c[beta].c[a].re;
-                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b].im = sp_smeared.c[b].c[alpha].c[beta].c[a].im;
+                        _FIELD_AT(&smeared_psi[a*4*nm+beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[b].c[alpha].c[beta].c[a];
                     
                     }
                 }

@@ -448,41 +448,13 @@ void covariant_project_to_suNg(suNg *u)
   _suNg_times_suNg(*u, tmp1, tmp);
 }
 
+
 void cooling_SPN(suNg* g_out, suNg* g_in, suNg* g_tilde, int cooling){
     
     suNgfull B, U_tilde, S;
     _suNg_expand( U_tilde, *g_tilde);
     _suNg_expand( S, *g_in);
-    
-    //_suNffull_unit(S);
-    
-    /*
-    lprintf("COOLING",0," U_tilde= \n",0);
-    for (int i=0;i<NG;i++){
-        for (int j=0;j<NG;j++){
         
-            lprintf("COOLING",0," (%f,%f), ",U_tilde.c[j + i*NG].re, U_tilde.c[j + i*NG].im);
-        }lprintf("COOLING",0," \n");
-    }
-    
-    lprintf("COOLING",0,"  U= \n",0);
-    for (int i=0;i<NG;i++){
-        for (int j=0;j<NG;j++){
-        
-            lprintf("COOLING",0," (%f,%f), ",S.c[j + i*NG].re, S.c[j + i*NG].im);
-        }lprintf("COOLING",0," \n");
-    }
-    _suNgfull_times_suNgfull_dagger(B, S, U_tilde);
-    
-    lprintf("COOLING",0,"  U*U_tilde^+= \n",0);
-    for (int i=0;i<NG;i++){
-        for (int j=0;j<NG;j++){
-        
-            lprintf("COOLING",0," (%f,%f), ",B.c[j + i*NG].re, B.c[j + i*NG].im);
-        }lprintf("COOLING",0," \n");
-    }
-    */
-    
     for (int nbcool=0;nbcool<cooling;nbcool++){
         _suNgfull_times_suNgfull_dagger(B, S, U_tilde);
         
@@ -494,39 +466,18 @@ void cooling_SPN(suNg* g_out, suNg* g_in, suNg* g_tilde, int cooling){
                 subgrb(N1, NG/2 + N1, &B, &S);
                 subgrb(N2, NG/2 + N2, &B, &S);
             }
-        }
-        
-        /*
-        lprintf("COOLING",0," U*U_tilde^+ cooled n=%d \n",nbcool+1);
-        for (int i=0;i<NG;i++){
-            for (int j=0;j<NG;j++){
-            
-                lprintf("COOLING",0," (%f,%f), ",B.c[j + i*NG].re, B.c[i + j*NG].im);
-            }lprintf("COOLING",0," \n");
-        }
-
-        
-        lprintf("COOLING",0," U cooled n=%d \n",nbcool+1);
-        for (int i=0;i<NG;i++){
-            for (int j=0;j<NG;j++){
-            
-                lprintf("COOLING",0," (%f,%f), ",S.c[j + i*NG].re, S.c[i + j*NG].im);
-            }lprintf("COOLING",0," \n");
-        }
-        */
-        
+        }       
     }
     
     for (int i=0;i<(NG/2)*NG;i++){
         
-        g_out->c[i].re = S.c[i].re;
-        g_out->c[i].im = S.c[i].im;
+        g_out->c[i] = S.c[i];
     }
 }
 
 void subgrb(int i1col, int i2col, suNgfull* B11, suNgfull* C11){
     
-    complex F11, F12, A11[4], ztmp1, ztmp2;    // A11 is the extracted su2 matrix in 1-d array
+    double complex F11, F12, A11[4], ztmp1, ztmp2;    // A11 is the extracted su2 matrix in 1-d array
     double UMAG;                               // [ 0 1 ]
     int i1,i2,i3,i4;                           // [ 2 3 ]   --> [0, 1, 2, 3]
     
@@ -543,7 +494,7 @@ void subgrb(int i1col, int i2col, suNgfull* B11, suNgfull* C11){
     
     _complex_mul_star(ztmp1, F11, F11);
     _complex_mul_star(ztmp2, F12, F12);
-    UMAG = sqrt(ztmp1.re+ztmp2.re);
+    UMAG = sqrt(creal(ztmp1)+creal(ztmp2));
     UMAG = 1./UMAG;
     
     _complex_mulr(F11, UMAG, F11);
@@ -558,10 +509,10 @@ void subgrb(int i1col, int i2col, suNgfull* B11, suNgfull* C11){
     vmxsu2(i1col,i2col,B11,A11);
 }
 
-void vmxsu2(int i1, int i2, suNgfull* A, complex B[4]){
+void vmxsu2(int i1, int i2, suNgfull* A, double complex B[4]){
     
-    complex C[NG*2];
-    complex ztmp1,ztmp2;
+    double complex C[NG*2];
+    double complex ztmp1,ztmp2;
     
     for (int i=0; i<NG; i++){
         _complex_mul(ztmp1, A->c[i + i1*NG], B[0]);
@@ -581,7 +532,7 @@ void vmxsu2(int i1, int i2, suNgfull* A, complex B[4]){
 
 void subgrb_tau(int n1, int n2, suNgfull* B11, suNgfull* C11){
     
-    complex F11, F12, A11[4], ztmp1, ztmp2;    // A11 is the extracted su2 matrix in 1-d array
+    double complex F11, F12, A11[4], ztmp1, ztmp2;    // A11 is the extracted su2 matrix in 1-d array
     double UMAG;                               // [ 0 1 ]
     int i1,i2,i3,i4;                           // [ 2 3 ]   --> [0, 1, 2, 3]
     
@@ -597,7 +548,7 @@ void subgrb_tau(int n1, int n2, suNgfull* B11, suNgfull* C11){
     
     _complex_mul_star(ztmp1, F11, F11);
     _complex_mul_star(ztmp2, F12, F12);
-    UMAG = sqrt(ztmp1.re+ztmp2.re);
+    UMAG = sqrt(creal(ztmp1)+creal(ztmp2));
     UMAG = 1./UMAG;
     
     _complex_mulr(F11, UMAG, F11);
@@ -615,7 +566,7 @@ void subgrb_tau(int n1, int n2, suNgfull* B11, suNgfull* C11){
 void vmxsu2_tau(int n1, int n2, suNgfull* A, complex B[4]){
     
     suNgfull C;
-    complex ztmp1, ztmp2;
+    double complex ztmp1, ztmp2;
     
     _suNgfull_mul(C, 1., *A);
     
