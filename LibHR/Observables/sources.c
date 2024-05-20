@@ -713,3 +713,177 @@ void create_smeared_source_with_APE(spinor_field *source, int t, int x, int y, i
         smearing_function_with_APE(source, t, color, epsilon);
     }
 }
+
+// FZ 2024: Add extra smeared sources for disconnected pieces
+void smearing_function_volume(spinor_field *source, double epsilon){
+    
+    int ix, t, x, y, z, ix_up, ix_right, ix_front, ix_left, ix_back, ix_down;
+    double norm_factor = 1./(1.+6.*epsilon);
+    suNf_spinor spinor_OG, spinor_smeared, spinor_tmp, spinor_right, spinor_left, spinor_front, spinor_back, spinor_up, spinor_down;
+    _spinor_zero_f(spinor_OG);_spinor_zero_f(spinor_tmp);_spinor_zero_f(spinor_right);_spinor_zero_f(spinor_left);
+    _spinor_zero_f(spinor_front);_spinor_zero_f(spinor_back);_spinor_zero_f(spinor_up);_spinor_zero_f(spinor_down);
+        
+    spinor_field* smeared_source = alloc_spinor_field_f(4,&glattice);
+    for (int beta=0;beta<4;++beta){
+        spinor_field_zero_f(&smeared_source[beta]);
+    }
+    
+    for (t=0; t<T; t++) for (x=0; x<X; x++) for (y=0; y<Y; y++) for (z=0; z<Z; z++){
+        
+        ix = ipt(t, x,y,z);
+        ix_right = iup(ix,1);
+        ix_left  = idn(ix,1);
+        ix_front = iup(ix,2);
+        ix_back  = idn(ix,2);
+        ix_up    = iup(ix,3);
+        ix_down  = idn(ix,3);
+
+        for (int spin=0;spin<4;spin++){
+            spinor_OG    = *_FIELD_AT(&source[spin], ix);
+            spinor_right = *_FIELD_AT(&source[spin], ix_right);
+            spinor_left  = *_FIELD_AT(&source[spin], ix_left);
+            spinor_front = *_FIELD_AT(&source[spin], ix_front);
+            spinor_back  = *_FIELD_AT(&source[spin], ix_back);
+            spinor_up    = *_FIELD_AT(&source[spin], ix_up);
+            spinor_down  = *_FIELD_AT(&source[spin], ix_down);
+                    
+    
+            _spinor_zero_f(spinor_smeared);
+    
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix,1), spinor_right.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+    
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix_left,1), spinor_left.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+                
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix,2), spinor_front.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+    
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix_back,2), spinor_back.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+                
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix,3), spinor_up.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+    
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_f(ix_down,3), spinor_down.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+                
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], norm_factor, spinor_OG.c[spin]);
+    
+            _FIELD_AT(&smeared_source[spin], ix)->c[spin]  = spinor_smeared.c[spin];       
+        }
+    }
+    
+    for (int beta=0;beta<4;++beta){
+        spinor_field_copy_f(source + beta, smeared_source +beta);
+    }
+    
+    
+    for (int beta=0;beta<4;++beta){
+        start_sf_sendrecv(source + beta);
+        complete_sf_sendrecv(source + beta);
+    }
+    free_spinor_field_f(smeared_source);
+}
+
+void smearing_function_volume_with_APE(spinor_field *source, double epsilon){
+    
+    int ix, t, x, y, z, ix_up, ix_right, ix_front, ix_left, ix_back, ix_down;
+    double norm_factor = 1./(1.+6.*epsilon);
+    suNf_spinor spinor_OG, spinor_smeared, spinor_tmp, spinor_right, spinor_left, spinor_front, spinor_back, spinor_up, spinor_down;
+    _spinor_zero_f(spinor_OG);_spinor_zero_f(spinor_tmp);_spinor_zero_f(spinor_right);_spinor_zero_f(spinor_left);
+    _spinor_zero_f(spinor_front);_spinor_zero_f(spinor_back);_spinor_zero_f(spinor_up);_spinor_zero_f(spinor_down);
+    
+    spinor_field* smeared_source = alloc_spinor_field_f(4, &glattice);
+    for (int beta=0;beta<4;++beta){
+        spinor_field_zero_f(&smeared_source[beta]);
+    }
+    
+    represent_gauge_field_APE();
+
+    for (t=0; t<T; t++) for (x=0; x<X; x++) for (y=0; y<Y; y++) for (z=0; z<Z; z++) {
+            
+        ix = ipt(t, x, y, z);
+        ix_right = iup(ix,1);
+        ix_left  = idn(ix,1);
+        ix_front = iup(ix,2);
+        ix_back  = idn(ix,2);
+        ix_up    = iup(ix,3);
+        ix_down  = idn(ix,3);
+            
+        for (int spin=0;spin<4;spin++){
+            spinor_OG    = *_FIELD_AT(&source[spin], ix);
+            spinor_right = *_FIELD_AT(&source[spin], ix_right);
+            spinor_left  = *_FIELD_AT(&source[spin], ix_left);
+            spinor_front = *_FIELD_AT(&source[spin], ix_front);
+            spinor_back  = *_FIELD_AT(&source[spin], ix_back);
+            spinor_up    = *_FIELD_AT(&source[spin], ix_up);
+            spinor_down  = *_FIELD_AT(&source[spin], ix_down);
+                
+            _spinor_zero_f(spinor_smeared);
+            
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix,1), spinor_right.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix_left,1), spinor_left.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix,2), spinor_front.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix_back,2), spinor_back.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            
+            _suNf_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix,3), spinor_up.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            _suNf_inverse_multiply(spinor_tmp.c[spin], *pu_gauge_APE_f(ix_down,3), spinor_down.c[spin]);
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], epsilon*norm_factor, spinor_tmp.c[spin]);
+            
+            _vector_mul_add_assign_f(spinor_smeared.c[spin], norm_factor, spinor_OG.c[spin]);
+                
+            *_FIELD_AT(&smeared_source[spin], ix)  = spinor_smeared;
+        }
+    }
+    for (int beta=0;beta<4;++beta){
+        spinor_field_copy_f(source + beta, smeared_source +beta);
+    }
+    
+    for (int beta=0;beta<4;++beta){
+        start_sf_sendrecv(source + beta);
+        complete_sf_sendrecv(source + beta);
+    }
+    free_spinor_field_f(smeared_source);
+}
+
+void create_noise_source_equal_eo_smeared_with_APE(spinor_field *source, double epsilon, int Nsmear){
+    
+    int beta;
+    for (beta=0;beta<4;++beta){
+        spinor_field_zero_f(&source[beta]);
+    }
+    
+    create_noise_source_equal_eo(source);
+    
+    lprintf("SMEAR",0,"Smeared noisy volume source with APE smearing \n");
+    lprintf("SMEAR",0,"source smearing epsilon = %f iterations: \n", epsilon);
+    
+    for (int n=0;n<Nsmear;n++){
+        lprintf("SMEAR",0,"%d...", n+1);
+        smearing_function_volume_with_APE(source, epsilon);
+    }
+}
+void create_noise_source_equal_eo_smeared(spinor_field *source, double epsilon, int Nsmear){
+    
+    int beta;
+    for (beta=0;beta<4;++beta){
+        spinor_field_zero_f(&source[beta]);
+    }
+
+    create_noise_source_equal_eo(source);
+    
+    lprintf("SMEAR",0,"Smeared noisy volume source \n");
+    lprintf("SMEAR",0,"source smearing epsilon = %f iterations: \n", epsilon);
+    
+    for (int n=0;n<Nsmear;n++){
+        lprintf("SMEAR",0,"%d...", n+1);
+        smearing_function_volume(source, epsilon);
+    }
+}
