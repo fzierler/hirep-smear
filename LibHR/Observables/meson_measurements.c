@@ -827,3 +827,76 @@ void measure_formfactor_fixed(int ti, int tf, int dt, int nm, double *m, int n_m
   free_gfield_f(u_gauge_old);
   free_propagator_eo();
 }
+
+
+
+/* Updates of Wuppertal smearing source in 2020*/
+
+void measure_smearing_ss(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N){
+    
+    char label[20];
+    spinor_field* source = alloc_spinor_field_f(4,&glattice);
+    spinor_field* prop = alloc_spinor_field_f(4*nm*NF, &glattice);
+    
+    init_propagator_eo(nm,m,precision);
+    
+    if (APE_N != 0){
+        APE_smearing(APE_epsilon, APE_N);
+        represent_gauge_field_APE();
+    }
+
+    int k;
+    for (k=0;k<NF;++k){
+        
+        if (APE_N != 0){
+            create_smeared_source_with_APE(source, t, x, y, z, k, epsilon_source, Nsmear_source);
+        }
+        else{
+            create_smeared_source(source, t, x, y, z, k, epsilon_source, Nsmear_source);
+        }
+        
+        calc_propagator(prop + 4*k, source , 4);//4 for spin components
+        
+        if (n_mom>1){
+            measure_point_mesons_momenta(meson_correlators,prop+4*k, source, nm, t, n_mom);
+        }
+        else{
+            measure_mesons(meson_correlators,prop+4*k, source, nm, t);
+        }
+    }
+    
+    sprintf(label, "source_N%d_sink_N%d",Nsmear_source, 0);
+    print_mesons(meson_correlators,1.,conf_num,nm,m,GLB_T,n_mom,label);
+    
+    int N_diff = 10; // measure sink smearing every 10 steps
+    for (int N = 0; N<Nsmear_sink; N += N_diff){
+        for(int steps=0;steps<N_diff;steps++){
+            
+            lprintf("SMEAR",0,"sink smearing with APE steps: %d\n ", steps+N+1);
+            
+            if (APE_N != 0){
+                smeared_propagator_with_APE(prop, nm, epsilon_sink);
+            }
+            
+            else{
+            smeared_propagator(prop, nm, epsilon_sink);
+            }
+            
+        }
+        
+        for (int c=0;c<NF;++c){
+             if (n_mom>1){
+                 measure_point_mesons_momenta(meson_correlators,prop+4*c, source, nm, t, n_mom);
+             }
+             else{
+                measure_mesons(meson_correlators,prop+4*c, source, nm, t);
+             }
+        }
+        sprintf(label, "source_N%d_sink_N%d",Nsmear_source, N+N_diff);
+        print_mesons(meson_correlators,1.,conf_num,nm,m,GLB_T,n_mom,label);
+    }
+    
+    free_propagator_eo();
+    free_spinor_field_f(source);
+    free_spinor_field_f(prop);
+}

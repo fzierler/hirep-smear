@@ -416,3 +416,175 @@ double complex avr_plaquette_wrk()
 
   return pa;
 }
+
+
+double plaq_APE(int ix,int mu,int nu)
+{
+  int iy,iz;
+  double p;
+  suNg *v1,*v2,*v3,*v4,w1,w2,w3;
+
+  iy=iup(ix,mu);
+  iz=iup(ix,nu);
+
+  v1=pu_gauge_APE(ix,mu);
+  v2=pu_gauge_APE(iy,nu);
+  v3=pu_gauge_APE(iz,mu);
+  v4=pu_gauge_APE(ix,nu);
+
+  _suNg_times_suNg(w1,(*v1),(*v2));
+  _suNg_times_suNg(w2,(*v4),(*v3));
+  _suNg_times_suNg_dagger(w3,w1,w2);
+
+  _suNg_trace_re(p,w3);
+
+#ifdef PLAQ_WEIGHTS
+  if(plaq_weight==NULL) return p;
+  return plaq_weight[ix*16+mu*4+nu]*p;
+#else
+  return p;
+#endif
+}
+
+void cplaq_APE(complex *ret,int ix,int mu,int nu)
+{
+  int iy,iz;
+  suNg *v1,*v2,*v3,*v4,w1,w2,w3;
+
+  iy=iup(ix,mu);
+  iz=iup(ix,nu);
+
+  v1=pu_gauge_APE(ix,mu);
+  v2=pu_gauge_APE(iy,nu);
+  v3=pu_gauge_APE(iz,mu);
+  v4=pu_gauge_APE(ix,nu);
+
+  _suNg_times_suNg(w1,(*v1),(*v2));
+  _suNg_times_suNg(w2,(*v4),(*v3));
+  _suNg_times_suNg_dagger(w3,w1,w2);
+
+  _suNg_trace_re(ret->re,w3);
+#ifdef GAUGE_SON
+  ret->im=0;
+#else
+  _suNg_trace_im(ret->im,w3);
+#endif
+
+#ifdef PLAQ_WEIGHTS
+  if(plaq_weight!=NULL) {
+    ret->re *= plaq_weight[ix*16+mu*4+nu];
+    ret->im *= plaq_weight[ix*16+mu*4+nu];
+  }
+#endif
+
+}
+
+
+double avr_spacial_plaquette_APE()
+{
+  double pa=0.;
+
+  _PIECE_FOR(&glattice,ixp) {
+    if(ixp==glattice.inner_master_pieces) {
+      _OMP_PRAGMA( master )
+      /* wait for gauge field to be transfered */
+      complete_gf_sendrecv(u_gauge_APE);
+      _OMP_PRAGMA( barrier )
+    }
+    _SITE_FOR_SUM(&glattice,ixp,ix,pa) {
+      
+      pa+=plaq_APE(ix,2,1);
+      pa+=plaq_APE(ix,3,1);
+      pa+=plaq_APE(ix,3,2);
+    }
+  }
+
+  global_sum(&pa, 1);
+
+#ifdef BC_T_OPEN
+    pa /= 3.0*NG*GLB_VOLUME*(GLB_T-1)/GLB_T;
+#else
+    pa /= 3.0*NG*GLB_VOLUME;
+#endif
+
+  return pa;
+
+}
+
+void full_plaquette_APE()
+{
+    complex pa[6];
+    double r0re = 0, r0im = 0;
+    double r1re = 0, r1im = 0;
+    double r2re = 0, r2im = 0;
+    double r3re = 0, r3im = 0;
+    double r4re = 0, r4im = 0;
+    double r5re = 0, r5im = 0;
+
+    _PIECE_FOR(&glattice,ixp)
+    {
+        if(ixp == glattice.inner_master_pieces)
+        {
+            _OMP_PRAGMA( master )
+            /* wait for gauge field to be transfered */
+            complete_gf_sendrecv(u_gauge_APE);
+            _OMP_PRAGMA( barrier )
+        }
+
+        _SITE_FOR_SUM(&glattice,ixp,ix,r0re,r0im,r1re,r1im,r2re,r2im,r3re,r3im,r4re,r4im,r5re,r5im)
+        {
+            complex tmp;
+
+            cplaq_APE(&tmp,ix,1,0);
+            r0re += tmp.re;
+            r0im += tmp.im;
+
+            cplaq_APE(&tmp,ix,2,0);
+            r1re += tmp.re;
+            r1im += tmp.im;
+
+            cplaq_APE(&tmp,ix,2,1);
+            r2re += tmp.re;
+            r2im += tmp.im;
+
+            cplaq_APE(&tmp,ix,3,0);
+            r3re += tmp.re;
+            r3im += tmp.im;
+
+            cplaq_APE(&tmp,ix,3,1);
+            r4re += tmp.re;
+            r4im += tmp.im;
+
+            cplaq_APE(&tmp,ix,3,2);
+            r5re += tmp.re;
+            r5im += tmp.im;
+
+        }
+    }
+
+    pa[0].re=r0re; pa[0].im=r0im;
+    pa[1].re=r1re; pa[1].im=r1im;
+    pa[2].re=r2re; pa[2].im=r2im;
+    pa[3].re=r3re; pa[3].im=r3im;
+    pa[4].re=r4re; pa[4].im=r4im;
+    pa[5].re=r5re; pa[5].im=r5im;
+
+    global_sum((double*)pa,12);
+    for(int k = 0; k < 6; k++)
+    {
+#ifdef BC_T_OPEN
+        pa[k].re /= NG*GLB_VOLUME*(GLB_T-1)/GLB_T;
+        pa[k].im /= NG*GLB_VOLUME*(GLB_T-1)/GLB_T;
+#else
+        pa[k].re /= NG*GLB_VOLUME;
+        pa[k].im /= NG*GLB_VOLUME;
+#endif
+    }
+
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",1,0,pa[0].re,pa[0].im);
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",2,0,pa[1].re,pa[1].im);
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",2,1,pa[2].re,pa[2].im);
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",3,0,pa[3].re,pa[3].im);
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",3,1,pa[4].re,pa[4].im);
+    lprintf("PLAQ",0,"Plaq(%d,%d) = ( %f , %f )\n",3,2,pa[5].re,pa[5].im);
+}
