@@ -790,4 +790,215 @@ void smeared_propagator_with_APE(spinor_field* psi, int nm , double epsilon){
     }
     free_spinor_field_f(smeared_psi);
 }
+// FZ (2024): Smeared propagator with a single source
+void smeared_propagator_volume(spinor_field* psi, int nm , double epsilon){
+    int i,t, x, y, z, ix, ix_up, ix_right, ix_front, ix_left, ix_back, ix_down;
+    double norm_factor = 1./(1.+6.*epsilon);
+    suNf_spin_matrix sp_OG, sp_smeared, sp_tmp, sp_right, sp_left, sp_front, sp_back, sp_up, sp_down;
+    _spinmatrix_zero(sp_smeared);
+    
+    spinor_field* smeared_psi = alloc_spinor_field_f(4*nm,&glattice);
+    
+    for(i=0; i<nm; i++) {
+        for (t=0; t<T; t++) {
+            for (x=0; x<X; x++) for (y=0; y<Y; y++) for (z=0; z<Z; z++) {
+                
+                ix=ipt(t,x,y,z);
+                ix_right = iup(ix,1);
+                ix_left  = idn(ix,1);
+                ix_front = iup(ix,2);
+                ix_back  = idn(ix,2);
+                ix_up    = iup(ix,3);
+                ix_down  = idn(ix,3);
+                
+                // The code identified the rows of the spinmatrix as the spinors. I will copy this
+                // convention for this function.
+                for (int beta=0;beta<4;beta++){
+                    _spinmatrix_assign_row(sp_OG, *_FIELD_AT(&psi[beta*nm+i],ix),beta);
+                    _spinmatrix_assign_row(sp_right, *_FIELD_AT(&psi[beta*nm+i],ix_right),beta);
+                    _spinmatrix_assign_row(sp_left, *_FIELD_AT(&psi[beta*nm+i],ix_left),beta);
+                    _spinmatrix_assign_row(sp_front, *_FIELD_AT(&psi[beta*nm+i],ix_front),beta);
+                    _spinmatrix_assign_row(sp_back, *_FIELD_AT(&psi[beta*nm+i],ix_back),beta);
+                    _spinmatrix_assign_row(sp_up, *_FIELD_AT(&psi[beta*nm+i],ix_up),beta);
+                    _spinmatrix_assign_row(sp_down, *_FIELD_AT(&psi[beta*nm+i],ix_down),beta);
+                }
+                
+                _spinmatrix_zero(sp_smeared);
 
+                // No deicated function for a spin matrix esists. Loop over rows in the spinmatrix
+                // which are spinors and use that method.
+                for (int beta=0;beta<4;beta++){
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],norm_factor, sp_OG.c[beta]);
+                }
+
+                // For the multiplication with a colour matrix we need to loop over every entry in the
+                // spin matrix, i.e. two loops are needed. Assignment and addition can be done in the 
+                // outermost loop since deicated functions for spinors exist.
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix,1), sp_right.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                // Repeat the same approach for the inverse multiplication and smearing directions
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix_left,1), sp_left.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix,2), sp_front.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix_back,2), sp_back.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }                
+
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix,3), sp_up.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_f(ix_down,3), sp_down.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }           
+                
+                for (int b=0;b<NF;b++){
+                    for (int alpha=0;alpha<4;alpha++) for (int beta=0;beta<4;beta++){
+                        _FIELD_AT(&smeared_psi[beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[beta].c[alpha].c[b];
+                        _FIELD_AT(&smeared_psi[beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[beta].c[alpha].c[b];
+                    }
+                }
+               
+            }
+        }
+    }
+    for (int i=0;i<4*nm;i++){
+        spinor_field_copy_f(psi + i, smeared_psi  + i);
+    }
+    for (int i=0;i<4*nm;i++){
+        start_sf_sendrecv(psi + i);
+        complete_sf_sendrecv(psi + i);
+    }
+    free_spinor_field_f(smeared_psi);
+}
+
+void smeared_propagator_volume_with_APE(spinor_field* psi, int nm , double epsilon){
+    int i,t, x, y, z, ix, ix_up, ix_right, ix_front, ix_left, ix_back, ix_down;
+    double norm_factor = 1./(1.+6.*epsilon);
+    suNf_spin_matrix sp_OG, sp_smeared, sp_tmp, sp_right, sp_left, sp_front, sp_back, sp_up, sp_down;
+    _spinmatrix_zero(sp_smeared);
+    
+    spinor_field* smeared_psi = alloc_spinor_field_f(4*nm,&glattice);
+    
+    for(i=0; i<nm; i++) {
+        for (t=0; t<T; t++) {
+            for (x=0; x<X; x++) for (y=0; y<Y; y++) for (z=0; z<Z; z++) {
+                
+                ix=ipt(t,x,y,z);
+                ix_right = iup(ix,1);
+                ix_left  = idn(ix,1);
+                ix_front = iup(ix,2);
+                ix_back  = idn(ix,2);
+                ix_up    = iup(ix,3);
+                ix_down  = idn(ix,3);
+                
+                // The code identified the rows of the spinmatrix as the spinors. I will copy this
+                // convention for this function.
+                for (int beta=0;beta<4;beta++){
+                    _spinmatrix_assign_row(sp_OG, *_FIELD_AT(&psi[beta*nm+i],ix),beta);
+                    _spinmatrix_assign_row(sp_right, *_FIELD_AT(&psi[beta*nm+i],ix_right),beta);
+                    _spinmatrix_assign_row(sp_left, *_FIELD_AT(&psi[beta*nm+i],ix_left),beta);
+                    _spinmatrix_assign_row(sp_front, *_FIELD_AT(&psi[beta*nm+i],ix_front),beta);
+                    _spinmatrix_assign_row(sp_back, *_FIELD_AT(&psi[beta*nm+i],ix_back),beta);
+                    _spinmatrix_assign_row(sp_up, *_FIELD_AT(&psi[beta*nm+i],ix_up),beta);
+                    _spinmatrix_assign_row(sp_down, *_FIELD_AT(&psi[beta*nm+i],ix_down),beta);
+                }
+                
+                _spinmatrix_zero(sp_smeared);
+
+                // No deicated function for a spin matrix esists. Loop over rows in the spinmatrix
+                // which are spinors and use that method.
+                for (int beta=0;beta<4;beta++){
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],norm_factor, sp_OG.c[beta]);
+                }
+
+                // For the multiplication with a colour matrix we need to loop over every entry in the
+                // spin matrix, i.e. two loops are needed. Assignment and addition can be done in the 
+                // outermost loop since deicated functions for spinors exist.
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix,1), sp_right.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                // Repeat the same approach for the inverse multiplication and smearing directions
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix_left,1), sp_left.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix,2), sp_front.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix_back,2), sp_back.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }                
+
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix,3), sp_up.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }
+                
+                for (int beta=0; beta<4; beta++){
+                  for (int alpha=0; alpha<4; alpha++){
+                   _suNf_inverse_multiply(sp_tmp.c[beta].c[alpha], *pu_gauge_APE_f(ix_down,3), sp_down.c[beta].c[alpha]);
+                  }
+                  _spinor_mul_add_assign_f(sp_smeared.c[beta],epsilon*norm_factor, sp_tmp.c[beta]);
+                }           
+                
+                for (int b=0;b<NF;b++){
+                    for (int alpha=0;alpha<4;alpha++) for (int beta=0;beta<4;beta++){
+                        _FIELD_AT(&smeared_psi[beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[beta].c[alpha].c[b];
+                        _FIELD_AT(&smeared_psi[beta*nm+i],ix)->c[alpha].c[b] = sp_smeared.c[beta].c[alpha].c[b];
+                    }
+                }
+               
+            }
+        }
+    }
+    for (int i=0;i<4*nm;i++){
+        spinor_field_copy_f(psi + i, smeared_psi  + i);
+    }
+    for (int i=0;i<4*nm;i++){
+        start_sf_sendrecv(psi + i);
+        complete_sf_sendrecv(psi + i);
+    }
+    free_spinor_field_f(smeared_psi);
+}

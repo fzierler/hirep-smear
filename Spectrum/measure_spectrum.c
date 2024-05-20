@@ -62,6 +62,7 @@ typedef struct _input_mesons
   int fixed_point;
   int fixed_gfwall;
   int discon_semwall;
+  int discon_semwall_smeared;
   int discon_gfwall;
   int discon_volume;
   int def_semwall_nondeg;
@@ -93,7 +94,7 @@ typedef struct _input_mesons
   int degree_hopping; // The degree of the hopping parameter expasion
 
   /* for the reading function */
-  input_record_t read[46];
+  input_record_t read[47];
 } input_mesons;
 
 #define init_input_mesons(varname)                                                                                \
@@ -114,6 +115,7 @@ typedef struct _input_mesons
       {"enable Dirichlet point", "mes:dirichlet_point = %d", INT_T, &(varname).fixed_point},                      \
       {"enable Dirichlet gfwall", "mes:dirichlet_gfwall = %d", INT_T, &(varname).fixed_gfwall},                   \
       {"enable discon semwall", "mes:discon_semwall = %d", INT_T, &(varname).discon_semwall},                     \
+      {"enable discon semwall with smearing", "mes:discon_semwall_smeared = %d",INT_T, &(varname).discon_semwall_smeared},\
       {"enable discon gfwall", "mes:discon_gfwall = %d", INT_T, &(varname).discon_gfwall},                        \
       {"enable discon volume", "mes:discon_volume = %d", INT_T, &(varname).discon_volume},                        \
       {"volume source dilution", "mes:dilution = %d", INT_T, &(varname).dilution},                                \
@@ -426,6 +428,10 @@ int main(int argc, char *argv[])
       if (mes_var.discon_semwall)
       {
         measure_spectrum_discon_semwall(nm, m, mes_var.nhits_disc, i, mes_var.precision,DONTSTORE, NULL, mes_var.n_mom);
+      }
+      if (mes_var.discon_semwall_smeared){
+        //measure_spectrum_discon_semwall_smeared(nm,m,mes_var.nhits_disc,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source, mes_var.APE_epsilon, mes_var.APE_N, mes_var.smear_N_step);
+        measure_spectrum_discon_semwall_smeared_single_inversion(nm,m,mes_var.nhits_disc,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source, mes_var.APE_epsilon, mes_var.APE_N, mes_var.smear_N_step);
       }
       if (mes_var.discon_gfwall)
       {
