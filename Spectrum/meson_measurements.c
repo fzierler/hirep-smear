@@ -561,7 +561,7 @@ void measure_formfactor_fixed(int ti, int tf, int dt, int nm, double* m, int n_m
 
 /* Updates of Wuppertal smearing source in 2020*/
 
-void measure_smearing_ss(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N){
+void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source_max, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N){
     
     char label[20];
     spinor_field* source = alloc_spinor_field_f(4,&glattice);

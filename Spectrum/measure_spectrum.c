@@ -78,7 +78,7 @@ typedef struct _input_mesons {
     int source_x;
     int source_y;
     int source_z;
-    int smearing_ss;
+  int smearing_source_sink;
     double smear_epsilon_source;
     int smear_N_source;
     double smear_epsilon_sink;
@@ -131,7 +131,7 @@ typedef struct _input_mesons {
     {"Smearing Source x", "mes:source_x = %d",INT_T, &(varname).source_x}, \
     {"Smearing Source y", "mes:source_y = %d",INT_T, &(varname).source_y}, \
     {"Smearing Source z", "mes:source_z = %d",INT_T, &(varname).source_z}, \
-    {"Smearing a lot at once", "mes:smearing_ss = %d",INT_T, &(varname).smearing_ss}, \
+    {"Smearing a lot at once", "mes:smearing_source_sink = %d",INT_T, &(varname).smearing_source_sink}, \
     {"smearing source step size", "mes:smear_epsilon_source = %lf", DOUBLE_T, &(varname).smear_epsilon_source},\
     {"Number of smeared source steps", "mes:smear_N_source = %d",INT_T, &(varname).smear_N_source},        \
     {"smearing sink step size", "mes:smear_epsilon_sink = %lf", DOUBLE_T, &(varname).smear_epsilon_sink},\
@@ -399,7 +399,7 @@ int main(int argc,char *argv[]) {
         lprintf("MAIN",0,"APE smearing activate on Gaussian smearing\n");
     }
     
-    if (mes_var.smearing_ss){
+    if (mes_var.smearing_source_sink){
       lprintf("MAIN",0,"Smear source to several Ns_sink\n");
     }
     
@@ -501,8 +501,8 @@ int main(int argc,char *argv[]) {
      if (mes_var.def_point){
        measure_spectrum_pt(tau,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision);
      }
-     if (mes_var.smearing_ss){
-       measure_smearing_ss(mes_var.source_t,mes_var.source_x,mes_var.source_y,mes_var.source_z,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source,mes_var.smear_epsilon_sink,mes_var.smear_N_sink, mes_var.APE_epsilon, mes_var.APE_N);
+     if (mes_var.smearing_source_sink){
+       measure_smearing_source_sink(mes_var.source_t,mes_var.source_x,mes_var.source_y,mes_var.source_z,nm,m,mes_var.n_mom,mes_var.nhits_2pt,i,mes_var.precision,mes_var.smear_epsilon_source,mes_var.smear_N_source,mes_var.smear_epsilon_sink,mes_var.smear_N_sink, mes_var.APE_epsilon, mes_var.APE_N);
         }
         
      if (mes_var.def_baryon){
