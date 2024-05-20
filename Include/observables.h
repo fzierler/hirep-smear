@@ -315,6 +315,6 @@ void smeared_propagator(spinor_field* psi, int nm , double epsilon);
 void smeared_propagator_with_APE(spinor_field* psi, int nm , double epsilon);
 
 /* Measurements*/
-void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N);
+void measure_smearing_source_sink(int t, int x, int y, int z, int nm, double* m, int n_mom, int nhits, int conf_num, double precision, double epsilon_source, int Nsmear_source, double epsilon_sink, int Nsmear_sink, double APE_epsilon, int APE_N, int N_diff);
 
 #endif
